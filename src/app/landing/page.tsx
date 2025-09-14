@@ -1,54 +1,71 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Header } from "@/components/ui/header";
 import { Logo } from "@/components/ui/logo";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { 
-  ArrowRight, 
-  CheckCircle2, 
-  Gift, 
-  Link2, 
-  Sparkles, 
-  Users, 
-  Zap,
-  Share2,
+import {
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  Gift,
+  Link2,
   ListTodo,
-  Bot
+  Share2,
+  Sparkles,
+  Users,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function LandingPage() {
-  const [activeDemo, setActiveDemo] = useState<"create" | "share" | "pledge">("create");
+  const [activeDemo, setActiveDemo] = useState<"create" | "share" | "pledge">(
+    "create"
+  );
 
   const features = [
     {
+      id: 1,
       icon: <Zap className="h-6 w-6 text-yellow-500" />,
       title: "Instant Setup",
       description: "Create a pledge board in seconds. No sign-ups, no hassle.",
     },
     {
+      id: 2,
       icon: <Share2 className="h-6 w-6 text-blue-500" />,
       title: "Easy Sharing",
-      description: "Share a simple link with your community. Works on any device.",
+      description:
+        "Share a simple link with your community. Works on any device.",
     },
     {
+      id: 3,
       icon: <Users className="h-6 w-6 text-green-500" />,
       title: "Real-time Collaboration",
-      description: "See pledges update instantly as your community contributes.",
+      description:
+        "See pledges update instantly as your community contributes.",
     },
     {
+      id: 4,
       icon: <Bot className="h-6 w-6 text-purple-500" />,
       title: "AI Assistance",
-      description: "Get smart suggestions to populate your board based on your event type.",
+      description:
+        "Get smart suggestions to populate your board based on your event type.",
     },
     {
+      id: 5,
       icon: <CheckCircle2 className="h-6 w-6 text-pink-500" />,
       title: "Track Progress",
       description: "Mark tasks complete and celebrate milestones together.",
     },
     {
+      id: 6,
       icon: <Gift className="h-6 w-6 text-orange-500" />,
       title: "100% Free",
       description: "No hidden costs, no premium tiers. Free forever.",
@@ -57,21 +74,25 @@ export default function LandingPage() {
 
   const useCases = [
     {
+      id: 1,
       title: "Community Events",
       example: "Block parties, fundraisers, festivals",
       icon: "🎉",
     },
     {
+      id: 2,
       title: "School Activities",
       example: "Bake sales, field trips, PTA events",
       icon: "🎓",
     },
     {
+      id: 3,
       title: "Team Building",
       example: "Office parties, retreats, celebrations",
       icon: "🤝",
     },
     {
+      id: 4,
       title: "Family Gatherings",
       example: "Reunions, holidays, birthdays",
       icon: "👨‍👩‍👧‍👦",
@@ -84,15 +105,15 @@ export default function LandingPage() {
       description: "Give your pledge board a name and description",
       content: (
         <div className="space-y-4 p-4">
-          <input 
-            type="text" 
-            placeholder="Summer Block Party 2024" 
+          <input
+            type="text"
+            placeholder="Summer Block Party 2024"
             className="w-full rounded-md border bg-background px-3 py-2"
             defaultValue="Summer Block Party 2024"
           />
-          <textarea 
+          <textarea
             placeholder="Help us make this the best block party ever!"
-            className="w-full rounded-md border bg-background px-3 py-2 h-20"
+            className="h-20 w-full rounded-md border bg-background px-3 py-2"
             defaultValue="Help us make this the best block party ever! We need volunteers and supplies."
           />
           <Button className="w-full">
@@ -108,11 +129,13 @@ export default function LandingPage() {
       content: (
         <div className="space-y-4 p-4">
           <div className="rounded-md bg-muted p-4">
-            <p className="text-sm text-muted-foreground mb-2">Your pledge board link:</p>
+            <p className="mb-2 text-muted-foreground text-sm">
+              Your pledge board link:
+            </p>
             <div className="flex gap-2">
-              <input 
-                type="text" 
-                value="pleeboo.com/board/summer-party-2024" 
+              <input
+                type="text"
+                value="pleeboo.com/board/summer-party-2024"
                 readOnly
                 className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
               />
@@ -139,28 +162,30 @@ export default function LandingPage() {
         <div className="space-y-3 p-4">
           <div className="rounded-md border p-3">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-500" />
               <div className="flex-1">
                 <p className="font-medium text-sm">Set up tables and chairs</p>
-                <p className="text-xs text-muted-foreground">Pledged by: Sarah M.</p>
+                <p className="text-muted-foreground text-xs">
+                  Pledged by: Sarah M.
+                </p>
               </div>
             </div>
           </div>
           <div className="rounded-md border p-3">
             <div className="flex items-start gap-3">
-              <div className="h-5 w-5 rounded-sm border-2 mt-0.5" />
+              <div className="mt-0.5 h-5 w-5 rounded-sm border-2" />
               <div className="flex-1">
                 <p className="font-medium text-sm">Bring coolers with ice</p>
-                <p className="text-xs text-muted-foreground">2 needed</p>
+                <p className="text-muted-foreground text-xs">2 needed</p>
               </div>
             </div>
           </div>
           <div className="rounded-md border p-3 opacity-60">
             <div className="flex items-start gap-3">
-              <div className="h-5 w-5 rounded-sm border-2 mt-0.5" />
+              <div className="mt-0.5 h-5 w-5 rounded-sm border-2" />
               <div className="flex-1">
                 <p className="font-medium text-sm">Organize games for kids</p>
-                <p className="text-xs text-muted-foreground">Pledging now...</p>
+                <p className="text-muted-foreground text-xs">Pledging now...</p>
               </div>
             </div>
           </div>
@@ -171,33 +196,21 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Logo size="md" />
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-              <Link href="/">
-                <Button>Get Started</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
+      <section className="px-4 py-20">
         <div className="mx-auto max-w-7xl text-center">
           <div className="mx-auto max-w-3xl">
-            <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text font-bold text-5xl text-transparent tracking-tight sm:text-6xl">
               Organize Community Efforts with Ease
             </h1>
-            <p className="mb-10 text-xl text-muted-foreground">
-              Pleeboo is the free, simple way to coordinate volunteers and resources for any event. 
-              Create a pledge board, share the link, and watch your community come together.
+            <p className="mb-10 text-muted-foreground text-xl">
+              Pleeboo is the free, simple way to coordinate volunteers and
+              resources for any event. Create a pledge board, share the link,
+              and watch your community come together.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link href="/">
                 <Button size="lg" className="min-w-[200px]">
                   Create Your First Board
@@ -213,34 +226,39 @@ export default function LandingPage() {
       </section>
 
       {/* Interactive Demo */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="bg-muted/30 px-4 py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">See How It Works</h2>
-            <p className="text-muted-foreground text-lg">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 font-bold text-3xl">See How It Works</h2>
+            <p className="text-lg text-muted-foreground">
               Three simple steps to organized success
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
+          <div className="grid items-center gap-8 lg:grid-cols-2">
             <div className="space-y-4">
               <button
+                type="button"
                 onClick={() => setActiveDemo("create")}
-                className={`w-full text-left p-4 rounded-lg border transition-all ${
-                  activeDemo === "create" 
-                    ? "border-primary bg-primary/5" 
+                className={`w-full rounded-lg border p-4 text-left transition-all ${
+                  activeDemo === "create"
+                    ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`rounded-full p-2 ${
-                    activeDemo === "create" ? "bg-primary text-primary-foreground" : "bg-muted"
-                  }`}>
+                  <div
+                    className={`rounded-full p-2 ${
+                      activeDemo === "create"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
                     <ListTodo className="h-4 w-4" />
                   </div>
                   <div>
                     <h3 className="font-semibold">1. Create Your Board</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Set up your pledge board with AI-powered suggestions
                     </p>
                   </div>
@@ -248,22 +266,27 @@ export default function LandingPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveDemo("share")}
-                className={`w-full text-left p-4 rounded-lg border transition-all ${
-                  activeDemo === "share" 
-                    ? "border-primary bg-primary/5" 
+                className={`w-full rounded-lg border p-4 text-left transition-all ${
+                  activeDemo === "share"
+                    ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`rounded-full p-2 ${
-                    activeDemo === "share" ? "bg-primary text-primary-foreground" : "bg-muted"
-                  }`}>
+                  <div
+                    className={`rounded-full p-2 ${
+                      activeDemo === "share"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
                     <Share2 className="h-4 w-4" />
                   </div>
                   <div>
                     <h3 className="font-semibold">2. Share the Link</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Send to your community via any platform
                     </p>
                   </div>
@@ -271,22 +294,27 @@ export default function LandingPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveDemo("pledge")}
-                className={`w-full text-left p-4 rounded-lg border transition-all ${
-                  activeDemo === "pledge" 
-                    ? "border-primary bg-primary/5" 
+                className={`w-full rounded-lg border p-4 text-left transition-all ${
+                  activeDemo === "pledge"
+                    ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`rounded-full p-2 ${
-                    activeDemo === "pledge" ? "bg-primary text-primary-foreground" : "bg-muted"
-                  }`}>
+                  <div
+                    className={`rounded-full p-2 ${
+                      activeDemo === "pledge"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
                     <Users className="h-4 w-4" />
                   </div>
                   <div>
                     <h3 className="font-semibold">3. Collect Pledges</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Watch as people sign up to contribute
                     </p>
                   </div>
@@ -297,29 +325,32 @@ export default function LandingPage() {
             <Card className="border-2">
               <CardHeader>
                 <CardTitle>{demoBoards[activeDemo].title}</CardTitle>
-                <CardDescription>{demoBoards[activeDemo].description}</CardDescription>
+                <CardDescription>
+                  {demoBoards[activeDemo].description}
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                {demoBoards[activeDemo].content}
-              </CardContent>
+              <CardContent>{demoBoards[activeDemo].content}</CardContent>
             </Card>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-4">
+      <section className="px-4 py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Everything You Need</h2>
-            <p className="text-muted-foreground text-lg">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 font-bold text-3xl">Everything You Need</h2>
+            <p className="text-lg text-muted-foreground">
               Powerful features that make organizing effortless
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <Card
+                key={`feature-${feature.id}`}
+                className="border-2 transition-colors hover:border-primary/50"
+              >
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     {feature.icon}
@@ -336,24 +367,26 @@ export default function LandingPage() {
       </section>
 
       {/* Use Cases */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="bg-muted/30 px-4 py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Perfect For Any Event</h2>
-            <p className="text-muted-foreground text-lg">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 font-bold text-3xl">Perfect For Any Event</h2>
+            <p className="text-lg text-muted-foreground">
               From small gatherings to large community events
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {useCases.map((useCase, index) => (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {useCases.map((useCase) => (
               <div
-                key={index}
-                className="text-center p-6 rounded-lg bg-background border-2 hover:border-primary/50 transition-colors"
+                key={`useCase-${useCase.id}`}
+                className="rounded-lg border-2 bg-background p-6 text-center transition-colors hover:border-primary/50"
               >
-                <div className="text-4xl mb-4">{useCase.icon}</div>
-                <h3 className="font-semibold mb-2">{useCase.title}</h3>
-                <p className="text-sm text-muted-foreground">{useCase.example}</p>
+                <div className="mb-4 text-4xl">{useCase.icon}</div>
+                <h3 className="mb-2 font-semibold">{useCase.title}</h3>
+                <p className="text-muted-foreground text-sm">
+                  {useCase.example}
+                </p>
               </div>
             ))}
           </div>
@@ -361,17 +394,15 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
+      <section className="px-4 py-20">
         <div className="mx-auto max-w-4xl text-center">
           <div className="rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 p-12 text-white">
-            <h2 className="text-3xl font-bold mb-4">
-              Start Organizing Today
-            </h2>
-            <p className="text-xl mb-8 text-white/90">
+            <h2 className="mb-4 font-bold text-3xl">Start Organizing Today</h2>
+            <p className="mb-8 text-white/90 text-xl">
               Join thousands of communities using Pleeboo to coordinate better.
               No credit card required. Ever.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link href="/">
                 <Button size="lg" variant="secondary" className="min-w-[200px]">
                   Create Free Board
@@ -387,23 +418,32 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 px-4">
+      <footer className="border-t px-4 py-12">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-4">
               <Logo size="sm" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 © 2024 Pleeboo. Made with ❤️ for communities everywhere.
               </p>
             </div>
             <div className="flex gap-6 text-sm">
-              <Link href="/landing" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/landing"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 About
               </Link>
-              <Link href="/" className="text-muted-foreground hover:text-foreground">
+              <Link
+                href="/"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 Create Board
               </Link>
-              <a href="https://github.com" className="text-muted-foreground hover:text-foreground">
+              <a
+                href="https://github.com"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 GitHub
               </a>
             </div>

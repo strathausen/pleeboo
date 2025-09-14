@@ -10,15 +10,36 @@ import type { AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = pgTableCreator((name) => `pleeboo_${name}`);
 
-export const posts = createTable(
-	"post",
+export const boards = createTable(
+	"board",
+	(d) => ({
+		id: d.varchar({ length: 32 }).primaryKey(),
+		title: d.varchar({ length: 256 }).notNull(),
+		description: d.text(),
+		createdAt: d
+			.timestamp({ withTimezone: true })
+			.default(sql`CURRENT_TIMESTAMP`)
+			.notNull(),
+		updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+	}),
+	(t) => [index("board_created_at_idx").on(t.createdAt)],
+);
+
+export const boardsRelations = relations(boards, ({ many }) => ({
+	tasks: many(tasks),
+}));
+
+export const tasks = createTable(
+	"task",
 	(d) => ({
 		id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-		name: d.varchar({ length: 256 }),
-		createdById: d
-			.varchar({ length: 255 })
+		boardId: d
+			.varchar({ length: 32 })
 			.notNull()
-			.references(() => users.id),
+			.references(() => boards.id, { onDelete: "cascade" }),
+		content: d.text().notNull(),
+		pledgedBy: d.varchar({ length: 256 }),
+		completed: d.boolean().default(false).notNull(),
 		createdAt: d
 			.timestamp({ withTimezone: true })
 			.default(sql`CURRENT_TIMESTAMP`)
@@ -26,10 +47,14 @@ export const posts = createTable(
 		updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
 	}),
 	(t) => [
-		index("created_by_idx").on(t.createdById),
-		index("name_idx").on(t.name),
+		index("task_board_idx").on(t.boardId),
+		index("task_created_at_idx").on(t.createdAt),
 	],
 );
+
+export const tasksRelations = relations(tasks, ({ one }) => ({
+	board: one(boards, { fields: [tasks.boardId], references: [boards.id] }),
+}));
 
 export const users = createTable("user", (d) => ({
 	id: d

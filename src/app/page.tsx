@@ -1,9 +1,11 @@
 "use client";
 
+import { PledgeDialog } from "@/components/pledge-board/pledge-dialog";
+import {
+  PledgeItem,
+  type PledgeItemData,
+} from "@/components/pledge-board/pledge-item";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,55 +13,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/ui/logo";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Book as Broom,
   Camera,
-  CheckCircle,
-  Clock,
   Gift,
   Heart,
   Music,
-  Plus,
-  UserPlus,
   Users,
   Utensils,
 } from "lucide-react";
 import { useState } from "react";
-
-interface Volunteer {
-  name: string;
-  details: string;
-}
-
-interface PledgeItem {
-  id: number;
-  title: string;
-  description: string;
-  needed: number;
-  volunteers: Volunteer[];
-  icon:
-    | typeof Broom
-    | typeof Camera
-    | typeof Music
-    | typeof Gift
-    | typeof Heart
-    | typeof Utensils;
-  category: string;
-}
 
 // Mock data for demonstration
 const initialTasks = [
@@ -138,10 +103,12 @@ export default function PledgeBoard() {
   const [tasks, setTasks] = useState(initialTasks);
   const [items, setItems] = useState(initialItems);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedPledge, setSelectedPledge] = useState<PledgeItem | null>(null);
+  const [selectedPledge, setSelectedPledge] = useState<PledgeItemData | null>(
+    null
+  );
   const [formData, setFormData] = useState({ name: "", details: "" });
 
-  const handlePledge = (pledgeItem: PledgeItem) => {
+  const handlePledge = (pledgeItem: PledgeItemData) => {
     setSelectedPledge(pledgeItem);
     setIsDialogOpen(true);
   };
@@ -178,26 +145,6 @@ export default function PledgeBoard() {
     setSelectedPledge(null);
   };
 
-  const getStatusBadge = (needed: number, current: number) => {
-    if (current >= needed) {
-      return (
-        <Badge className="bg-accent text-accent-foreground">
-          <CheckCircle className="mr-1 h-3 w-3" />
-          Complete
-        </Badge>
-      );
-    }
-    if (current > 0) {
-      return (
-        <Badge className="bg-secondary text-secondary-foreground">
-          <Clock className="mr-1 h-3 w-3" />
-          In Progress
-        </Badge>
-      );
-    }
-    return <Badge variant="outline">Needed</Badge>;
-  };
-
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
@@ -206,7 +153,7 @@ export default function PledgeBoard() {
           <Logo size="lg" />
           <ThemeToggle />
         </div>
-        
+
         {/* Main Header */}
         <div className="space-y-4 text-center">
           <h1 className="font-bold text-4xl text-card-foreground">
@@ -230,82 +177,14 @@ export default function PledgeBoard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {tasks.map((task) => {
-              const Icon = task.icon;
-              return (
-                <div
-                  key={task.id}
-                  className="space-y-3 rounded-lg border border-border p-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex flex-1 items-start gap-3">
-                      <Icon className="mt-1 h-5 w-5 text-primary" />
-                      <div className="flex-1 space-y-1">
-                        <h3 className="font-semibold text-card-foreground">
-                          {task.title}
-                        </h3>
-                        <p className="text-muted-foreground text-sm">
-                          {task.description}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(task.needed, task.volunteers.length)}
-                          <span className="text-muted-foreground text-sm">
-                            {task.volunteers.length} of {task.needed} volunteers
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => handlePledge(task)}
-                      disabled={task.volunteers.length >= task.needed}
-                      className="shrink-0"
-                    >
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Volunteer
-                    </Button>
-                  </div>
-
-                  {task.volunteers.length > 0 && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-card-foreground text-sm">
-                          Current Volunteers:
-                        </h4>
-                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                          {task.volunteers.map((volunteer, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 text-sm"
-                            >
-                              <Avatar className="h-6 w-6">
-                                <AvatarFallback className="text-xs">
-                                  {volunteer.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <span className="font-medium">
-                                  {volunteer.name}
-                                </span>
-                                {volunteer.details && (
-                                  <span className="text-muted-foreground">
-                                    {" "}
-                                    - {volunteer.details}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
+            {tasks.map((task) => (
+              <PledgeItem
+                key={task.id}
+                item={task}
+                onPledge={handlePledge}
+                isTask={true}
+              />
+            ))}
           </CardContent>
         </Card>
 
@@ -321,83 +200,14 @@ export default function PledgeBoard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {items.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.id}
-                  className="space-y-3 rounded-lg border border-border p-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex flex-1 items-start gap-3">
-                      <Icon className="mt-1 h-5 w-5 text-primary" />
-                      <div className="flex-1 space-y-1">
-                        <h3 className="font-semibold text-card-foreground">
-                          {item.title}
-                        </h3>
-                        <p className="text-muted-foreground text-sm">
-                          {item.description}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(item.needed, item.volunteers.length)}
-                          <span className="text-muted-foreground text-sm">
-                            {item.volunteers.length} of {item.needed}{" "}
-                            contributions
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => handlePledge(item)}
-                      disabled={item.volunteers.length >= item.needed}
-                      className="shrink-0"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      I'll Bring This
-                    </Button>
-                  </div>
-
-                  {item.volunteers.length > 0 && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-card-foreground text-sm">
-                          Who's Bringing:
-                        </h4>
-                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                          {item.volunteers.map((volunteer, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 text-sm"
-                            >
-                              <Avatar className="h-6 w-6">
-                                <AvatarFallback className="text-xs">
-                                  {volunteer.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <span className="font-medium">
-                                  {volunteer.name}
-                                </span>
-                                {volunteer.details && (
-                                  <span className="text-muted-foreground">
-                                    {" "}
-                                    - {volunteer.details}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
+            {items.map((item) => (
+              <PledgeItem
+                key={item.id}
+                item={item}
+                onPledge={handlePledge}
+                isTask={false}
+              />
+            ))}
           </CardContent>
         </Card>
 
@@ -412,59 +222,14 @@ export default function PledgeBoard() {
         </Alert>
 
         {/* Pledge Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {selectedPledge?.category === "tasks"
-                  ? "Volunteer for"
-                  : "Sign up to bring"}
-                : {selectedPledge?.title}
-              </DialogTitle>
-              <DialogDescription>
-                {selectedPledge?.description}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Your Name *</Label>
-                <Input
-                  id="name"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="details">Additional Details (Optional)</Label>
-                <Textarea
-                  id="details"
-                  placeholder={
-                    selectedPledge?.category === "tasks"
-                      ? "Any special skills, availability, or equipment you can bring..."
-                      : "What specifically will you bring? How many people will it serve?..."
-                  }
-                  value={formData.details}
-                  onChange={(e) =>
-                    setFormData({ ...formData, details: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={submitPledge} disabled={!formData.name.trim()}>
-                {selectedPledge?.category === "tasks"
-                  ? "Sign Me Up!"
-                  : "I'll Bring This!"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <PledgeDialog
+          isOpen={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          selectedPledge={selectedPledge}
+          formData={formData}
+          onFormDataChange={setFormData}
+          onSubmit={submitPledge}
+        />
       </div>
     </div>
   );

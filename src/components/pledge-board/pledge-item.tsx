@@ -1,12 +1,10 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   CheckCircle,
   Clock,
   type LucideIcon,
-  Plus,
-  UserPlus,
 } from "lucide-react";
+import { VolunteerItem } from "./volunteer-item";
 
 export interface Volunteer {
   name: string;
@@ -26,6 +24,8 @@ export interface PledgeItemData {
 interface PledgeItemProps {
   item: PledgeItemData;
   onPledge: (item: PledgeItemData) => void;
+  onVolunteerNameChange?: (itemId: number, volunteerIndex: number, newName: string) => void;
+  onVolunteerDetailsChange?: (itemId: number, volunteerIndex: number, newDetails: string) => void;
   isTask?: boolean;
 }
 
@@ -52,77 +52,60 @@ function getStatusBadge(needed: number, current: number) {
 export function PledgeItem({
   item,
   onPledge,
+  onVolunteerNameChange,
+  onVolunteerDetailsChange,
   isTask = false,
 }: PledgeItemProps) {
   const Icon = item.icon;
+  
+  // Create array with empty slots for remaining needed volunteers
+  const allSlots = [...item.volunteers];
+  while (allSlots.length < item.needed) {
+    allSlots.push({ name: "", details: "" });
+  }
 
   return (
     <div className="rounded-lg border border-border p-4">
-      <div className="mb-3 flex items-start justify-between">
+      <div className="mb-3">
         <h3 className="flex items-center gap-2 font-semibold text-card-foreground">
           <Icon className="h-5 w-5 text-primary" />
           {item.title}
         </h3>
-        <Button
-          onClick={() => onPledge(item)}
-          disabled={item.volunteers.length >= item.needed}
-          className="shrink-0"
-        >
-          {isTask ? (
-            <>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Volunteer
-            </>
-          ) : (
-            <>
-              <Plus className="mr-2 h-4 w-4" />
-              I'll Bring This
-            </>
-          )}
-        </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Left column - Description and status */}
+      <div className="grid gap-4 md:grid-cols-2 mb-3">
+        {/* Left column - Description */}
         <div className="space-y-2">
           <p className="text-muted-foreground text-sm">{item.description}</p>
-          <div className="flex items-center gap-2">
-            {getStatusBadge(item.needed, item.volunteers.length)}
-            <span className="text-muted-foreground text-sm">
-              {item.volunteers.length} of {item.needed}{" "}
-              {isTask ? "volunteers" : "contributions"}
-            </span>
-          </div>
         </div>
 
-        {/* Right column - Volunteers/Contributors list */}
+        {/* Right column - All volunteer slots */}
         <div className="space-y-2">
-          {item.volunteers.length > 0 ? (
-            <>
-              <h4 className="font-medium text-card-foreground text-sm">
-                {isTask ? "Current Volunteers:" : "Who's Bringing:"}
-              </h4>
-              <div className="space-y-2">
-                {item.volunteers.map((volunteer, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm">
-                    <div className="flex-1">
-                      <span className="font-medium">{volunteer.name}</span>
-                      {volunteer.details && (
-                        <span className="block text-muted-foreground text-xs">
-                          {volunteer.details}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="text-muted-foreground text-sm italic">
-              {isTask ? "No volunteers yet" : "No one signed up yet"}
-            </div>
-          )}
+          <h4 className="font-medium text-card-foreground text-sm">
+            {isTask ? "Volunteers:" : "Contributors:"} ({item.volunteers.length}/{item.needed})
+          </h4>
+          <div className="space-y-2">
+            {allSlots.map((volunteer, index) => (
+              <VolunteerItem
+                key={index}
+                volunteer={volunteer}
+                itemId={item.id}
+                volunteerIndex={index}
+                onNameChange={onVolunteerNameChange}
+                onDetailsChange={onVolunteerDetailsChange}
+              />
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* Progress status at the bottom */}
+      <div className="flex items-center gap-2 pt-3 border-t">
+        {getStatusBadge(item.needed, item.volunteers.length)}
+        <span className="text-muted-foreground text-sm">
+          {item.volunteers.length} of {item.needed}{" "}
+          {isTask ? "volunteers" : "contributions"}
+        </span>
       </div>
     </div>
   );

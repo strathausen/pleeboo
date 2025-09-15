@@ -113,6 +113,86 @@ export default function PledgeBoard() {
     setIsDialogOpen(true);
   };
 
+  const handleVolunteerNameChange = (itemId: number, volunteerIndex: number, newName: string) => {
+    // Update tasks
+    setTasks(tasks.map(task => {
+      if (task.id === itemId) {
+        const newVolunteers = [...task.volunteers];
+        // Add new volunteer if index doesn't exist yet
+        while (newVolunteers.length <= volunteerIndex) {
+          newVolunteers.push({ name: "", details: "" });
+        }
+        newVolunteers[volunteerIndex] = {
+          ...newVolunteers[volunteerIndex],
+          name: newName
+        };
+        // Filter out empty volunteers at the end
+        const filteredVolunteers = newVolunteers.filter((v, i) => 
+          v.name.trim() !== "" || i < task.needed
+        );
+        return { ...task, volunteers: filteredVolunteers.slice(0, task.needed) };
+      }
+      return task;
+    }));
+
+    // Update items
+    setItems(items.map(item => {
+      if (item.id === itemId) {
+        const newVolunteers = [...item.volunteers];
+        // Add new volunteer if index doesn't exist yet
+        while (newVolunteers.length <= volunteerIndex) {
+          newVolunteers.push({ name: "", details: "" });
+        }
+        newVolunteers[volunteerIndex] = {
+          ...newVolunteers[volunteerIndex],
+          name: newName
+        };
+        // Filter out empty volunteers at the end
+        const filteredVolunteers = newVolunteers.filter((v, i) => 
+          v.name.trim() !== "" || i < item.needed
+        );
+        return { ...item, volunteers: filteredVolunteers.slice(0, item.needed) };
+      }
+      return item;
+    }));
+  };
+
+  const handleVolunteerDetailsChange = (itemId: number, volunteerIndex: number, newDetails: string) => {
+    // Update tasks
+    setTasks(tasks.map(task => {
+      if (task.id === itemId) {
+        const newVolunteers = [...task.volunteers];
+        // Add new volunteer if index doesn't exist yet
+        while (newVolunteers.length <= volunteerIndex) {
+          newVolunteers.push({ name: "", details: "" });
+        }
+        newVolunteers[volunteerIndex] = {
+          ...newVolunteers[volunteerIndex],
+          details: newDetails
+        };
+        return { ...task, volunteers: newVolunteers.slice(0, task.needed) };
+      }
+      return task;
+    }));
+
+    // Update items
+    setItems(items.map(item => {
+      if (item.id === itemId) {
+        const newVolunteers = [...item.volunteers];
+        // Add new volunteer if index doesn't exist yet
+        while (newVolunteers.length <= volunteerIndex) {
+          newVolunteers.push({ name: "", details: "" });
+        }
+        newVolunteers[volunteerIndex] = {
+          ...newVolunteers[volunteerIndex],
+          details: newDetails
+        };
+        return { ...item, volunteers: newVolunteers.slice(0, item.needed) };
+      }
+      return item;
+    }));
+  };
+
   const submitPledge = () => {
     if (!selectedPledge) return;
     if (!formData.name.trim()) return;
@@ -182,6 +262,8 @@ export default function PledgeBoard() {
                 key={task.id}
                 item={task}
                 onPledge={handlePledge}
+                onVolunteerNameChange={handleVolunteerNameChange}
+                onVolunteerDetailsChange={handleVolunteerDetailsChange}
                 isTask={true}
               />
             ))}
@@ -205,6 +287,8 @@ export default function PledgeBoard() {
                 key={item.id}
                 item={item}
                 onPledge={handlePledge}
+                onVolunteerNameChange={handleVolunteerNameChange}
+                onVolunteerDetailsChange={handleVolunteerDetailsChange}
                 isTask={false}
               />
             ))}

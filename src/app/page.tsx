@@ -1,11 +1,6 @@
 "use client";
 
-import { PledgeDialog } from "@/components/pledge-board/pledge-dialog";
-import {
-  PledgeItem,
-  type PledgeItemData,
-} from "@/components/pledge-board/pledge-item";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,330 +8,448 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Header } from "@/components/ui/header";
 import { Logo } from "@/components/ui/logo";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
-  Book as Broom,
-  Camera,
+  ArrowRight,
+  Bot,
+  CheckCircle2,
   Gift,
-  Heart,
-  Music,
+  Link2,
+  ListTodo,
+  Share2,
+  Sparkles,
   Users,
-  Utensils,
+  Zap,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
-// Mock data for demonstration
-const initialTasks = [
-  {
-    id: 1,
-    title: "Setup & Cleanup Crew",
-    description: "Help set up tables, chairs, and clean up after the event",
-    needed: 4,
-    volunteers: [
-      { name: "Sarah Johnson", details: "Can bring cleaning supplies" },
-      { name: "Mike Chen", details: "Available all day" },
-    ],
-    icon: Broom,
-    category: "tasks",
-  },
-  {
-    id: 2,
-    title: "Photography Team",
-    description: "Capture memories throughout the event",
-    needed: 2,
-    volunteers: [
-      { name: "Alex Rivera", details: "Professional camera equipment" },
-    ],
-    icon: Camera,
-    category: "tasks",
-  },
-  {
-    id: 3,
-    title: "Music & Entertainment",
-    description: "DJ or live music for the event",
-    needed: 1,
-    volunteers: [],
-    icon: Music,
-    category: "tasks",
-  },
-];
-
-const initialItems = [
-  {
-    id: 4,
-    title: "Savory Dishes",
-    description: "Main courses, appetizers, or side dishes",
-    needed: 6,
-    volunteers: [
-      { name: "Emma Davis", details: "Bringing lasagna for 12 people" },
-      { name: "James Wilson", details: "Homemade tacos and fixings" },
-      { name: "Lisa Park", details: "Vegetarian spring rolls" },
-    ],
-    icon: Utensils,
-    category: "items",
-  },
-  {
-    id: 5,
-    title: "Desserts & Sweets",
-    description: "Cakes, cookies, pies, or other sweet treats",
-    needed: 4,
-    volunteers: [
-      { name: "Maria Garcia", details: "Chocolate chip cookies" },
-      { name: "Tom Anderson", details: "Apple pie" },
-    ],
-    icon: Gift,
-    category: "items",
-  },
-  {
-    id: 6,
-    title: "Beverages",
-    description: "Soft drinks, juices, coffee, or water",
-    needed: 3,
-    volunteers: [{ name: "Rachel Kim", details: "Coffee and tea station" }],
-    icon: Heart,
-    category: "items",
-  },
-];
-
-export default function PledgeBoard() {
-  const [tasks, setTasks] = useState(initialTasks);
-  const [items, setItems] = useState(initialItems);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedPledge, setSelectedPledge] = useState<PledgeItemData | null>(
-    null,
+export default function LandingPage() {
+  const [activeDemo, setActiveDemo] = useState<"create" | "share" | "pledge">(
+    "create",
   );
-  const [formData, setFormData] = useState({ name: "", details: "" });
 
-  const handlePledge = (pledgeItem: PledgeItemData) => {
-    setSelectedPledge(pledgeItem);
-    setIsDialogOpen(true);
-  };
+  const features = [
+    {
+      id: 1,
+      icon: <Zap className="h-6 w-6 text-yellow-500" />,
+      title: "Instant Setup",
+      description: "Create a pledge board in seconds. No sign-ups, no hassle.",
+    },
+    {
+      id: 2,
+      icon: <Share2 className="h-6 w-6 text-blue-500" />,
+      title: "Easy Sharing",
+      description:
+        "Share a simple link with your community. Works on any device.",
+    },
+    {
+      id: 3,
+      icon: <Users className="h-6 w-6 text-green-500" />,
+      title: "Real-time Collaboration",
+      description:
+        "See pledges update instantly as your community contributes.",
+    },
+    {
+      id: 4,
+      icon: <Bot className="h-6 w-6 text-purple-500" />,
+      title: "AI Assistance",
+      description:
+        "Get smart suggestions to populate your board based on your event type.",
+    },
+    {
+      id: 5,
+      icon: <CheckCircle2 className="h-6 w-6 text-pink-500" />,
+      title: "Track Progress",
+      description: "Mark tasks complete and celebrate milestones together.",
+    },
+    {
+      id: 6,
+      icon: <Gift className="h-6 w-6 text-orange-500" />,
+      title: "100% Free",
+      description: "No hidden costs, no premium tiers. Free forever.",
+    },
+  ];
 
-  const handleVolunteerNameChange = (
-    itemId: number,
-    volunteerIndex: number,
-    newName: string,
-  ) => {
-    // Update tasks
-    setTasks(
-      tasks.map((task) => {
-        if (task.id === itemId) {
-          const newVolunteers = [...task.volunteers];
-          // Add new volunteer if index doesn't exist yet
-          while (newVolunteers.length <= volunteerIndex) {
-            newVolunteers.push({ name: "", details: "" });
-          }
-          newVolunteers[volunteerIndex] = {
-            ...newVolunteers[volunteerIndex],
-            name: newName,
-          };
-          // Filter out empty volunteers at the end
-          const filteredVolunteers = newVolunteers.filter(
-            (v, i) => v.name.trim() !== "" || i < task.needed,
-          );
-          return {
-            ...task,
-            volunteers: filteredVolunteers.slice(0, task.needed),
-          };
-        }
-        return task;
-      }),
-    );
+  const useCases = [
+    {
+      id: 1,
+      title: "Community Events",
+      example: "Block parties, fundraisers, festivals",
+      icon: "🎉",
+    },
+    {
+      id: 2,
+      title: "School Activities",
+      example: "Bake sales, field trips, PTA events",
+      icon: "🎓",
+    },
+    {
+      id: 3,
+      title: "Team Building",
+      example: "Office parties, retreats, celebrations",
+      icon: "🤝",
+    },
+    {
+      id: 4,
+      title: "Family Gatherings",
+      example: "Reunions, holidays, birthdays",
+      icon: "👨‍👩‍👧‍👦",
+    },
+  ];
 
-    // Update items
-    setItems(
-      items.map((item) => {
-        if (item.id === itemId) {
-          const newVolunteers = [...item.volunteers];
-          // Add new volunteer if index doesn't exist yet
-          while (newVolunteers.length <= volunteerIndex) {
-            newVolunteers.push({ name: "", details: "" });
-          }
-          newVolunteers[volunteerIndex] = {
-            ...newVolunteers[volunteerIndex],
-            name: newName,
-          };
-          // Filter out empty volunteers at the end
-          const filteredVolunteers = newVolunteers.filter(
-            (v, i) => v.name.trim() !== "" || i < item.needed,
-          );
-          return {
-            ...item,
-            volunteers: filteredVolunteers.slice(0, item.needed),
-          };
-        }
-        return item;
-      }),
-    );
-  };
-
-  const handleVolunteerDetailsChange = (
-    itemId: number,
-    volunteerIndex: number,
-    newDetails: string,
-  ) => {
-    // Update tasks
-    setTasks(
-      tasks.map((task) => {
-        if (task.id === itemId) {
-          const newVolunteers = [...task.volunteers];
-          // Add new volunteer if index doesn't exist yet
-          while (newVolunteers.length <= volunteerIndex) {
-            newVolunteers.push({ name: "", details: "" });
-          }
-          newVolunteers[volunteerIndex] = {
-            ...newVolunteers[volunteerIndex],
-            details: newDetails,
-          };
-          return { ...task, volunteers: newVolunteers.slice(0, task.needed) };
-        }
-        return task;
-      }),
-    );
-
-    // Update items
-    setItems(
-      items.map((item) => {
-        if (item.id === itemId) {
-          const newVolunteers = [...item.volunteers];
-          // Add new volunteer if index doesn't exist yet
-          while (newVolunteers.length <= volunteerIndex) {
-            newVolunteers.push({ name: "", details: "" });
-          }
-          newVolunteers[volunteerIndex] = {
-            ...newVolunteers[volunteerIndex],
-            details: newDetails,
-          };
-          return { ...item, volunteers: newVolunteers.slice(0, item.needed) };
-        }
-        return item;
-      }),
-    );
-  };
-
-  const submitPledge = () => {
-    if (!selectedPledge) return;
-    if (!formData.name.trim()) return;
-
-    const newVolunteer = {
-      name: formData.name,
-      details: formData.details || "No additional details",
-    };
-
-    if (selectedPledge.category === "tasks") {
-      setTasks(
-        tasks.map((task) =>
-          task.id === selectedPledge.id
-            ? { ...task, volunteers: [...task.volunteers, newVolunteer] }
-            : task,
-        ),
-      );
-    } else {
-      setItems(
-        items.map((item) =>
-          item.id === selectedPledge.id
-            ? { ...item, volunteers: [...item.volunteers, newVolunteer] }
-            : item,
-        ),
-      );
-    }
-
-    setFormData({ name: "", details: "" });
-    setIsDialogOpen(false);
-    setSelectedPledge(null);
+  const demoBoards = {
+    create: {
+      title: "Create Your Board",
+      description: "Give your pledge board a name and description",
+      content: (
+        <div className="space-y-4 p-4">
+          <input
+            type="text"
+            placeholder="Summer Block Party 2024"
+            className="w-full rounded-md border bg-background px-3 py-2"
+            defaultValue="Summer Block Party 2024"
+          />
+          <textarea
+            placeholder="Help us make this the best block party ever!"
+            className="h-20 w-full rounded-md border bg-background px-3 py-2"
+            defaultValue="Help us make this the best block party ever! We need volunteers and supplies."
+          />
+          <Button className="w-full">
+            <Sparkles className="mr-2 h-4 w-4" />
+            AI Suggest Tasks
+          </Button>
+        </div>
+      ),
+    },
+    share: {
+      title: "Share With Your Community",
+      description: "Get a unique link to share with contributors",
+      content: (
+        <div className="space-y-4 p-4">
+          <div className="rounded-md bg-muted p-4">
+            <p className="mb-2 text-muted-foreground text-sm">
+              Your pledge board link:
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value="pleeboo.com/board/summer-party-2024"
+                readOnly
+                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
+              />
+              <Button size="sm">
+                <Link2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1">
+              Share via Email
+            </Button>
+            <Button variant="outline" className="flex-1">
+              Share via Text
+            </Button>
+          </div>
+        </div>
+      ),
+    },
+    pledge: {
+      title: "Community Pledges",
+      description: "Watch as people sign up to help",
+      content: (
+        <div className="space-y-3 p-4">
+          <div className="rounded-md border p-3">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-500" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Set up tables and chairs</p>
+                <p className="text-muted-foreground text-xs">
+                  Pledged by: Sarah M.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-md border p-3">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 h-5 w-5 rounded-sm border-2" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Bring coolers with ice</p>
+                <p className="text-muted-foreground text-xs">2 needed</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-md border p-3 opacity-60">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 h-5 w-5 rounded-sm border-2" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Organize games for kids</p>
+                <p className="text-muted-foreground text-xs">Pledging now...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-8">
-        {/* Header with logo and theme toggle */}
-        <div className="flex items-center justify-between">
-          <Logo size="lg" />
-          <ThemeToggle />
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      {/* Hero Section */}
+      <section className="px-4 py-20">
+        <div className="mx-auto max-w-7xl text-center">
+          <div className="mx-auto max-w-3xl">
+            <h1 className="mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text font-bold text-5xl text-transparent tracking-tight sm:text-6xl">
+              Organize Community Efforts with Ease
+            </h1>
+            <p className="mb-10 text-muted-foreground text-xl">
+              Pleeboo is the free, simple way to coordinate volunteers and
+              resources for any event. Create a pledge board, share the link,
+              and watch your community come together.
+            </p>
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
+              <Link href="/">
+                <Button size="lg" className="min-w-[200px]">
+                  Create Your First Board
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="min-w-[200px]">
+                See Example Board
+              </Button>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Main Header */}
-        <div className="space-y-4 text-center">
-          <h1 className="font-bold text-4xl text-card-foreground">
-            Community Event Pledge Board
-          </h1>
-          <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
-            Join us in making our community event amazing! Sign up to volunteer
-            for tasks or bring items. Every contribution makes a difference! 🌟
-          </p>
+      {/* Interactive Demo */}
+      <section className="bg-muted/30 px-4 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 font-bold text-3xl">See How It Works</h2>
+            <p className="text-lg text-muted-foreground">
+              Three simple steps to organized success
+            </p>
+          </div>
+
+          <div className="grid items-center gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={() => setActiveDemo("create")}
+                className={`w-full rounded-lg border p-4 text-left transition-all ${
+                  activeDemo === "create"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`rounded-full p-2 ${
+                      activeDemo === "create"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    <ListTodo className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">1. Create Your Board</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Set up your pledge board with AI-powered suggestions
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveDemo("share")}
+                className={`w-full rounded-lg border p-4 text-left transition-all ${
+                  activeDemo === "share"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`rounded-full p-2 ${
+                      activeDemo === "share"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">2. Share the Link</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Send to your community via any platform
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveDemo("pledge")}
+                className={`w-full rounded-lg border p-4 text-left transition-all ${
+                  activeDemo === "pledge"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`rounded-full p-2 ${
+                      activeDemo === "pledge"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">3. Collect Pledges</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Watch as people sign up to contribute
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle>{demoBoards[activeDemo].title}</CardTitle>
+                <CardDescription>
+                  {demoBoards[activeDemo].description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>{demoBoards[activeDemo].content}</CardContent>
+            </Card>
+          </div>
         </div>
+      </section>
 
-        {/* Tasks Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Volunteer Tasks
-            </CardTitle>
-            <CardDescription>
-              Help make our event run smoothly by volunteering for these tasks
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {tasks.map((task) => (
-              <PledgeItem
-                key={task.id}
-                item={task}
-                onPledge={handlePledge}
-                onVolunteerNameChange={handleVolunteerNameChange}
-                onVolunteerDetailsChange={handleVolunteerDetailsChange}
-                isTask={true}
-              />
+      {/* Features Grid */}
+      <section className="px-4 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 font-bold text-3xl">Everything You Need</h2>
+            <p className="text-lg text-muted-foreground">
+              Powerful features that make organizing effortless
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <Card
+                key={`feature-${feature.id}`}
+                className="border-2 transition-colors hover:border-primary/50"
+              >
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    {feature.icon}
+                    <CardTitle className="text-lg">{feature.title}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </CardContent>
+              </Card>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </section>
 
-        {/* Items Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5 text-primary" />
-              Items to Bring
-            </CardTitle>
-            <CardDescription>
-              Sign up to bring food, drinks, or other items for the event
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {items.map((item) => (
-              <PledgeItem
-                key={item.id}
-                item={item}
-                onPledge={handlePledge}
-                onVolunteerNameChange={handleVolunteerNameChange}
-                onVolunteerDetailsChange={handleVolunteerDetailsChange}
-                isTask={false}
-              />
+      {/* Use Cases */}
+      <section className="bg-muted/30 px-4 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 font-bold text-3xl">Perfect For Any Event</h2>
+            <p className="text-lg text-muted-foreground">
+              From small gatherings to large community events
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {useCases.map((useCase) => (
+              <div
+                key={`useCase-${useCase.id}`}
+                className="rounded-lg border-2 bg-background p-6 text-center transition-colors hover:border-primary/50"
+              >
+                <div className="mb-4 text-4xl">{useCase.icon}</div>
+                <h3 className="mb-2 font-semibold">{useCase.title}</h3>
+                <p className="text-muted-foreground text-sm">
+                  {useCase.example}
+                </p>
+              </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </section>
 
-        {/* Success Message */}
-        <Alert className="border-accent bg-accent/10">
-          <Heart className="h-4 w-4 text-accent-foreground" />
-          <AlertTitle className="text-accent-foreground">Thank You!</AlertTitle>
-          <AlertDescription className="text-accent-foreground">
-            Your participation makes our community stronger. Every contribution,
-            big or small, is deeply appreciated!
-          </AlertDescription>
-        </Alert>
+      {/* CTA Section */}
+      <section className="px-4 py-20">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 p-12 text-white">
+            <h2 className="mb-4 font-bold text-3xl">Start Organizing Today</h2>
+            <p className="mb-8 text-white/90 text-xl">
+              Join thousands of communities using Pleeboo to coordinate better.
+              No credit card required. Ever.
+            </p>
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
+              <Link href="/">
+                <Button size="lg" variant="secondary" className="min-w-[200px]">
+                  Create Free Board
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+            <p className="mt-6 text-sm text-white/70">
+              ✨ AI-powered • 🔒 No sign-up required • 💯 Free forever
+            </p>
+          </div>
+        </div>
+      </section>
 
-        {/* Pledge Dialog */}
-        <PledgeDialog
-          isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          selectedPledge={selectedPledge}
-          formData={formData}
-          onFormDataChange={setFormData}
-          onSubmit={submitPledge}
-        />
-      </div>
+      {/* Footer */}
+      <footer className="border-t px-4 py-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <div className="flex items-center gap-4">
+              <Logo size="sm" />
+              <p className="text-muted-foreground text-sm">
+                © 2024 Pleeboo. Made with ❤️ for communities everywhere.
+              </p>
+            </div>
+            <div className="flex gap-6 text-sm">
+              <Link
+                href="/landing"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                About
+              </Link>
+              <Link
+                href="/"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Create Board
+              </Link>
+              <a
+                href="https://github.com"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

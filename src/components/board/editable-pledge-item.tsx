@@ -9,29 +9,26 @@ import {
   ChevronDown,
   ChevronUp,
   Edit3,
-  Plus,
   Trash2,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { IconPicker } from "./icon-picker";
+import { IconSelector } from "./icon-selector";
 import type { BoardItemData } from "@/app/board/page";
 
 interface EditablePledgeItemProps {
   item: BoardItemData;
-  onPledge: (item: BoardItemData) => void;
   onVolunteerNameChange: (index: number, name: string) => void;
   onVolunteerDetailsChange: (index: number, details: string) => void;
   onUpdate: (updates: Partial<BoardItemData>) => void;
   onDelete: () => void;
-  availableIcons: { icon: LucideIcon; name: string }[];
+  availableIcons?: { icon: LucideIcon; name: string }[];
   isTask: boolean;
 }
 
 export function EditablePledgeItem({
   item,
-  onPledge,
   onVolunteerNameChange,
   onVolunteerDetailsChange,
   onUpdate,
@@ -44,7 +41,6 @@ export function EditablePledgeItem({
   const [tempTitle, setTempTitle] = useState(item.title);
   const [tempDescription, setTempDescription] = useState(item.description);
   const [tempNeeded, setTempNeeded] = useState(item.needed);
-  const [showIconPicker, setShowIconPicker] = useState(false);
 
   const filledCount = item.volunteers.length;
   const progressPercentage = (filledCount / item.needed) * 100;
@@ -72,25 +68,11 @@ export function EditablePledgeItem({
     return (
       <div className="rounded-lg border bg-card p-4 space-y-3">
         <div className="flex gap-2 items-start">
-          <div className="relative">
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={() => setShowIconPicker(!showIconPicker)}
-            >
-              <Icon className="h-4 w-4" />
-            </Button>
-            {showIconPicker && (
-              <IconPicker
-                icons={availableIcons}
-                onSelect={(icon) => {
-                  onUpdate({ icon });
-                  setShowIconPicker(false);
-                }}
-                onClose={() => setShowIconPicker(false)}
-              />
-            )}
-          </div>
+          <IconSelector
+            currentIcon={item.icon}
+            availableIcons={availableIcons}
+            onIconSelect={(icon) => onUpdate({ icon })}
+          />
           <div className="flex-1 space-y-2">
             <Input
               value={tempTitle}
@@ -175,93 +157,55 @@ export function EditablePledgeItem({
                   </span>
                 )}
               </div>
-              <div className="flex gap-2">
-                {item.volunteers.length > 0 && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="gap-1"
-                  >
-                    {isExpanded ? (
-                      <>
-                        <ChevronUp className="h-4 w-4" />
-                        Hide
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4" />
-                        Show
-                      </>
-                    )}
-                  </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="gap-1"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Hide
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Show
+                  </>
                 )}
-                <Button
-                  size="sm"
-                  onClick={() => onPledge(item)}
-                  disabled={isFull}
-                  className="gap-1"
-                >
-                  <Plus className="h-4 w-4" />
-                  {isTask ? "Volunteer" : "Pledge"}
-                </Button>
-              </div>
+              </Button>
             </div>
           </div>
         </div>
 
-        {isExpanded && item.volunteers.length > 0 && (
+        {isExpanded && (
           <div className="mt-4 ml-12 space-y-2">
-            {item.volunteers.map((volunteer, index) => (
-              <div key={index} className="flex items-start gap-2">
-                <div className="flex-1 space-y-1">
-                  <Input
-                    type="text"
-                    placeholder="Name"
-                    value={volunteer.name}
-                    onChange={(e) => onVolunteerNameChange(index, e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Details (optional)"
-                    value={volunteer.details}
-                    onChange={(e) =>
-                      onVolunteerDetailsChange(index, e.target.value)
-                    }
-                    className="h-8 text-sm text-muted-foreground"
-                  />
-                </div>
-              </div>
-            ))}
-            {filledCount < item.needed &&
-              Array.from({ length: item.needed - filledCount }).map((_, index) => (
-                <div key={`empty-${index}`} className="flex items-start gap-2">
+            {Array.from({ length: item.needed }).map((_, index) => {
+              const volunteer = item.volunteers[index];
+              return (
+                <div key={index} className="flex items-start gap-2">
                   <div className="flex-1 space-y-1">
                     <Input
                       type="text"
-                      placeholder="Available slot"
-                      value=""
-                      onChange={(e) =>
-                        onVolunteerNameChange(filledCount + index, e.target.value)
-                      }
+                      placeholder={index < filledCount ? "Name" : "Available slot"}
+                      value={volunteer?.name || ""}
+                      onChange={(e) => onVolunteerNameChange(index, e.target.value)}
                       className="h-8 text-sm"
                     />
                     <Input
                       type="text"
                       placeholder="Details (optional)"
-                      value=""
+                      value={volunteer?.details || ""}
                       onChange={(e) =>
-                        onVolunteerDetailsChange(
-                          filledCount + index,
-                          e.target.value
-                        )
+                        onVolunteerDetailsChange(index, e.target.value)
                       }
                       className="h-8 text-sm text-muted-foreground"
                     />
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
         )}
       </div>

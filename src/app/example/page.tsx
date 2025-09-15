@@ -1,18 +1,9 @@
 "use client";
 
 import { PledgeDialog } from "@/components/pledge-board/pledge-dialog";
-import {
-  PledgeItem,
-  type PledgeItemData,
-} from "@/components/pledge-board/pledge-item";
+import { type PledgeItemData } from "@/components/pledge-board/pledge-item";
+import { PledgeSection } from "@/components/pledge-board/pledge-section";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
@@ -268,54 +259,28 @@ export default function PledgeBoard() {
         </div>
 
         {/* Tasks Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Volunteer Tasks
-            </CardTitle>
-            <CardDescription>
-              Help make our event run smoothly by volunteering for these tasks
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {tasks.map((task) => (
-              <PledgeItem
-                key={task.id}
-                item={task}
-                onPledge={handlePledge}
-                onVolunteerNameChange={handleVolunteerNameChange}
-                onVolunteerDetailsChange={handleVolunteerDetailsChange}
-                isTask={true}
-              />
-            ))}
-          </CardContent>
-        </Card>
+        <PledgeSection
+          title="Volunteer Tasks"
+          description="Help make our event run smoothly by volunteering for these tasks"
+          icon={Users}
+          items={tasks}
+          onPledge={handlePledge}
+          onVolunteerNameChange={handleVolunteerNameChange}
+          onVolunteerDetailsChange={handleVolunteerDetailsChange}
+          isTask={true}
+        />
 
         {/* Items Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5 text-primary" />
-              Items to Bring
-            </CardTitle>
-            <CardDescription>
-              Sign up to bring food, drinks, or other items for the event
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {items.map((item) => (
-              <PledgeItem
-                key={item.id}
-                item={item}
-                onPledge={handlePledge}
-                onVolunteerNameChange={handleVolunteerNameChange}
-                onVolunteerDetailsChange={handleVolunteerDetailsChange}
-                isTask={false}
-              />
-            ))}
-          </CardContent>
-        </Card>
+        <PledgeSection
+          title="Items to Bring"
+          description="Sign up to bring food, drinks, or other items for the event"
+          icon={Gift}
+          items={items}
+          onPledge={handlePledge}
+          onVolunteerNameChange={handleVolunteerNameChange}
+          onVolunteerDetailsChange={handleVolunteerDetailsChange}
+          isTask={false}
+        />
 
         {/* Success Message */}
         <Alert className="border-accent bg-accent/10">

@@ -202,4 +202,95 @@ export const boardRouter = createTRPCRouter({
 
     return boardsList;
   }),
+
+  updateSection: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1).max(256).optional(),
+        description: z.string().optional(),
+        icon: z.string().max(50).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updates } = input;
+
+      await ctx.db
+        .update(boardSections)
+        .set(updates)
+        .where(eq(boardSections.id, id));
+
+      return { success: true };
+    }),
+
+  deleteSection: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(boardSections)
+        .where(eq(boardSections.id, input.id));
+
+      return { success: true };
+    }),
+
+  updateItem: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1).max(256).optional(),
+        description: z.string().optional(),
+        icon: z.string().max(50).optional(),
+        needed: z.number().min(1).max(100).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updates } = input;
+
+      await ctx.db
+        .update(boardItems)
+        .set(updates)
+        .where(eq(boardItems.id, id));
+
+      return { success: true };
+    }),
+
+  deleteItem: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(boardItems)
+        .where(eq(boardItems.id, input.id));
+
+      return { success: true };
+    }),
+
+  addItem: publicProcedure
+    .input(
+      z.object({
+        sectionId: z.number(),
+        title: z.string().min(1).max(256),
+        description: z.string().optional(),
+        icon: z.string().max(50),
+        needed: z.number().min(1).max(100),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the max sort order for this section
+      const maxSortItem = await ctx.db.query.boardItems.findFirst({
+        where: eq(boardItems.sectionId, input.sectionId),
+        orderBy: (items, { desc }) => [desc(items.sortOrder)],
+      });
+
+      const sortOrder = (maxSortItem?.sortOrder || 0) + 1;
+
+      const [newItem] = await ctx.db
+        .insert(boardItems)
+        .values({
+          ...input,
+          sortOrder,
+        })
+        .returning();
+
+      return newItem;
+    }),
 });

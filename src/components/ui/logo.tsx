@@ -29,7 +29,7 @@ export function Logo({ className, size = "sm", showText = true }: LogoProps) {
           <span
             className={cn(
               "font-['Nunito'] font-bold text-[#333463] dark:text-white",
-              sizes[size].text
+              sizes[size].text,
             )}
           >
             pleeboo

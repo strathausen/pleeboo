@@ -5,132 +5,132 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 
 function generateBoardId(): string {
-	return nanoid(24);
+  return nanoid(24);
 }
 
 export const boardRouter = createTRPCRouter({
-	create: publicProcedure
-		.input(
-			z.object({
-				title: z.string().min(1).max(256),
-				description: z.string().optional(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const boardId = generateBoardId();
+  create: publicProcedure
+    .input(
+      z.object({
+        title: z.string().min(1).max(256),
+        description: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const boardId = generateBoardId();
 
-			const [board] = await ctx.db
-				.insert(boards)
-				.values({
-					id: boardId,
-					title: input.title,
-					description: input.description,
-				})
-				.returning();
+      const [board] = await ctx.db
+        .insert(boards)
+        .values({
+          id: boardId,
+          title: input.title,
+          description: input.description,
+        })
+        .returning();
 
-			return board;
-		}),
+      return board;
+    }),
 
-	get: publicProcedure
-		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
-			const board = await ctx.db.query.boards.findFirst({
-				where: eq(boards.id, input.id),
-				with: {
-					tasks: {
-						orderBy: [desc(tasks.createdAt)],
-					},
-				},
-			});
+  get: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const board = await ctx.db.query.boards.findFirst({
+        where: eq(boards.id, input.id),
+        with: {
+          tasks: {
+            orderBy: [desc(tasks.createdAt)],
+          },
+        },
+      });
 
-			if (!board) {
-				throw new Error("Board not found");
-			}
+      if (!board) {
+        throw new Error("Board not found");
+      }
 
-			return board;
-		}),
+      return board;
+    }),
 
-	update: publicProcedure
-		.input(
-			z.object({
-				id: z.string(),
-				title: z.string().min(1).max(256).optional(),
-				description: z.string().optional(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const { id, ...updates } = input;
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().min(1).max(256).optional(),
+        description: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updates } = input;
 
-			const [board] = await ctx.db
-				.update(boards)
-				.set(updates)
-				.where(eq(boards.id, id))
-				.returning();
+      const [board] = await ctx.db
+        .update(boards)
+        .set(updates)
+        .where(eq(boards.id, id))
+        .returning();
 
-			return board;
-		}),
+      return board;
+    }),
 
-	addTask: publicProcedure
-		.input(
-			z.object({
-				boardId: z.string(),
-				content: z.string().min(1),
-				pledgedBy: z.string().optional(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const [task] = await ctx.db
-				.insert(tasks)
-				.values({
-					boardId: input.boardId,
-					content: input.content,
-					pledgedBy: input.pledgedBy,
-					completed: false,
-				})
-				.returning();
+  addTask: publicProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        content: z.string().min(1),
+        pledgedBy: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [task] = await ctx.db
+        .insert(tasks)
+        .values({
+          boardId: input.boardId,
+          content: input.content,
+          pledgedBy: input.pledgedBy,
+          completed: false,
+        })
+        .returning();
 
-			return task;
-		}),
+      return task;
+    }),
 
-	updateTask: publicProcedure
-		.input(
-			z.object({
-				id: z.number(),
-				content: z.string().min(1).optional(),
-				pledgedBy: z.string().optional(),
-				completed: z.boolean().optional(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const { id, ...updates } = input;
+  updateTask: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        content: z.string().min(1).optional(),
+        pledgedBy: z.string().optional(),
+        completed: z.boolean().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updates } = input;
 
-			const [task] = await ctx.db
-				.update(tasks)
-				.set(updates)
-				.where(eq(tasks.id, id))
-				.returning();
+      const [task] = await ctx.db
+        .update(tasks)
+        .set(updates)
+        .where(eq(tasks.id, id))
+        .returning();
 
-			return task;
-		}),
+      return task;
+    }),
 
-	deleteTask: publicProcedure
-		.input(z.object({ id: z.number() }))
-		.mutation(async ({ ctx, input }) => {
-			await ctx.db.delete(tasks).where(eq(tasks.id, input.id));
-			return { success: true };
-		}),
+  deleteTask: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(tasks).where(eq(tasks.id, input.id));
+      return { success: true };
+    }),
 
-	getRecent: publicProcedure.query(async ({ ctx }) => {
-		const recentBoards = await ctx.db.query.boards.findMany({
-			orderBy: [desc(boards.createdAt)],
-			limit: 10,
-			with: {
-				tasks: {
-					limit: 3,
-				},
-			},
-		});
+  getRecent: publicProcedure.query(async ({ ctx }) => {
+    const recentBoards = await ctx.db.query.boards.findMany({
+      orderBy: [desc(boards.createdAt)],
+      limit: 10,
+      with: {
+        tasks: {
+          limit: 3,
+        },
+      },
+    });
 
-		return recentBoards;
-	}),
+    return recentBoards;
+  }),
 });

@@ -104,7 +104,7 @@ export default function PledgeBoard() {
   const [items, setItems] = useState(initialItems);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPledge, setSelectedPledge] = useState<PledgeItemData | null>(
-    null
+    null,
   );
   const [formData, setFormData] = useState({ name: "", details: "" });
 
@@ -113,84 +113,106 @@ export default function PledgeBoard() {
     setIsDialogOpen(true);
   };
 
-  const handleVolunteerNameChange = (itemId: number, volunteerIndex: number, newName: string) => {
+  const handleVolunteerNameChange = (
+    itemId: number,
+    volunteerIndex: number,
+    newName: string,
+  ) => {
     // Update tasks
-    setTasks(tasks.map(task => {
-      if (task.id === itemId) {
-        const newVolunteers = [...task.volunteers];
-        // Add new volunteer if index doesn't exist yet
-        while (newVolunteers.length <= volunteerIndex) {
-          newVolunteers.push({ name: "", details: "" });
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === itemId) {
+          const newVolunteers = [...task.volunteers];
+          // Add new volunteer if index doesn't exist yet
+          while (newVolunteers.length <= volunteerIndex) {
+            newVolunteers.push({ name: "", details: "" });
+          }
+          newVolunteers[volunteerIndex] = {
+            ...newVolunteers[volunteerIndex],
+            name: newName,
+          };
+          // Filter out empty volunteers at the end
+          const filteredVolunteers = newVolunteers.filter(
+            (v, i) => v.name.trim() !== "" || i < task.needed,
+          );
+          return {
+            ...task,
+            volunteers: filteredVolunteers.slice(0, task.needed),
+          };
         }
-        newVolunteers[volunteerIndex] = {
-          ...newVolunteers[volunteerIndex],
-          name: newName
-        };
-        // Filter out empty volunteers at the end
-        const filteredVolunteers = newVolunteers.filter((v, i) => 
-          v.name.trim() !== "" || i < task.needed
-        );
-        return { ...task, volunteers: filteredVolunteers.slice(0, task.needed) };
-      }
-      return task;
-    }));
+        return task;
+      }),
+    );
 
     // Update items
-    setItems(items.map(item => {
-      if (item.id === itemId) {
-        const newVolunteers = [...item.volunteers];
-        // Add new volunteer if index doesn't exist yet
-        while (newVolunteers.length <= volunteerIndex) {
-          newVolunteers.push({ name: "", details: "" });
+    setItems(
+      items.map((item) => {
+        if (item.id === itemId) {
+          const newVolunteers = [...item.volunteers];
+          // Add new volunteer if index doesn't exist yet
+          while (newVolunteers.length <= volunteerIndex) {
+            newVolunteers.push({ name: "", details: "" });
+          }
+          newVolunteers[volunteerIndex] = {
+            ...newVolunteers[volunteerIndex],
+            name: newName,
+          };
+          // Filter out empty volunteers at the end
+          const filteredVolunteers = newVolunteers.filter(
+            (v, i) => v.name.trim() !== "" || i < item.needed,
+          );
+          return {
+            ...item,
+            volunteers: filteredVolunteers.slice(0, item.needed),
+          };
         }
-        newVolunteers[volunteerIndex] = {
-          ...newVolunteers[volunteerIndex],
-          name: newName
-        };
-        // Filter out empty volunteers at the end
-        const filteredVolunteers = newVolunteers.filter((v, i) => 
-          v.name.trim() !== "" || i < item.needed
-        );
-        return { ...item, volunteers: filteredVolunteers.slice(0, item.needed) };
-      }
-      return item;
-    }));
+        return item;
+      }),
+    );
   };
 
-  const handleVolunteerDetailsChange = (itemId: number, volunteerIndex: number, newDetails: string) => {
+  const handleVolunteerDetailsChange = (
+    itemId: number,
+    volunteerIndex: number,
+    newDetails: string,
+  ) => {
     // Update tasks
-    setTasks(tasks.map(task => {
-      if (task.id === itemId) {
-        const newVolunteers = [...task.volunteers];
-        // Add new volunteer if index doesn't exist yet
-        while (newVolunteers.length <= volunteerIndex) {
-          newVolunteers.push({ name: "", details: "" });
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === itemId) {
+          const newVolunteers = [...task.volunteers];
+          // Add new volunteer if index doesn't exist yet
+          while (newVolunteers.length <= volunteerIndex) {
+            newVolunteers.push({ name: "", details: "" });
+          }
+          newVolunteers[volunteerIndex] = {
+            ...newVolunteers[volunteerIndex],
+            details: newDetails,
+          };
+          return { ...task, volunteers: newVolunteers.slice(0, task.needed) };
         }
-        newVolunteers[volunteerIndex] = {
-          ...newVolunteers[volunteerIndex],
-          details: newDetails
-        };
-        return { ...task, volunteers: newVolunteers.slice(0, task.needed) };
-      }
-      return task;
-    }));
+        return task;
+      }),
+    );
 
     // Update items
-    setItems(items.map(item => {
-      if (item.id === itemId) {
-        const newVolunteers = [...item.volunteers];
-        // Add new volunteer if index doesn't exist yet
-        while (newVolunteers.length <= volunteerIndex) {
-          newVolunteers.push({ name: "", details: "" });
+    setItems(
+      items.map((item) => {
+        if (item.id === itemId) {
+          const newVolunteers = [...item.volunteers];
+          // Add new volunteer if index doesn't exist yet
+          while (newVolunteers.length <= volunteerIndex) {
+            newVolunteers.push({ name: "", details: "" });
+          }
+          newVolunteers[volunteerIndex] = {
+            ...newVolunteers[volunteerIndex],
+            details: newDetails,
+          };
+          return { ...item, volunteers: newVolunteers.slice(0, item.needed) };
         }
-        newVolunteers[volunteerIndex] = {
-          ...newVolunteers[volunteerIndex],
-          details: newDetails
-        };
-        return { ...item, volunteers: newVolunteers.slice(0, item.needed) };
-      }
-      return item;
-    }));
+        return item;
+      }),
+    );
   };
 
   const submitPledge = () => {
@@ -207,16 +229,16 @@ export default function PledgeBoard() {
         tasks.map((task) =>
           task.id === selectedPledge.id
             ? { ...task, volunteers: [...task.volunteers, newVolunteer] }
-            : task
-        )
+            : task,
+        ),
       );
     } else {
       setItems(
         items.map((item) =>
           item.id === selectedPledge.id
             ? { ...item, volunteers: [...item.volunteers, newVolunteer] }
-            : item
-        )
+            : item,
+        ),
       );
     }
 

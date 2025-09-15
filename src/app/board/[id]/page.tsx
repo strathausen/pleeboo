@@ -114,7 +114,7 @@ export default function BoardPage() {
   const completedTasks = board.data.tasks.filter((t) => t.completed).length;
   const totalTasks = board.data.tasks.length;
   const uniqueVolunteers = new Set(
-    board.data.tasks.filter((t) => t.pledgedBy).map((t) => t.pledgedBy)
+    board.data.tasks.filter((t) => t.pledgedBy).map((t) => t.pledgedBy),
   ).size;
 
   const boardStats = [
@@ -132,7 +132,7 @@ export default function BoardPage() {
           <div className="mb-6">
             <Logo size="md" />
           </div>
-          
+
           <div className="mb-4 flex items-start justify-between">
             <div className="flex-1">
               <h1 className="mb-2 font-light text-3xl text-white md:text-4xl">

@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PledgeItemData } from "./pledge-item";
+import type { PledgeItemData } from "./pledge-item";
 
 interface PledgeDialogProps {
   isOpen: boolean;
@@ -42,9 +42,7 @@ export function PledgeDialog({
               : "Sign up to bring"}
             : {selectedPledge?.title}
           </DialogTitle>
-          <DialogDescription>
-            {selectedPledge?.description}
-          </DialogDescription>
+          <DialogDescription>{selectedPledge?.description}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">

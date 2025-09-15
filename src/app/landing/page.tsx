@@ -27,7 +27,7 @@ import { useState } from "react";
 
 export default function LandingPage() {
   const [activeDemo, setActiveDemo] = useState<"create" | "share" | "pledge">(
-    "create"
+    "create",
   );
 
   const features = [

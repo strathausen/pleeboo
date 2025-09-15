@@ -5,8 +5,16 @@ interface VolunteerItemProps {
   volunteer: Volunteer;
   itemId: number;
   volunteerIndex: number;
-  onNameChange?: (itemId: number, volunteerIndex: number, newName: string) => void;
-  onDetailsChange?: (itemId: number, volunteerIndex: number, newDetails: string) => void;
+  onNameChange?: (
+    itemId: number,
+    volunteerIndex: number,
+    newName: string,
+  ) => void;
+  onDetailsChange?: (
+    itemId: number,
+    volunteerIndex: number,
+    newDetails: string,
+  ) => void;
 }
 
 export function VolunteerItem({
@@ -23,7 +31,13 @@ export function VolunteerItem({
   return (
     <div className="flex items-start gap-2 text-sm">
       <div className="flex-1 space-y-1">
-        <div className={isEmpty ? "border border-dashed border-muted-foreground/30 rounded px-1" : ""}>
+        <div
+          className={
+            isEmpty
+              ? "rounded border border-muted-foreground/30 border-dashed "
+              : ""
+          }
+        >
           <input
             type="text"
             value={volunteer.name}
@@ -35,12 +49,12 @@ export function VolunteerItem({
             onFocus={() => setIsEditingName(true)}
             onBlur={() => setIsEditingName(false)}
             placeholder="Enter name..."
-            className={`font-medium bg-transparent border-0 outline-none p-0 w-full ${
+            className={`w-full border-0 bg-transparent p-0 font-medium outline-none ${
               isEditingName
-                ? "ring-2 ring-primary ring-offset-1 rounded px-1"
-                : isEmpty 
-                  ? "placeholder:text-muted-foreground/50 placeholder:italic"
-                  : "cursor-text hover:bg-muted/50 rounded px-1"
+                ? "rounded px-1 ring-2 ring-primary ring-offset-1"
+                : isEmpty
+                  ? "px-1 placeholder:text-muted-foreground/50 placeholder:italic"
+                  : "cursor-text rounded px-1 hover:bg-muted/50"
             }`}
             style={{ minWidth: "100px" }}
           />
@@ -57,10 +71,10 @@ export function VolunteerItem({
             onFocus={() => setIsEditingDetails(true)}
             onBlur={() => setIsEditingDetails(false)}
             placeholder="Add details..."
-            className={`block text-muted-foreground text-xs bg-transparent border-0 outline-none p-0 w-full ${
+            className={`block w-full border-0 bg-transparent p-0 text-muted-foreground text-xs outline-none ${
               isEditingDetails
-                ? "ring-2 ring-primary ring-offset-1 rounded px-1"
-                : "cursor-text hover:bg-muted/50 rounded px-1 placeholder:text-muted-foreground/50 placeholder:italic"
+                ? "rounded px-1 ring-2 ring-primary ring-offset-1"
+                : "cursor-text rounded px-1 placeholder:text-muted-foreground/50 placeholder:italic hover:bg-muted/50"
             }`}
             style={{ minWidth: "150px" }}
           />

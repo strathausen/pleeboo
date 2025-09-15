@@ -16,6 +16,7 @@ export const boards = createTable(
     id: d.varchar({ length: 32 }).primaryKey(),
     title: d.varchar({ length: 256 }).notNull(),
     description: d.text(),
+    createdById: d.varchar({ length: 255 }).references(() => users.id),
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -25,21 +26,23 @@ export const boards = createTable(
   (t) => [index("board_created_at_idx").on(t.createdAt)],
 );
 
-export const boardsRelations = relations(boards, ({ many }) => ({
-  tasks: many(tasks),
+export const boardsRelations = relations(boards, ({ many, one }) => ({
+  sections: many(boardSections),
+  createdBy: one(users, { fields: [boards.createdById], references: [users.id] }),
 }));
 
-export const tasks = createTable(
-  "task",
+export const boardSections = createTable(
+  "board_section",
   (d) => ({
     id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
     boardId: d
       .varchar({ length: 32 })
       .notNull()
       .references(() => boards.id, { onDelete: "cascade" }),
-    content: d.text().notNull(),
-    pledgedBy: d.varchar({ length: 256 }),
-    completed: d.boolean().default(false).notNull(),
+    title: d.varchar({ length: 256 }).notNull(),
+    description: d.text(),
+    icon: d.varchar({ length: 50 }).notNull().default("Package"),
+    sortOrder: d.integer().notNull().default(0),
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -47,13 +50,69 @@ export const tasks = createTable(
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
   }),
   (t) => [
-    index("task_board_idx").on(t.boardId),
-    index("task_created_at_idx").on(t.createdAt),
+    index("board_section_board_idx").on(t.boardId),
+    index("board_section_sort_idx").on(t.sortOrder),
   ],
 );
 
-export const tasksRelations = relations(tasks, ({ one }) => ({
-  board: one(boards, { fields: [tasks.boardId], references: [boards.id] }),
+export const boardSectionsRelations = relations(boardSections, ({ one, many }) => ({
+  board: one(boards, { fields: [boardSections.boardId], references: [boards.id] }),
+  items: many(boardItems),
+}));
+
+export const boardItems = createTable(
+  "board_item",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    sectionId: d
+      .integer()
+      .notNull()
+      .references(() => boardSections.id, { onDelete: "cascade" }),
+    title: d.varchar({ length: 256 }).notNull(),
+    description: d.text(),
+    icon: d.varchar({ length: 50 }).notNull().default("Star"),
+    needed: d.integer().notNull().default(1),
+    sortOrder: d.integer().notNull().default(0),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [
+    index("board_item_section_idx").on(t.sectionId),
+    index("board_item_sort_idx").on(t.sortOrder),
+  ],
+);
+
+export const boardItemsRelations = relations(boardItems, ({ one, many }) => ({
+  section: one(boardSections, { fields: [boardItems.sectionId], references: [boardSections.id] }),
+  volunteers: many(boardVolunteers),
+}));
+
+export const boardVolunteers = createTable(
+  "board_volunteer",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    itemId: d
+      .integer()
+      .notNull()
+      .references(() => boardItems.id, { onDelete: "cascade" }),
+    name: d.varchar({ length: 256 }).notNull(),
+    details: d.text(),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [
+    index("board_volunteer_item_idx").on(t.itemId),
+  ],
+);
+
+export const boardVolunteersRelations = relations(boardVolunteers, ({ one }) => ({
+  item: one(boardItems, { fields: [boardVolunteers.itemId], references: [boardItems.id] }),
 }));
 
 export const users = createTable("user", (d) => ({

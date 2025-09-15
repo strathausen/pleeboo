@@ -211,15 +211,17 @@ export default function LandingPage() {
               and watch your community come together.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/">
+              <Link href="/board">
                 <Button size="lg" className="min-w-[200px]">
                   Create Your First Board
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="min-w-[200px]">
-                See Example Board
-              </Button>
+              <Link href="/example">
+                <Button size="lg" variant="outline" className="min-w-[200px]">
+                  See Example Board
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -322,7 +324,7 @@ export default function LandingPage() {
               </button>
             </div>
 
-            <Card className="border-2">
+            <Card className="min-h-[360px] border-2">
               <CardHeader>
                 <CardTitle>{demoBoards[activeDemo].title}</CardTitle>
                 <CardDescription>

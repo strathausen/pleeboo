@@ -110,3 +110,8 @@ export const availableIcons: { icon: LucideIcon; name: string }[] = [
 export function getIconByName(name: string): LucideIcon | undefined {
   return availableIcons.find((item) => item.name === name)?.icon;
 }
+
+export function getIconName(icon: LucideIcon): string {
+  const found = availableIcons.find((item) => item.icon === icon);
+  return found?.name || "Star";
+}

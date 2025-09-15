@@ -1,8 +1,9 @@
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { boards, tasks } from "@/server/db/schema";
+import { boards, boardSections, boardItems, boardVolunteers } from "@/server/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 
 function generateBoardId(): string {
   return nanoid(24);
@@ -14,21 +15,89 @@ export const boardRouter = createTRPCRouter({
       z.object({
         title: z.string().min(1).max(256),
         description: z.string().optional(),
-      }),
+        sections: z.array(
+          z.object({
+            title: z.string().min(1).max(256),
+            description: z.string().optional(),
+            icon: z.string().max(50),
+            items: z.array(
+              z.object({
+                title: z.string().min(1).max(256),
+                description: z.string().optional(),
+                icon: z.string().max(50),
+                needed: z.number().min(1).max(100),
+                volunteers: z.array(
+                  z.object({
+                    name: z.string().min(1).max(256),
+                    details: z.string().optional(),
+                  })
+                ),
+              })
+            ),
+          })
+        ),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const boardId = generateBoardId();
 
-      const [board] = await ctx.db
-        .insert(boards)
-        .values({
-          id: boardId,
-          title: input.title,
-          description: input.description,
-        })
-        .returning();
+      // Create the board
+      await ctx.db.insert(boards).values({
+        id: boardId,
+        title: input.title,
+        description: input.description,
+        createdById: ctx.session?.user?.id,
+      });
 
-      return board;
+      // Create sections and items
+      for (let sectionIndex = 0; sectionIndex < input.sections.length; sectionIndex++) {
+        const section = input.sections[sectionIndex];
+
+        const [insertedSection] = await ctx.db
+          .insert(boardSections)
+          .values({
+            boardId,
+            title: section.title,
+            description: section.description,
+            icon: section.icon,
+            sortOrder: sectionIndex,
+          })
+          .returning({ id: boardSections.id });
+
+        if (!insertedSection) continue;
+
+        // Create items for this section
+        for (let itemIndex = 0; itemIndex < section.items.length; itemIndex++) {
+          const item = section.items[itemIndex];
+
+          const [insertedItem] = await ctx.db
+            .insert(boardItems)
+            .values({
+              sectionId: insertedSection.id,
+              title: item.title,
+              description: item.description,
+              icon: item.icon,
+              needed: item.needed,
+              sortOrder: itemIndex,
+            })
+            .returning({ id: boardItems.id });
+
+          if (!insertedItem) continue;
+
+          // Create volunteers for this item
+          for (const volunteer of item.volunteers) {
+            if (volunteer.name.trim()) {
+              await ctx.db.insert(boardVolunteers).values({
+                itemId: insertedItem.id,
+                name: volunteer.name,
+                details: volunteer.details,
+              });
+            }
+          }
+        }
+      }
+
+      return { boardId };
     }),
 
   get: publicProcedure
@@ -37,14 +106,25 @@ export const boardRouter = createTRPCRouter({
       const board = await ctx.db.query.boards.findFirst({
         where: eq(boards.id, input.id),
         with: {
-          tasks: {
-            orderBy: [desc(tasks.createdAt)],
+          sections: {
+            orderBy: (sections, { asc }) => [asc(sections.sortOrder)],
+            with: {
+              items: {
+                orderBy: (items, { asc }) => [asc(items.sortOrder)],
+                with: {
+                  volunteers: true,
+                },
+              },
+            },
           },
         },
       });
 
       if (!board) {
-        throw new Error("Board not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Board not found",
+        });
       }
 
       return board;
@@ -70,67 +150,56 @@ export const boardRouter = createTRPCRouter({
       return board;
     }),
 
-  addTask: publicProcedure
+  updateVolunteer: publicProcedure
     .input(
       z.object({
-        boardId: z.string(),
-        content: z.string().min(1),
-        pledgedBy: z.string().optional(),
-      }),
+        itemId: z.number(),
+        volunteerIndex: z.number(),
+        name: z.string(),
+        details: z.string().optional(),
+      })
     )
     .mutation(async ({ ctx, input }) => {
-      const [task] = await ctx.db
-        .insert(tasks)
-        .values({
-          boardId: input.boardId,
-          content: input.content,
-          pledgedBy: input.pledgedBy,
-          completed: false,
-        })
-        .returning();
+      // Get existing volunteers for this item
+      const existingVolunteers = await ctx.db.query.boardVolunteers.findMany({
+        where: eq(boardVolunteers.itemId, input.itemId),
+        orderBy: (volunteers, { asc }) => [asc(volunteers.id)],
+      });
 
-      return task;
-    }),
+      if (input.volunteerIndex < existingVolunteers.length) {
+        // Update existing volunteer
+        const volunteer = existingVolunteers[input.volunteerIndex];
+        if (volunteer) {
+          if (input.name.trim()) {
+            await ctx.db
+              .update(boardVolunteers)
+              .set({ name: input.name, details: input.details })
+              .where(eq(boardVolunteers.id, volunteer.id));
+          } else {
+            // Delete if name is empty
+            await ctx.db
+              .delete(boardVolunteers)
+              .where(eq(boardVolunteers.id, volunteer.id));
+          }
+        }
+      } else if (input.name.trim()) {
+        // Create new volunteer
+        await ctx.db.insert(boardVolunteers).values({
+          itemId: input.itemId,
+          name: input.name,
+          details: input.details,
+        });
+      }
 
-  updateTask: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        content: z.string().min(1).optional(),
-        pledgedBy: z.string().optional(),
-        completed: z.boolean().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...updates } = input;
-
-      const [task] = await ctx.db
-        .update(tasks)
-        .set(updates)
-        .where(eq(tasks.id, id))
-        .returning();
-
-      return task;
-    }),
-
-  deleteTask: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.delete(tasks).where(eq(tasks.id, input.id));
       return { success: true };
     }),
 
-  getRecent: publicProcedure.query(async ({ ctx }) => {
-    const recentBoards = await ctx.db.query.boards.findMany({
+  list: publicProcedure.query(async ({ ctx }) => {
+    const boardsList = await ctx.db.query.boards.findMany({
       orderBy: [desc(boards.createdAt)],
-      limit: 10,
-      with: {
-        tasks: {
-          limit: 3,
-        },
-      },
+      limit: 20,
     });
 
-    return recentBoards;
+    return boardsList;
   }),
 });

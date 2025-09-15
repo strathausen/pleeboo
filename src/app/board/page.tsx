@@ -2,7 +2,10 @@
 
 import { EditablePledgeItem } from "@/components/board/editable-pledge-item";
 import { IconSelector } from "@/components/board/icon-selector";
+import { BoardHeader } from "@/components/pledge-board/board-header";
 import { Button } from "@/components/ui/button";
+import { api } from "@/trpc/react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -11,10 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Logo } from "@/components/ui/logo";
-import { Textarea } from "@/components/ui/textarea";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { availableIcons } from "@/lib/available-icons";
+import { availableIcons, getIconName } from "@/lib/available-icons";
 import {
   Check,
   Edit3,
@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export type BoardItemData = {
   id: number;
@@ -49,11 +50,13 @@ export type BoardSectionData = {
 
 
 export default function BoardEditor() {
+  const router = useRouter();
+  const createBoard = api.board.create.useMutation();
+  const [isSaving, setIsSaving] = useState(false);
   const [boardTitle, setBoardTitle] = useState("Community Event Pledge Board");
   const [boardDescription, setBoardDescription] = useState(
     "Join us in making our community event amazing! Sign up to volunteer for tasks or bring items. Every contribution makes a difference! 🌟"
   );
-  const [isEditingHeader, setIsEditingHeader] = useState(false);
   const [sections, setSections] = useState<BoardSectionData[]>([
     {
       id: 1,
@@ -186,6 +189,51 @@ export default function BoardEditor() {
     );
   };
 
+  const handleSaveBoard = async () => {
+    if (!boardTitle.trim()) {
+      toast.error("Please add a board title");
+      return;
+    }
+
+    if (sections.length === 0) {
+      toast.error("Please add at least one section");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const boardData = {
+        title: boardTitle,
+        description: boardDescription,
+        sections: sections.map((section) => ({
+          title: section.title,
+          description: section.description,
+          icon: getIconName(section.icon),
+          items: section.items.map((item) => ({
+            title: item.title,
+            description: item.description,
+            icon: getIconName(item.icon),
+            needed: item.needed,
+            volunteers: item.volunteers.map((v) => ({
+              name: v.name,
+              details: v.details,
+            })),
+          })),
+        })),
+      };
+
+      const result = await createBoard.mutateAsync(boardData);
+      toast.success("Board created successfully!");
+      router.push(`/board/${result.boardId}`);
+    } catch (error) {
+      toast.error("Failed to create board");
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleVolunteerDetailsChange = (
     itemId: number,
     volunteerIndex: number,
@@ -215,51 +263,13 @@ export default function BoardEditor() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <div className="flex items-center justify-between">
-          <Logo size="lg" />
-          <ThemeToggle />
-        </div>
-
-        <div className="space-y-4">
-          {isEditingHeader ? (
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={boardTitle}
-                  onChange={(e) => setBoardTitle(e.target.value)}
-                  placeholder="Board title"
-                  className="font-bold text-2xl"
-                />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => setIsEditingHeader(false)}
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-              </div>
-              <Textarea
-                value={boardDescription}
-                onChange={(e) => setBoardDescription(e.target.value)}
-                placeholder="Board description"
-                className="min-h-[80px]"
-              />
-            </div>
-          ) : (
-            <div
-              className="space-y-4 text-center cursor-pointer group"
-              onClick={() => setIsEditingHeader(true)}
-            >
-              <h1 className="font-bold text-4xl text-card-foreground group-hover:text-primary transition-colors">
-                {boardTitle}
-                <Edit3 className="inline-block ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </h1>
-              <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
-                {boardDescription}
-              </p>
-            </div>
-          )}
-        </div>
+        <BoardHeader
+          title={boardTitle}
+          description={boardDescription}
+          editable={true}
+          onTitleChange={setBoardTitle}
+          onDescriptionChange={setBoardDescription}
+        />
 
         {sections.map((section) => (
           <EditableSection
@@ -278,10 +288,17 @@ export default function BoardEditor() {
           />
         ))}
 
-        <div className="flex justify-center">
-          <Button onClick={addSection} size="lg" className="gap-2">
+        <div className="flex justify-center gap-4">
+          <Button onClick={addSection} size="lg" variant="outline" className="gap-2">
             <Plus className="h-5 w-5" />
             Add Section
+          </Button>
+          <Button
+            onClick={handleSaveBoard}
+            size="lg"
+            disabled={isSaving || sections.length === 0}
+          >
+            {isSaving ? "Creating..." : "Create Board"}
           </Button>
         </div>
 

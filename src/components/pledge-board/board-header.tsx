@@ -1,0 +1,93 @@
+"use client";
+
+import { Logo } from "@/components/ui/logo";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Edit3, Check } from "lucide-react";
+import { useState } from "react";
+
+interface BoardHeaderProps {
+  title: string;
+  description: string;
+  editable?: boolean;
+  onTitleChange?: (title: string) => void;
+  onDescriptionChange?: (description: string) => void;
+}
+
+export function BoardHeader({
+  title,
+  description,
+  editable = false,
+  onTitleChange,
+  onDescriptionChange,
+}: BoardHeaderProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempTitle, setTempTitle] = useState(title);
+  const [tempDescription, setTempDescription] = useState(description);
+
+  const handleSave = () => {
+    if (onTitleChange) onTitleChange(tempTitle);
+    if (onDescriptionChange) onDescriptionChange(tempDescription);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setTempTitle(title);
+    setTempDescription(description);
+    setIsEditing(false);
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <Logo size="lg" />
+        <ThemeToggle />
+      </div>
+
+      <div className="space-y-4">
+        {editable && isEditing ? (
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                value={tempTitle}
+                onChange={(e) => setTempTitle(e.target.value)}
+                placeholder="Board title"
+                className="font-bold text-2xl"
+              />
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleSave}
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            </div>
+            <Textarea
+              value={tempDescription}
+              onChange={(e) => setTempDescription(e.target.value)}
+              placeholder="Board description"
+              className="min-h-[80px]"
+            />
+          </div>
+        ) : (
+          <div
+            className={`space-y-4 text-center ${editable ? "cursor-pointer group" : ""}`}
+            onClick={() => editable && setIsEditing(true)}
+          >
+            <h1 className={`font-bold text-4xl text-card-foreground ${editable ? "group-hover:text-primary transition-colors" : ""}`}>
+              {title}
+              {editable && (
+                <Edit3 className="inline-block ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              )}
+            </h1>
+            <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
+              {description}
+            </p>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}

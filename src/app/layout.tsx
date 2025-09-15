@@ -7,12 +7,13 @@ import "@fontsource/nunito/600.css";
 import "@fontsource/nunito/700.css";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pleeboo",
-  description: "pledgeboards for people",
-  generator: "v0.dev",
+  title: "pleeboo 👻︎☑︎",
+  description: "pledgeboards for community events",
+  generator: "t3",
   icons: {
     icon: "/pleeboo.png",
     shortcut: "/pleeboo.png",
@@ -35,6 +36,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TRPCReactProvider>{children}</TRPCReactProvider>
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
         <Analytics />
       </body>

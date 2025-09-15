@@ -1,11 +1,10 @@
 "use client";
 
+import { BoardHeader } from "@/components/pledge-board/board-header";
 import { PledgeDialog } from "@/components/pledge-board/pledge-dialog";
-import { type PledgeItemData } from "@/components/pledge-board/pledge-item";
+import type { PledgeItemData } from "@/components/pledge-board/pledge-item";
 import { PledgeSection } from "@/components/pledge-board/pledge-section";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Logo } from "@/components/ui/logo";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Book as Broom,
   Camera,
@@ -241,22 +240,10 @@ export default function PledgeBoard() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        {/* Header with logo and theme toggle */}
-        <div className="flex items-center justify-between">
-          <Logo size="lg" />
-          <ThemeToggle />
-        </div>
-
-        {/* Main Header */}
-        <div className="space-y-4 text-center">
-          <h1 className="font-bold text-4xl text-card-foreground">
-            Community Event Pledge Board
-          </h1>
-          <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
-            Join us in making our community event amazing! Sign up to volunteer
-            for tasks or bring items. Every contribution makes a difference! 🌟
-          </p>
-        </div>
+        <BoardHeader
+          title="Community Event Pledge Board"
+          description="Join us in making our community event amazing! Sign up to volunteer for tasks or bring items. Every contribution makes a difference! 🌟"
+        />
 
         {/* Tasks Section */}
         <PledgeSection

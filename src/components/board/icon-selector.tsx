@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { availableIcons as defaultIcons } from "@/lib/available-icons";
-import { type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { IconPicker } from "./icon-picker";
 

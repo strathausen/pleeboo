@@ -1,5 +1,6 @@
 "use client";
 
+import type { BoardItemData } from "@/app/board/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -9,13 +10,12 @@ import {
   ChevronDown,
   ChevronUp,
   Edit3,
+  type LucideIcon,
   Trash2,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { IconSelector } from "./icon-selector";
-import type { BoardItemData } from "@/app/board/page";
 
 interface EditablePledgeItemProps {
   item: BoardItemData;
@@ -66,8 +66,8 @@ export function EditablePledgeItem({
 
   if (isEditing) {
     return (
-      <div className="rounded-lg border bg-card p-4 space-y-3">
-        <div className="flex gap-2 items-start">
+      <div className="space-y-3 rounded-lg border bg-card p-4">
+        <div className="flex items-start gap-2">
           <IconSelector
             currentIcon={item.icon}
             availableIcons={availableIcons}
@@ -86,13 +86,15 @@ export function EditablePledgeItem({
               placeholder="Item description"
               className="text-sm"
             />
-            <div className="flex gap-2 items-center">
-              <span className="text-sm text-muted-foreground">Needed:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm">Needed:</span>
               <Input
                 type="number"
                 min="1"
                 value={tempNeeded}
-                onChange={(e) => setTempNeeded(parseInt(e.target.value) || 1)}
+                onChange={(e) =>
+                  setTempNeeded(Number.parseInt(e.target.value) || 1)
+                }
                 className="w-20"
               />
             </div>
@@ -117,7 +119,7 @@ export function EditablePledgeItem({
     <div
       className={cn(
         "rounded-lg border bg-card transition-all",
-        isFull && "border-primary/50 bg-primary/5"
+        isFull && "border-primary/50 bg-primary/5",
       )}
     >
       <div className="p-4">
@@ -126,7 +128,7 @@ export function EditablePledgeItem({
             <div
               className={cn(
                 "rounded-lg bg-primary/10 p-2",
-                isFull && "bg-primary/20"
+                isFull && "bg-primary/20",
               )}
             >
               <Icon className="h-5 w-5 text-primary" />
@@ -135,24 +137,27 @@ export function EditablePledgeItem({
 
           <div className="flex-1 space-y-2">
             <div
-              className="cursor-pointer group"
+              className="group cursor-pointer"
               onClick={() => setIsEditing(true)}
             >
-              <h3 className="font-medium text-card-foreground group-hover:text-primary transition-colors">
+              <h3 className="font-medium text-card-foreground transition-colors group-hover:text-primary">
                 {item.title}
-                <Edit3 className="inline-block ml-2 h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Edit3 className="ml-2 inline-block h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
               </h3>
-              <p className="text-sm text-muted-foreground">{item.description}</p>
+              <p className="text-muted-foreground text-sm">
+                {item.description}
+              </p>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Progress value={progressPercentage} className="h-2 w-24" />
-                <span className="text-sm text-muted-foreground">
-                  {filledCount}/{item.needed} {isTask ? "volunteers" : "pledged"}
+                <span className="text-muted-foreground text-sm">
+                  {filledCount}/{item.needed}{" "}
+                  {isTask ? "volunteers" : "pledged"}
                 </span>
                 {isFull && (
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary text-xs">
                     Full
                   </span>
                 )}
@@ -188,9 +193,13 @@ export function EditablePledgeItem({
                   <div className="flex-1 space-y-1">
                     <Input
                       type="text"
-                      placeholder={index < filledCount ? "Name" : "Available slot"}
+                      placeholder={
+                        index < filledCount ? "Name" : "Available slot"
+                      }
                       value={volunteer?.name || ""}
-                      onChange={(e) => onVolunteerNameChange(index, e.target.value)}
+                      onChange={(e) =>
+                        onVolunteerNameChange(index, e.target.value)
+                      }
                       className="h-8 text-sm"
                     />
                     <Input
@@ -200,7 +209,7 @@ export function EditablePledgeItem({
                       onChange={(e) =>
                         onVolunteerDetailsChange(index, e.target.value)
                       }
-                      className="h-8 text-sm text-muted-foreground"
+                      className="h-8 text-muted-foreground text-sm"
                     />
                   </div>
                 </div>

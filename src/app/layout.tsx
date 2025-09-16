@@ -1,3 +1,4 @@
+import { BoardHistorySidebar } from "@/components/board/board-history-sidebar";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TRPCReactProvider } from "@/trpc/react";
 import "@fontsource/nunito/300.css";
@@ -36,6 +37,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TRPCReactProvider>{children}</TRPCReactProvider>
+          <BoardHistorySidebar />
           <Toaster richColors position="top-center" />
         </ThemeProvider>
         <Analytics />

@@ -4,8 +4,6 @@ import { EditablePledgeItem } from "@/components/board/editable-pledge-item";
 import { IconSelector } from "@/components/board/icon-selector";
 import { BoardHeader } from "@/components/pledge-board/board-header";
 import { Button } from "@/components/ui/button";
-import { api } from "@/trpc/react";
-import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -15,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { availableIcons, getIconName } from "@/lib/available-icons";
+import { api } from "@/trpc/react";
 import {
   Check,
   Edit3,
@@ -27,6 +26,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -48,14 +48,13 @@ export type BoardSectionData = {
   items: BoardItemData[];
 };
 
-
 export default function BoardEditor() {
   const router = useRouter();
   const createBoard = api.board.create.useMutation();
   const [isSaving, setIsSaving] = useState(false);
   const [boardTitle, setBoardTitle] = useState("Community Event Pledge Board");
   const [boardDescription, setBoardDescription] = useState(
-    "Join us in making our community event amazing! Sign up to volunteer for tasks or bring items. Every contribution makes a difference! 🌟"
+    "Join us in making our community event amazing! Sign up to volunteer for tasks or bring items. Every contribution makes a difference! 🌟",
   );
   const [sections, setSections] = useState<BoardSectionData[]>([
     {
@@ -105,19 +104,19 @@ export default function BoardEditor() {
       sections.map((section) =>
         section.id === sectionId
           ? { ...section, items: [...section.items, newItem] }
-          : section
-      )
+          : section,
+      ),
     );
   };
 
   const updateSection = (
     sectionId: number,
-    updates: Partial<BoardSectionData>
+    updates: Partial<BoardSectionData>,
   ) => {
     setSections(
       sections.map((section) =>
-        section.id === sectionId ? { ...section, ...updates } : section
-      )
+        section.id === sectionId ? { ...section, ...updates } : section,
+      ),
     );
   };
 
@@ -128,7 +127,7 @@ export default function BoardEditor() {
   const updateItem = (
     sectionId: number,
     itemId: number,
-    updates: Partial<BoardItemData>
+    updates: Partial<BoardItemData>,
   ) => {
     setSections(
       sections.map((section) =>
@@ -136,11 +135,11 @@ export default function BoardEditor() {
           ? {
               ...section,
               items: section.items.map((item) =>
-                item.id === itemId ? { ...item, ...updates } : item
+                item.id === itemId ? { ...item, ...updates } : item,
               ),
             }
-          : section
-      )
+          : section,
+      ),
     );
   };
 
@@ -152,15 +151,15 @@ export default function BoardEditor() {
               ...section,
               items: section.items.filter((item) => item.id !== itemId),
             }
-          : section
-      )
+          : section,
+      ),
     );
   };
 
   const handleVolunteerNameChange = (
     itemId: number,
     volunteerIndex: number,
-    newName: string
+    newName: string,
   ) => {
     setSections(
       sections.map((section) => ({
@@ -176,7 +175,7 @@ export default function BoardEditor() {
               name: newName,
             };
             const filteredVolunteers = newVolunteers.filter(
-              (v, i) => v.name.trim() !== "" || i < item.needed
+              (v, i) => v.name.trim() !== "" || i < item.needed,
             );
             return {
               ...item,
@@ -185,7 +184,7 @@ export default function BoardEditor() {
           }
           return item;
         }),
-      }))
+      })),
     );
   };
 
@@ -237,7 +236,7 @@ export default function BoardEditor() {
   const handleVolunteerDetailsChange = (
     itemId: number,
     volunteerIndex: number,
-    newDetails: string
+    newDetails: string,
   ) => {
     setSections(
       sections.map((section) => ({
@@ -256,7 +255,7 @@ export default function BoardEditor() {
           }
           return item;
         }),
-      }))
+      })),
     );
   };
 
@@ -289,7 +288,12 @@ export default function BoardEditor() {
         ))}
 
         <div className="flex justify-center gap-4">
-          <Button onClick={addSection} size="lg" variant="outline" className="gap-2">
+          <Button
+            onClick={addSection}
+            size="lg"
+            variant="outline"
+            className="gap-2"
+          >
             <Plus className="h-5 w-5" />
             Add Section
           </Button>
@@ -301,7 +305,6 @@ export default function BoardEditor() {
             {isSaving ? "Creating..." : "Create Board"}
           </Button>
         </div>
-
       </div>
     </div>
   );
@@ -329,7 +332,7 @@ function EditableSection({
   onVolunteerDetailsChange: (
     itemId: number,
     index: number,
-    details: string
+    details: string,
   ) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -354,7 +357,7 @@ function EditableSection({
       <CardHeader>
         {isEditing ? (
           <div className="space-y-3">
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <IconSelector
                 currentIcon={section.icon}
                 onIconSelect={(icon) => onUpdate({ icon })}
@@ -386,13 +389,13 @@ function EditableSection({
           </div>
         ) : (
           <div
-            className="cursor-pointer group"
+            className="group cursor-pointer"
             onClick={() => setIsEditing(true)}
           >
-            <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+            <CardTitle className="flex items-center gap-2 transition-colors group-hover:text-primary">
               <SectionIcon className="h-5 w-5 text-primary" />
               {section.title}
-              <Edit3 className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Edit3 className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
             </CardTitle>
             <CardDescription>{section.description}</CardDescription>
           </div>

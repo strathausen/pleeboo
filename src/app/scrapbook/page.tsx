@@ -119,15 +119,15 @@ export default function ScrapbookPage() {
           <h2 className="font-semibold text-2xl">Logos</h2>
           <div className="flex flex-wrap items-center gap-8 rounded-lg border bg-card p-6">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Small</p>
+              <p className="text-muted-foreground text-sm">Small</p>
               <Logo size="sm" />
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Medium</p>
+              <p className="text-muted-foreground text-sm">Medium</p>
               <Logo size="md" />
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Large</p>
+              <p className="text-muted-foreground text-sm">Large</p>
               <Logo size="lg" />
             </div>
           </div>
@@ -152,7 +152,9 @@ export default function ScrapbookPage() {
                 description="Click to edit this header"
                 editable={true}
                 onTitleChange={(title) => console.log("Title:", title)}
-                onDescriptionChange={(desc) => console.log("Description:", desc)}
+                onDescriptionChange={(desc) =>
+                  console.log("Description:", desc)
+                }
               />
             </div>
           </div>
@@ -219,10 +221,12 @@ export default function ScrapbookPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Basic Card</CardTitle>
-                <CardDescription>Card with title and description</CardDescription>
+                <CardDescription>
+                  Card with title and description
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   This is the card content area where you can place any content.
                 </p>
               </CardContent>
@@ -234,10 +238,12 @@ export default function ScrapbookPage() {
                   <Users className="h-5 w-5 text-primary" />
                   With Icon
                 </CardTitle>
-                <CardDescription>Card with an icon in the title</CardDescription>
+                <CardDescription>
+                  Card with an icon in the title
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Icons help identify content quickly.
                 </p>
               </CardContent>
@@ -269,10 +275,12 @@ export default function ScrapbookPage() {
 
             <Alert className="border-accent bg-accent/10">
               <Heart className="h-4 w-4 text-accent-foreground" />
-              <AlertTitle className="text-accent-foreground">Thank You!</AlertTitle>
+              <AlertTitle className="text-accent-foreground">
+                Thank You!
+              </AlertTitle>
               <AlertDescription className="text-accent-foreground">
-                Your participation makes our community stronger. Every contribution,
-                big or small, is deeply appreciated!
+                Your participation makes our community stronger. Every
+                contribution, big or small, is deeply appreciated!
               </AlertDescription>
             </Alert>
 
@@ -292,23 +300,23 @@ export default function ScrapbookPage() {
           <Card>
             <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">0% Progress</p>
+                <p className="text-muted-foreground text-sm">0% Progress</p>
                 <Progress value={0} />
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">25% Progress</p>
+                <p className="text-muted-foreground text-sm">25% Progress</p>
                 <Progress value={25} />
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">50% Progress</p>
+                <p className="text-muted-foreground text-sm">50% Progress</p>
                 <Progress value={50} />
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">75% Progress</p>
+                <p className="text-muted-foreground text-sm">75% Progress</p>
                 <Progress value={75} />
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">100% Progress</p>
+                <p className="text-muted-foreground text-sm">100% Progress</p>
                 <Progress value={100} />
               </div>
             </CardContent>
@@ -330,7 +338,9 @@ export default function ScrapbookPage() {
           <h2 className="font-semibold text-2xl">Pledge Items</h2>
           <div className="space-y-4">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Regular Pledge Item</p>
+              <p className="text-muted-foreground text-sm">
+                Regular Pledge Item
+              </p>
               <PledgeItem
                 item={mockPledgeItem}
                 onPledge={() => setIsDialogOpen(true)}
@@ -345,7 +355,9 @@ export default function ScrapbookPage() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Editable Pledge Item</p>
+              <p className="text-muted-foreground text-sm">
+                Editable Pledge Item
+              </p>
               <EditablePledgeItem
                 item={mockEditableItem}
                 onVolunteerNameChange={(index, name) =>
@@ -388,7 +400,9 @@ export default function ScrapbookPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Icon Selector</CardTitle>
-                <CardDescription>Click the button to select an icon</CardDescription>
+                <CardDescription>
+                  Click the button to select an icon
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <IconSelector
@@ -401,7 +415,9 @@ export default function ScrapbookPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Icon Picker (Open State)</CardTitle>
-                <CardDescription>Icon picker component in open state</CardDescription>
+                <CardDescription>
+                  Icon picker component in open state
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="relative">
@@ -431,15 +447,21 @@ export default function ScrapbookPage() {
             <CardContent className="space-y-4 pt-6">
               <div className="flex items-center gap-4">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm text-muted-foreground">Small spinner</span>
+                <span className="text-muted-foreground text-sm">
+                  Small spinner
+                </span>
               </div>
               <div className="flex items-center gap-4">
                 <Loader2 className="h-6 w-6 animate-spin" />
-                <span className="text-sm text-muted-foreground">Medium spinner</span>
+                <span className="text-muted-foreground text-sm">
+                  Medium spinner
+                </span>
               </div>
               <div className="flex items-center gap-4">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="text-sm text-muted-foreground">Large colored spinner</span>
+                <span className="text-muted-foreground text-sm">
+                  Large colored spinner
+                </span>
               </div>
               <Button disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -456,7 +478,7 @@ export default function ScrapbookPage() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <ThemeToggle />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   Toggle between light and dark themes
                 </span>
               </div>
@@ -496,10 +518,10 @@ export default function ScrapbookPage() {
                 {availableIcons.map(({ icon: Icon, name }) => (
                   <div
                     key={name}
-                    className="flex flex-col items-center gap-1 p-2 rounded hover:bg-muted"
+                    className="flex flex-col items-center gap-1 rounded p-2 hover:bg-muted"
                   >
                     <Icon className="h-5 w-5" />
-                    <span className="text-xs text-muted-foreground truncate w-full text-center">
+                    <span className="w-full truncate text-center text-muted-foreground text-xs">
                       {name}
                     </span>
                   </div>
@@ -554,7 +576,7 @@ export default function ScrapbookPage() {
 
         {/* Footer */}
         <div className="border-t pt-8 pb-4">
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-muted-foreground text-sm">
             End of UI Component Scrapbook
           </p>
         </div>

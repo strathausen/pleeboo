@@ -1,11 +1,11 @@
 "use client";
 
-import { Logo } from "@/components/ui/logo";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Edit3, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Logo } from "@/components/ui/logo";
+import { Textarea } from "@/components/ui/textarea";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Check, Edit3 } from "lucide-react";
 import { useState } from "react";
 
 interface BoardHeaderProps {
@@ -56,11 +56,7 @@ export function BoardHeader({
                 placeholder="Board title"
                 className="font-bold text-2xl"
               />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={handleSave}
-              >
+              <Button size="icon" variant="ghost" onClick={handleSave}>
                 <Check className="h-4 w-4" />
               </Button>
             </div>
@@ -73,13 +69,15 @@ export function BoardHeader({
           </div>
         ) : (
           <div
-            className={`space-y-4 text-center ${editable ? "cursor-pointer group" : ""}`}
+            className={`space-y-4 text-center ${editable ? "group cursor-pointer" : ""}`}
             onClick={() => editable && setIsEditing(true)}
           >
-            <h1 className={`font-bold text-4xl text-card-foreground ${editable ? "group-hover:text-primary transition-colors" : ""}`}>
+            <h1
+              className={`font-bold text-4xl text-card-foreground ${editable ? "transition-colors group-hover:text-primary" : ""}`}
+            >
               {title}
               {editable && (
-                <Edit3 className="inline-block ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Edit3 className="ml-2 inline-block h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
               )}
             </h1>
             <p className="mx-auto max-w-3xl text-lg text-muted-foreground">

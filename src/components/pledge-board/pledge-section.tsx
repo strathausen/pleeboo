@@ -24,18 +24,18 @@ interface PledgeSectionProps {
   onVolunteerNameChange: (
     itemId: number,
     volunteerIndex: number,
-    newName: string
+    newName: string,
   ) => void;
   onVolunteerDetailsChange: (
     itemId: number,
     volunteerIndex: number,
-    newDetails: string
+    newDetails: string,
   ) => void;
   isTask: boolean;
   editable?: boolean;
   onSectionUpdate?: (
     sectionId: number,
-    updates: { title?: string; description?: string; icon?: LucideIcon }
+    updates: { title?: string; description?: string; icon?: LucideIcon },
   ) => void;
   onSectionDelete?: (sectionId: number) => void;
   onItemUpdate?: (itemId: number, updates: Partial<PledgeItemData>) => void;
@@ -130,7 +130,10 @@ export function PledgeSection({
           <>
             <CardTitle className="group flex items-center gap-2">
               <Icon className="h-5 w-5 text-primary" />
-              <div className="-underline-offset-1 underline decoration-[8px] decoration-yellow-200" style={{textDecorationSkipInk: "none"}}>
+              <div
+                className="-underline-offset-1 underline decoration-[8px] decoration-yellow-200"
+                style={{ textDecorationSkipInk: "none" }}
+              >
                 {title}
               </div>
               {editable && (

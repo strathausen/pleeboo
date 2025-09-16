@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { X, type LucideIcon } from "lucide-react";
+import { type LucideIcon, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 interface IconPickerProps {
@@ -32,13 +32,18 @@ export function IconPicker({ icons, onSelect, onClose }: IconPickerProps) {
       ref={ref}
       className="absolute z-50 mt-2 w-80 rounded-lg border bg-popover p-2 shadow-lg"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium">Choose an icon</span>
-        <Button size="icon" variant="ghost" onClick={onClose} className="h-6 w-6">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-medium text-sm">Choose an icon</span>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={onClose}
+          className="h-6 w-6"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <div className="grid grid-cols-8 gap-1 max-h-60 overflow-y-auto">
+      <div className="grid max-h-60 grid-cols-8 gap-1 overflow-y-auto">
         {icons.map(({ icon: Icon, name }) => (
           <Button
             key={name}

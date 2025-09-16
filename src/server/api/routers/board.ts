@@ -1,9 +1,15 @@
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { boards, boardSections, boardItems, boardVolunteers } from "@/server/db/schema";
-import { desc, eq } from "drizzle-orm";
+import {
+  boardAccessTokens,
+  boardItems,
+  boardSections,
+  boardVolunteers,
+  boards,
+} from "@/server/db/schema";
+import { TRPCError } from "@trpc/server";
+import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 
 function generateBoardId(): string {
   return nanoid(24);
@@ -30,13 +36,13 @@ export const boardRouter = createTRPCRouter({
                   z.object({
                     name: z.string().min(1).max(256),
                     details: z.string().optional(),
-                  })
+                  }),
                 ),
-              })
+              }),
             ),
-          })
+          }),
         ),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const boardId = generateBoardId();
@@ -50,7 +56,11 @@ export const boardRouter = createTRPCRouter({
       });
 
       // Create sections and items
-      for (let sectionIndex = 0; sectionIndex < input.sections.length; sectionIndex++) {
+      for (
+        let sectionIndex = 0;
+        sectionIndex < input.sections.length;
+        sectionIndex++
+      ) {
         const section = input.sections[sectionIndex];
 
         const [insertedSection] = await ctx.db
@@ -157,7 +167,7 @@ export const boardRouter = createTRPCRouter({
         volunteerIndex: z.number(),
         name: z.string(),
         details: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Get existing volunteers for this item
@@ -210,7 +220,7 @@ export const boardRouter = createTRPCRouter({
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
         icon: z.string().max(50).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...updates } = input;
@@ -226,9 +236,7 @@ export const boardRouter = createTRPCRouter({
   deleteSection: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .delete(boardSections)
-        .where(eq(boardSections.id, input.id));
+      await ctx.db.delete(boardSections).where(eq(boardSections.id, input.id));
 
       return { success: true };
     }),
@@ -241,15 +249,12 @@ export const boardRouter = createTRPCRouter({
         description: z.string().optional(),
         icon: z.string().max(50).optional(),
         needed: z.number().min(1).max(100).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...updates } = input;
 
-      await ctx.db
-        .update(boardItems)
-        .set(updates)
-        .where(eq(boardItems.id, id));
+      await ctx.db.update(boardItems).set(updates).where(eq(boardItems.id, id));
 
       return { success: true };
     }),
@@ -257,9 +262,7 @@ export const boardRouter = createTRPCRouter({
   deleteItem: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .delete(boardItems)
-        .where(eq(boardItems.id, input.id));
+      await ctx.db.delete(boardItems).where(eq(boardItems.id, input.id));
 
       return { success: true };
     }),
@@ -272,7 +275,7 @@ export const boardRouter = createTRPCRouter({
         description: z.string().optional(),
         icon: z.string().max(50),
         needed: z.number().min(1).max(100),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Get the max sort order for this section
@@ -292,5 +295,75 @@ export const boardRouter = createTRPCRouter({
         .returning();
 
       return newItem;
+    }),
+
+  generateTokens: publicProcedure
+    .input(z.object({ boardId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if board exists
+      const board = await ctx.db.query.boards.findFirst({
+        where: eq(boards.id, input.boardId),
+      });
+
+      if (!board) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Board not found",
+        });
+      }
+
+      // Generate tokens
+      const adminToken = nanoid(32);
+      const viewToken = nanoid(32);
+
+      // Delete existing tokens for this board
+      await ctx.db
+        .delete(boardAccessTokens)
+        .where(eq(boardAccessTokens.boardId, input.boardId));
+
+      // Create new tokens
+      await ctx.db.insert(boardAccessTokens).values([
+        {
+          id: adminToken,
+          boardId: input.boardId,
+          type: "admin",
+        },
+        {
+          id: viewToken,
+          boardId: input.boardId,
+          type: "view",
+        },
+      ]);
+
+      return {
+        adminToken,
+        viewToken,
+      };
+    }),
+
+  validateToken: publicProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        token: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (!input.token) {
+        return { access: "none" as const };
+      }
+
+      const accessToken = await ctx.db.query.boardAccessTokens.findFirst({
+        where: and(
+          eq(boardAccessTokens.id, input.token),
+          eq(boardAccessTokens.boardId, input.boardId),
+        ),
+      });
+
+      if (!accessToken) {
+        return { access: "none" as const };
+      }
+
+      return { access: accessToken.type };
     }),
 });

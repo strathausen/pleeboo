@@ -28,7 +28,11 @@ export const boards = createTable(
 
 export const boardsRelations = relations(boards, ({ many, one }) => ({
   sections: many(boardSections),
-  createdBy: one(users, { fields: [boards.createdById], references: [users.id] }),
+  createdBy: one(users, {
+    fields: [boards.createdById],
+    references: [users.id],
+  }),
+  accessTokens: many(boardAccessTokens),
 }));
 
 export const boardSections = createTable(
@@ -55,10 +59,16 @@ export const boardSections = createTable(
   ],
 );
 
-export const boardSectionsRelations = relations(boardSections, ({ one, many }) => ({
-  board: one(boards, { fields: [boardSections.boardId], references: [boards.id] }),
-  items: many(boardItems),
-}));
+export const boardSectionsRelations = relations(
+  boardSections,
+  ({ one, many }) => ({
+    board: one(boards, {
+      fields: [boardSections.boardId],
+      references: [boards.id],
+    }),
+    items: many(boardItems),
+  }),
+);
 
 export const boardItems = createTable(
   "board_item",
@@ -86,7 +96,10 @@ export const boardItems = createTable(
 );
 
 export const boardItemsRelations = relations(boardItems, ({ one, many }) => ({
-  section: one(boardSections, { fields: [boardItems.sectionId], references: [boardSections.id] }),
+  section: one(boardSections, {
+    fields: [boardItems.sectionId],
+    references: [boardSections.id],
+  }),
   volunteers: many(boardVolunteers),
 }));
 
@@ -106,14 +119,49 @@ export const boardVolunteers = createTable(
       .notNull(),
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
   }),
+  (t) => [index("board_volunteer_item_idx").on(t.itemId)],
+);
+
+export const boardVolunteersRelations = relations(
+  boardVolunteers,
+  ({ one }) => ({
+    item: one(boardItems, {
+      fields: [boardVolunteers.itemId],
+      references: [boardItems.id],
+    }),
+  }),
+);
+
+export const boardAccessTokens = createTable(
+  "board_access_token",
+  (d) => ({
+    id: d.varchar({ length: 32 }).primaryKey(),
+    boardId: d
+      .varchar({ length: 32 })
+      .notNull()
+      .references(() => boards.id, { onDelete: "cascade" }),
+    type: d.varchar({ length: 10 }).notNull().$type<"admin" | "view">(),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    expiresAt: d.timestamp({ withTimezone: true }),
+  }),
   (t) => [
-    index("board_volunteer_item_idx").on(t.itemId),
+    index("board_access_token_board_idx").on(t.boardId),
+    index("board_access_token_type_idx").on(t.type),
   ],
 );
 
-export const boardVolunteersRelations = relations(boardVolunteers, ({ one }) => ({
-  item: one(boardItems, { fields: [boardVolunteers.itemId], references: [boardItems.id] }),
-}));
+export const boardAccessTokensRelations = relations(
+  boardAccessTokens,
+  ({ one }) => ({
+    board: one(boards, {
+      fields: [boardAccessTokens.boardId],
+      references: [boards.id],
+    }),
+  }),
+);
 
 export const users = createTable("user", (d) => ({
   id: d

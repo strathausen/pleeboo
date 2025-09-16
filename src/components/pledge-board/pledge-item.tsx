@@ -1,8 +1,16 @@
+import { IconSelector } from "@/components/board/icon-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { IconSelector } from "@/components/board/icon-selector";
-import { CheckCircle, Clock, Edit3, Trash2, Check, X, type LucideIcon } from "lucide-react";
+import {
+  Check,
+  CheckCircle,
+  Clock,
+  Edit3,
+  type LucideIcon,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { VolunteerItem } from "./volunteer-item";
 
@@ -27,12 +35,12 @@ interface PledgeItemProps {
   onVolunteerNameChange?: (
     itemId: number,
     volunteerIndex: number,
-    newName: string
+    newName: string,
   ) => void;
   onVolunteerDetailsChange?: (
     itemId: number,
     volunteerIndex: number,
-    newDetails: string
+    newDetails: string,
   ) => void;
   isTask?: boolean;
   editable?: boolean;
@@ -105,7 +113,7 @@ export function PledgeItem({
     return (
       <div className="rounded-lg border border-border p-4">
         <div className="space-y-3">
-          <div className="flex gap-2 items-start">
+          <div className="flex items-start gap-2">
             <IconSelector
               currentIcon={item.icon}
               onIconSelect={(icon) => onItemUpdate?.(item.id, { icon })}
@@ -123,13 +131,15 @@ export function PledgeItem({
                 placeholder="Item description"
                 className="text-sm"
               />
-              <div className="flex gap-2 items-center">
-                <span className="text-sm text-muted-foreground">Needed:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-sm">Needed:</span>
                 <Input
                   type="number"
                   min="1"
                   value={tempNeeded}
-                  onChange={(e) => setTempNeeded(parseInt(e.target.value) || 1)}
+                  onChange={(e) =>
+                    setTempNeeded(Number.parseInt(e.target.value) || 1)
+                  }
                   className="w-20"
                 />
               </div>
@@ -142,7 +152,11 @@ export function PledgeItem({
                 <X className="h-4 w-4" />
               </Button>
               {onItemDelete && (
-                <Button size="icon" variant="ghost" onClick={() => onItemDelete(item.id)}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onItemDelete(item.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
@@ -159,14 +173,14 @@ export function PledgeItem({
         {/* Left column - Description */}
         <div className="space-y-2">
           <div className="mb-3">
-            <h3 className="flex items-center gap-2 font-semibold text-card-foreground group">
+            <h3 className="group flex items-center gap-2 font-semibold text-card-foreground">
               <Icon className="h-5 w-5 text-primary" />
               {item.title}
               {editable && (
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit3 className="h-3 w-3" />

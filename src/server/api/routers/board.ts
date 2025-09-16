@@ -363,4 +363,28 @@ export const boardRouter = createTRPCRouter({
 
       return { access: accessToken.type };
     }),
+  reorderSections: publicProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        sectionIds: z.array(z.number()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Update sort order for each section
+      const updates = input.sectionIds.map((sectionId, index) =>
+        ctx.db
+          .update(boardSections)
+          .set({ sortOrder: index })
+          .where(
+            and(
+              eq(boardSections.id, sectionId),
+              eq(boardSections.boardId, input.boardId),
+            ),
+          ),
+      );
+
+      await Promise.all(updates);
+      return { success: true };
+    }),
 });

@@ -152,6 +152,9 @@ export function PledgeBoard({
   const deleteItem = api.board.deleteItem.useMutation({
     onSuccess: () => void refetch(),
   });
+  const reorderSections = api.board.reorderSections.useMutation({
+    onSuccess: () => void refetch(),
+  });
   const addItem = api.board.addItem.useMutation({
     onSuccess: (newItem) => {
       if (localBoard) {
@@ -437,6 +440,12 @@ export function PledgeBoard({
       const newSections = [...prev.sections];
       [newSections[index - 1], newSections[index]] = [newSections[index], newSections[index - 1]];
 
+      // Update server if in view mode
+      if (mode === "view" && boardId) {
+        const sectionIds = newSections.map((s) => s.id).filter((id) => id > 0);
+        reorderSections.mutate({ boardId, sectionIds });
+      }
+
       return {
         ...prev,
         sections: newSections,
@@ -452,6 +461,12 @@ export function PledgeBoard({
 
       const newSections = [...prev.sections];
       [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
+
+      // Update server if in view mode
+      if (mode === "view" && boardId) {
+        const sectionIds = newSections.map((s) => s.id).filter((id) => id > 0);
+        reorderSections.mutate({ boardId, sectionIds });
+      }
 
       return {
         ...prev,

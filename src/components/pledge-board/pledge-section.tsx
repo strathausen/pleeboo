@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MarkdownText } from "@/components/ui/markdown-text";
 import { ArrowUp, ArrowDown, Check, Edit3, type LucideIcon, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { PledgeItem, type PledgeItemData } from "./pledge-item";
@@ -157,7 +158,7 @@ export function PledgeSection({
             <Input
               value={tempDescription}
               onChange={(e) => setTempDescription(e.target.value)}
-              placeholder="Section description"
+              placeholder="Section description (supports markdown)"
               className="text-sm"
             />
           </div>
@@ -182,7 +183,9 @@ export function PledgeSection({
                 </Button>
               )}
             </CardTitle>
-            <CardDescription className="whitespace-pre-wrap">{description}</CardDescription>
+            <CardDescription>
+              <MarkdownText text={description} />
+            </CardDescription>
           </>
         )}
       </CardHeader>

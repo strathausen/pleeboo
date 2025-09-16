@@ -2,6 +2,7 @@ import { IconSelector } from "@/components/board/icon-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MarkdownText } from "@/components/ui/markdown-text";
 import {
   Check,
   CheckCircle,
@@ -138,7 +139,7 @@ export function PledgeItem({
               <Input
                 value={tempDescription}
                 onChange={(e) => setTempDescription(e.target.value)}
-                placeholder="Item description"
+                placeholder="Item description (supports markdown)"
                 className="text-sm"
               />
               <div className="flex items-center gap-4">
@@ -225,7 +226,9 @@ export function PledgeItem({
               )}
             </h3>
           </div>
-          <p className="text-muted-foreground text-sm whitespace-pre-wrap">{item.description}</p>
+          <div className="text-muted-foreground text-sm">
+            <MarkdownText text={item.description} />
+          </div>
         </div>
 
         {/* Right column - All volunteer slots */}

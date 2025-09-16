@@ -3,9 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/ui/logo";
+import { MarkdownText } from "@/components/ui/markdown-text";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Check, Edit3 } from "lucide-react";
+import { Check, Edit3, Info } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface BoardHeaderProps {
@@ -85,18 +86,24 @@ export function BoardHeader({
                 <Check className="h-5 w-5" />
               </Button>
             </div>
-            <Textarea
-              value={tempDescription}
-              onChange={(e) => setTempDescription(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && e.ctrlKey) {
-                  e.preventDefault();
-                  handleSave();
-                }
-              }}
-              placeholder="Board description"
-              className="min-h-[80px]"
-            />
+            <div className="space-y-2">
+              <Textarea
+                value={tempDescription}
+                onChange={(e) => setTempDescription(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    handleSave();
+                  }
+                }}
+                placeholder="Board description (supports markdown)"
+                className="min-h-[80px]"
+              />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Info className="h-3 w-3" />
+                <span>Supports **bold**, *italic*, [links](url), and lists • Cmd/Ctrl+Enter to save</span>
+              </div>
+            </div>
           </div>
         ) : (
           <div
@@ -111,9 +118,9 @@ export function BoardHeader({
                 <Edit3 className="absolute -right-8 top-1/2 -translate-y-1/2 h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
               )}
             </h1>
-            <p className="mx-auto max-w-3xl text-lg text-muted-foreground whitespace-pre-wrap">
-              {description}
-            </p>
+            <div className="mx-auto max-w-3xl text-lg text-muted-foreground">
+              <MarkdownText text={description} />
+            </div>
           </div>
         )}
       </div>

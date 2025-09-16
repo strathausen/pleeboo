@@ -64,29 +64,31 @@ export function BoardHeader({
       <div className="space-y-4">
         {editable && isEditing ? (
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                value={tempTitle}
-                onChange={(e) => setTempTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSave();
-                  }
-                }}
-                placeholder="Board title"
-                className="font-bold text-2xl"
-              />
-              <Button
-                size="icon"
-                variant="default"
-                onClick={handleSave}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Check className="h-5 w-5" />
-              </Button>
+            <div className="mx-auto max-w-3xl">
+              <div className="relative">
+                <Input
+                  value={tempTitle}
+                  onChange={(e) => setTempTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSave();
+                    }
+                  }}
+                  placeholder="Board title"
+                  className="font-bold text-4xl text-center border-0 bg-transparent p-0 pr-12 focus-visible:ring-0 focus-visible:ring-offset-0 text-card-foreground"
+                />
+                <Button
+                  size="icon"
+                  variant="default"
+                  onClick={handleSave}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Check className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
-            <div className="space-y-2">
+            <div className="mx-auto max-w-3xl space-y-2">
               <Textarea
                 value={tempDescription}
                 onChange={(e) => setTempDescription(e.target.value)}
@@ -97,7 +99,7 @@ export function BoardHeader({
                   }
                 }}
                 placeholder="Board description (supports markdown)"
-                className="min-h-[80px]"
+                className="min-h-[120px] text-lg text-muted-foreground resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Info className="h-3 w-3" />
@@ -107,18 +109,20 @@ export function BoardHeader({
           </div>
         ) : (
           <div
-            className={`space-y-4 text-center ${editable ? "group cursor-pointer" : ""}`}
+            className={`space-y-4 ${editable ? "group cursor-pointer" : ""}`}
             onClick={() => editable && setIsEditing(true)}
           >
-            <h1
-              className={`relative inline-block font-bold text-4xl text-card-foreground ${editable ? "transition-colors group-hover:text-primary" : ""}`}
-            >
-              {title}
-              {editable && (
-                <Edit3 className="absolute -right-8 top-1/2 -translate-y-1/2 h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
-              )}
-            </h1>
-            <div className="mx-auto max-w-3xl text-lg text-muted-foreground">
+            <div className="text-center">
+              <h1
+                className={`relative inline-block font-bold text-4xl text-card-foreground ${editable ? "transition-colors group-hover:text-primary" : ""}`}
+              >
+                {title}
+                {editable && (
+                  <Edit3 className="absolute -right-8 top-1/2 -translate-y-1/2 h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
+                )}
+              </h1>
+            </div>
+            <div className="mx-auto max-w-3xl text-lg text-muted-foreground text-left">
               <MarkdownText text={description} />
             </div>
           </div>

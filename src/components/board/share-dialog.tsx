@@ -10,8 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { api } from "@/trpc/react";
-import { Check, Copy, Loader2, Shield, Users } from "lucide-react";
+import { Check, Copy, Info, Loader2, Shield, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -59,11 +61,18 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Share Board</DialogTitle>
-          <DialogDescription>
-            Share different links based on who you want to give access to
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-2xl">
+            <span
+              className="-underline-offset-1 underline decoration-[8px] decoration-yellow-200 dark:decoration-yellow-600"
+              style={{ textDecorationSkipInk: "none" }}
+            >
+              Share Board
+            </span>
+          </DialogTitle>
+          <DialogDescription className="text-base">
+            Choose the right link for your audience
           </DialogDescription>
         </DialogHeader>
         {isLoading ? (
@@ -71,73 +80,88 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Shield className="h-4 w-4 text-yellow-500" />
-                <Label>Admin Link (Full Access)</Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Share this with co-organizers who need to edit the board
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  value={adminUrl}
-                  readOnly
-                  className="font-mono text-xs"
-                  onClick={(e) => e.currentTarget.select()}
-                />
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => copyToClipboard(adminUrl, "admin")}
-                  className="shrink-0"
-                >
-                  {copiedAdmin ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="border-yellow-500/20 bg-yellow-50/50 dark:bg-yellow-950/20">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-yellow-500/10 p-2">
+                      <Shield className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <h3 className="font-semibold text-base">Admin Access</h3>
+                      <p className="text-sm text-muted-foreground">
+                        For co-organizers who need to edit
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={adminUrl}
+                      readOnly
+                      className="font-mono text-xs bg-background"
+                      onClick={(e) => e.currentTarget.select()}
+                    />
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => copyToClipboard(adminUrl, "admin")}
+                      className="shrink-0"
+                    >
+                      {copiedAdmin ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <h3 className="font-semibold text-base">Volunteer Access</h3>
+                      <p className="text-sm text-muted-foreground">
+                        For people signing up to help
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={viewUrl}
+                      readOnly
+                      className="font-mono text-xs bg-background"
+                      onClick={(e) => e.currentTarget.select()}
+                    />
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => copyToClipboard(viewUrl, "view")}
+                      className="shrink-0"
+                    >
+                      {copiedView ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Users className="h-4 w-4 text-primary" />
-                <Label>Volunteer Link (View & Sign Up)</Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Share this with volunteers who want to sign up for tasks
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  value={viewUrl}
-                  readOnly
-                  className="font-mono text-xs"
-                  onClick={(e) => e.currentTarget.select()}
-                />
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => copyToClipboard(viewUrl, "view")}
-                  className="shrink-0"
-                >
-                  {copiedView ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <div className="rounded-lg bg-muted p-3">
-              <p className="text-xs text-muted-foreground">
-                <strong>Note:</strong> These links provide permanent access to your board.
-                Only share them with people you trust.
-              </p>
-            </div>
+            <Alert className="border-muted-foreground/20 bg-muted/50">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Security Note:</strong> These links provide permanent access to your board.
+                Only share them with people you trust. Admin links allow full editing capabilities.
+              </AlertDescription>
+            </Alert>
 
             <div className="flex justify-end">
               <Button size="sm" onClick={() => onOpenChange(false)}>

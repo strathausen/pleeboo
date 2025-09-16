@@ -2,14 +2,13 @@
 
 import { BoardHeader } from "@/components/pledge-board/board-header";
 import { PledgeSection } from "@/components/pledge-board/pledge-section";
-import { api } from "@/trpc/react";
-import { getIconByName } from "@/lib/available-icons";
-import { useParams } from "next/navigation";
-import { Loader2, Edit3, Eye } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
-import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
-import { getIconName } from "@/lib/available-icons";
+import { useDebounce } from "@/hooks/use-debounce";
+import { getIconByName, getIconName } from "@/lib/available-icons";
+import { api } from "@/trpc/react";
+import { Edit3, Eye, Loader2, Share2, Check } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 type VolunteerUpdate = {
   itemId: number;
@@ -22,10 +21,17 @@ export default function BoardPage() {
   const params = useParams();
   const boardId = params.id as string;
 
-  const { data: board, isLoading, refetch } = api.board.get.useQuery({ id: boardId });
+  const {
+    data: board,
+    isLoading,
+    refetch,
+  } = api.board.get.useQuery({ id: boardId });
   const [localBoard, setLocalBoard] = useState(board);
-  const [pendingUpdates, setPendingUpdates] = useState<Map<string, VolunteerUpdate>>(new Map());
+  const [pendingUpdates, setPendingUpdates] = useState<
+    Map<string, VolunteerUpdate>
+  >(new Map());
   const [editMode, setEditMode] = useState(false);
+  const [justCopied, setJustCopied] = useState(false);
 
   // Debounce the pending updates
   const debouncedUpdates = useDebounce(pendingUpdates, 500);
@@ -58,19 +64,19 @@ export default function BoardPage() {
         setLocalBoard({
           ...localBoard,
           sections: localBoard.sections.map((section) => {
-            if (section.items.some(item => item.id === newItem.id)) {
+            if (section.items.some((item) => item.id === newItem.id)) {
               // Replace the temporary item with the real one from server
               return {
                 ...section,
-                items: section.items.map(item =>
+                items: section.items.map((item) =>
                   item.id < 0 && item.sectionId === newItem.sectionId
                     ? { ...newItem, volunteers: [] }
                     : item
-                )
+                ),
               };
             }
             return section;
-          })
+          }),
         });
       }
       void refetch();
@@ -94,113 +100,125 @@ export default function BoardPage() {
     }
   }, [debouncedUpdates]);
 
-  const handleVolunteerNameChange = useCallback((
-    itemId: number,
-    volunteerIndex: number,
-    newName: string
-  ) => {
-    // Update local state immediately for instant feedback
-    setLocalBoard((prev) => {
-      if (!prev) return prev;
+  const handleVolunteerNameChange = useCallback(
+    (itemId: number, volunteerIndex: number, newName: string) => {
+      // Update local state immediately for instant feedback
+      setLocalBoard((prev) => {
+        if (!prev) return prev;
 
-      return {
-        ...prev,
-        sections: prev.sections.map((section) => ({
-          ...section,
-          items: section.items.map((item) => {
-            if (item.id === itemId) {
-              const newVolunteers = [...item.volunteers];
-              while (newVolunteers.length <= volunteerIndex) {
-                newVolunteers.push({
-                  id: Date.now() + volunteerIndex,
-                  itemId,
-                  name: "",
-                  details: null,
-                  createdAt: new Date(),
-                  updatedAt: null
-                });
+        return {
+          ...prev,
+          sections: prev.sections.map((section) => ({
+            ...section,
+            items: section.items.map((item) => {
+              if (item.id === itemId) {
+                const newVolunteers = [...item.volunteers];
+                while (newVolunteers.length <= volunteerIndex) {
+                  newVolunteers.push({
+                    id: Date.now() + volunteerIndex,
+                    itemId,
+                    name: "",
+                    details: null,
+                    createdAt: new Date(),
+                    updatedAt: null,
+                  });
+                }
+                newVolunteers[volunteerIndex] = {
+                  ...newVolunteers[volunteerIndex],
+                  name: newName,
+                };
+                return { ...item, volunteers: newVolunteers };
               }
-              newVolunteers[volunteerIndex] = {
-                ...newVolunteers[volunteerIndex],
-                name: newName,
-              };
-              return { ...item, volunteers: newVolunteers };
-            }
-            return item;
-          }),
-        })),
-      };
-    });
+              return item;
+            }),
+          })),
+        };
+      });
 
-    // Queue the update for the server
-    const key = `${itemId}-${volunteerIndex}`;
-    const existingUpdate = pendingUpdates.get(key);
-    const details = existingUpdate?.details ||
-      localBoard?.sections.find(s => s.items.some(i => i.id === itemId))
-        ?.items.find(i => i.id === itemId)
-        ?.volunteers[volunteerIndex]?.details || "";
+      // Queue the update for the server
+      const key = `${itemId}-${volunteerIndex}`;
+      const existingUpdate = pendingUpdates.get(key);
+      const details =
+        existingUpdate?.details ||
+        localBoard?.sections
+          .find((s) => s.items.some((i) => i.id === itemId))
+          ?.items.find((i) => i.id === itemId)?.volunteers[volunteerIndex]
+          ?.details ||
+        "";
 
-    setPendingUpdates(new Map(pendingUpdates.set(key, {
-      itemId,
-      volunteerIndex,
-      name: newName,
-      details,
-    })));
-  }, [localBoard, pendingUpdates]);
+      setPendingUpdates(
+        new Map(
+          pendingUpdates.set(key, {
+            itemId,
+            volunteerIndex,
+            name: newName,
+            details,
+          })
+        )
+      );
+    },
+    [localBoard, pendingUpdates]
+  );
 
-  const handleVolunteerDetailsChange = useCallback((
-    itemId: number,
-    volunteerIndex: number,
-    newDetails: string
-  ) => {
-    // Update local state immediately
-    setLocalBoard((prev) => {
-      if (!prev) return prev;
+  const handleVolunteerDetailsChange = useCallback(
+    (itemId: number, volunteerIndex: number, newDetails: string) => {
+      // Update local state immediately
+      setLocalBoard((prev) => {
+        if (!prev) return prev;
 
-      return {
-        ...prev,
-        sections: prev.sections.map((section) => ({
-          ...section,
-          items: section.items.map((item) => {
-            if (item.id === itemId) {
-              const newVolunteers = [...item.volunteers];
-              while (newVolunteers.length <= volunteerIndex) {
-                newVolunteers.push({
-                  id: Date.now() + volunteerIndex,
-                  itemId,
-                  name: "",
-                  details: null,
-                  createdAt: new Date(),
-                  updatedAt: null
-                });
+        return {
+          ...prev,
+          sections: prev.sections.map((section) => ({
+            ...section,
+            items: section.items.map((item) => {
+              if (item.id === itemId) {
+                const newVolunteers = [...item.volunteers];
+                while (newVolunteers.length <= volunteerIndex) {
+                  newVolunteers.push({
+                    id: Date.now() + volunteerIndex,
+                    itemId,
+                    name: "",
+                    details: null,
+                    createdAt: new Date(),
+                    updatedAt: null,
+                  });
+                }
+                newVolunteers[volunteerIndex] = {
+                  ...newVolunteers[volunteerIndex],
+                  details: newDetails,
+                };
+                return { ...item, volunteers: newVolunteers };
               }
-              newVolunteers[volunteerIndex] = {
-                ...newVolunteers[volunteerIndex],
-                details: newDetails,
-              };
-              return { ...item, volunteers: newVolunteers };
-            }
-            return item;
-          }),
-        })),
-      };
-    });
+              return item;
+            }),
+          })),
+        };
+      });
 
-    // Queue the update for the server
-    const key = `${itemId}-${volunteerIndex}`;
-    const existingUpdate = pendingUpdates.get(key);
-    const name = existingUpdate?.name ||
-      localBoard?.sections.find(s => s.items.some(i => i.id === itemId))
-        ?.items.find(i => i.id === itemId)
-        ?.volunteers[volunteerIndex]?.name || "";
+      // Queue the update for the server
+      const key = `${itemId}-${volunteerIndex}`;
+      const existingUpdate = pendingUpdates.get(key);
+      const name =
+        existingUpdate?.name ||
+        localBoard?.sections
+          .find((s) => s.items.some((i) => i.id === itemId))
+          ?.items.find((i) => i.id === itemId)?.volunteers[volunteerIndex]
+          ?.name ||
+        "";
 
-    setPendingUpdates(new Map(pendingUpdates.set(key, {
-      itemId,
-      volunteerIndex,
-      name,
-      details: newDetails,
-    })));
-  }, [localBoard, pendingUpdates]);
+      setPendingUpdates(
+        new Map(
+          pendingUpdates.set(key, {
+            itemId,
+            volunteerIndex,
+            name,
+            details: newDetails,
+          })
+        )
+      );
+    },
+    [localBoard, pendingUpdates]
+  );
 
   if (isLoading) {
     return (
@@ -234,7 +252,7 @@ export default function BoardPage() {
             return { ...section, ...updates };
           }
           return section;
-        })
+        }),
       };
     });
 
@@ -259,8 +277,8 @@ export default function BoardPage() {
               return { ...item, ...updates };
             }
             return item;
-          })
-        }))
+          }),
+        })),
       };
     });
 
@@ -285,7 +303,7 @@ export default function BoardPage() {
       volunteers: [],
       sortOrder: 999,
       createdAt: new Date(),
-      updatedAt: null
+      updatedAt: null,
     };
 
     // Update local state immediately for instant feedback
@@ -297,11 +315,11 @@ export default function BoardPage() {
           if (section.id === sectionId) {
             return {
               ...section,
-              items: [...section.items, newItem]
+              items: [...section.items, newItem],
             };
           }
           return section;
-        })
+        }),
       };
     });
 
@@ -315,19 +333,44 @@ export default function BoardPage() {
     });
   };
 
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    setJustCopied(true);
+    setTimeout(() => setJustCopied(false), 2000);
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <div className="flex items-start justify-between">
           <BoardHeader
             title={localBoard.title}
             description={localBoard.description || ""}
           />
-          <Button
-            onClick={() => setEditMode(!editMode)}
-            variant={editMode ? "default" : "outline"}
-            className="gap-2"
-          >
+        <div className="flex items-start justify-between">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleShare}
+              variant="default"
+              className="gap-2"
+            >
+              {justCopied ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={() => setEditMode(!editMode)}
+              variant={editMode ? "default" : "outline"}
+              className="gap-2"
+            >
             {editMode ? (
               <>
                 <Eye className="h-4 w-4" />
@@ -339,7 +382,8 @@ export default function BoardPage() {
                 Edit Mode
               </>
             )}
-          </Button>
+            </Button>
+          </div>
         </div>
 
         {localBoard.sections.map((section) => {
@@ -382,7 +426,7 @@ export default function BoardPage() {
                   if (!prev) return prev;
                   return {
                     ...prev,
-                    sections: prev.sections.filter(s => s.id !== id)
+                    sections: prev.sections.filter((s) => s.id !== id),
                   };
                 });
                 // Send to server in background
@@ -397,8 +441,8 @@ export default function BoardPage() {
                     ...prev,
                     sections: prev.sections.map((section) => ({
                       ...section,
-                      items: section.items.filter(item => item.id !== id)
-                    }))
+                      items: section.items.filter((item) => item.id !== id),
+                    })),
                   };
                 });
                 // Send to server in background

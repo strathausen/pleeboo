@@ -1,5 +1,7 @@
 "use client";
 
+import { IconSelector } from "@/components/board/icon-selector";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,12 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { IconSelector } from "@/components/board/icon-selector";
-import { type LucideIcon, Edit3, Plus, Trash2, Check, X } from "lucide-react";
-import { PledgeItem, type PledgeItemData } from "./pledge-item";
+import { Check, Edit3, type LucideIcon, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { PledgeItem, type PledgeItemData } from "./pledge-item";
 
 interface PledgeSectionProps {
   sectionId?: number;
@@ -33,7 +33,10 @@ interface PledgeSectionProps {
   ) => void;
   isTask: boolean;
   editable?: boolean;
-  onSectionUpdate?: (sectionId: number, updates: { title?: string; description?: string; icon?: LucideIcon }) => void;
+  onSectionUpdate?: (
+    sectionId: number,
+    updates: { title?: string; description?: string; icon?: LucideIcon }
+  ) => void;
   onSectionDelete?: (sectionId: number) => void;
   onItemUpdate?: (itemId: number, updates: Partial<PledgeItemData>) => void;
   onItemDelete?: (itemId: number) => void;
@@ -81,10 +84,12 @@ export function PledgeSection({
       <CardHeader>
         {isEditingSection && editable ? (
           <div className="space-y-3">
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <IconSelector
                 currentIcon={Icon}
-                onIconSelect={(icon) => onSectionUpdate?.(sectionId!, { icon })}
+                onIconSelect={(icon) =>
+                  sectionId && onSectionUpdate?.(sectionId, { icon })
+                }
               />
               <Input
                 value={tempTitle}
@@ -96,11 +101,19 @@ export function PledgeSection({
                 <Button size="icon" variant="ghost" onClick={handleSaveSection}>
                   <Check className="h-4 w-4" />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={handleCancelSection}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={handleCancelSection}
+                >
                   <X className="h-4 w-4" />
                 </Button>
                 {onSectionDelete && sectionId && (
-                  <Button size="icon" variant="ghost" onClick={() => onSectionDelete(sectionId)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onSectionDelete(sectionId)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
@@ -115,14 +128,16 @@ export function PledgeSection({
           </div>
         ) : (
           <>
-            <CardTitle className="flex items-center gap-2 group">
+            <CardTitle className="group flex items-center gap-2">
               <Icon className="h-5 w-5 text-primary" />
-              {title}
+              <div className="-underline-offset-1 underline decoration-[8px] decoration-yellow-200" style={{textDecorationSkipInk: "none"}}>
+                {title}
+              </div>
               {editable && (
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
                   onClick={() => setIsEditingSection(true)}
                 >
                   <Edit3 className="h-3 w-3" />

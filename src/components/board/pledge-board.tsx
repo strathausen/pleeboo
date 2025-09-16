@@ -136,6 +136,9 @@ export function PledgeBoard({
 
   // Mutations
   const createBoard = api.board.create.useMutation();
+  const updateBoard = api.board.update.useMutation({
+    onSuccess: () => void refetch(),
+  });
   const updateVolunteer = api.board.updateVolunteer.useMutation();
   const updateSection = api.board.updateSection.useMutation({
     onSuccess: () => void refetch(),
@@ -425,6 +428,38 @@ export function PledgeBoard({
     }
   };
 
+  const handleSectionMoveUp = (sectionId: number) => {
+    setLocalBoard((prev) => {
+      if (!prev) return prev;
+      const index = prev.sections.findIndex((s) => s.id === sectionId);
+      if (index <= 0) return prev;
+
+      const newSections = [...prev.sections];
+      [newSections[index - 1], newSections[index]] = [newSections[index], newSections[index - 1]];
+
+      return {
+        ...prev,
+        sections: newSections,
+      };
+    });
+  };
+
+  const handleSectionMoveDown = (sectionId: number) => {
+    setLocalBoard((prev) => {
+      if (!prev) return prev;
+      const index = prev.sections.findIndex((s) => s.id === sectionId);
+      if (index < 0 || index >= prev.sections.length - 1) return prev;
+
+      const newSections = [...prev.sections];
+      [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
+
+      return {
+        ...prev,
+        sections: newSections,
+      };
+    });
+  };
+
   const handleSectionAdd = () => {
     const tempId = nextTempId;
     setNextTempId(nextTempId - 1);
@@ -565,10 +600,18 @@ export function PledgeBoard({
           title={localBoard.title}
           description={localBoard.description || ""}
           editable={canEdit && editMode}
-          onTitleChange={(title) => setLocalBoard({ ...localBoard, title })}
-          onDescriptionChange={(description) =>
-            setLocalBoard({ ...localBoard, description })
-          }
+          onTitleChange={(title) => {
+            setLocalBoard({ ...localBoard, title });
+            if (mode === "view" && boardId) {
+              updateBoard.mutate({ id: boardId, title });
+            }
+          }}
+          onDescriptionChange={(description) => {
+            setLocalBoard({ ...localBoard, description });
+            if (mode === "view" && boardId) {
+              updateBoard.mutate({ id: boardId, description });
+            }
+          }}
         />
 
         <div className="flex items-start justify-between">
@@ -615,7 +658,7 @@ export function PledgeBoard({
           </div>
         </div>
 
-        {localBoard.sections.map((section) => {
+        {localBoard.sections.map((section, sectionIndex) => {
           const sectionIcon =
             typeof section.icon === "string"
               ? getIconByName(section.icon)
@@ -661,6 +704,10 @@ export function PledgeBoard({
               onItemUpdate={handleItemUpdate}
               onItemDelete={handleItemDelete}
               onItemAdd={handleItemAdd}
+              onMoveUp={handleSectionMoveUp}
+              onMoveDown={handleSectionMoveDown}
+              isFirst={sectionIndex === 0}
+              isLast={sectionIndex === localBoard.sections.length - 1}
             />
           );
         })}

@@ -110,8 +110,13 @@ export function EditablePledgeItem({
             </div>
           </div>
           <div className="flex gap-1">
-            <Button size="icon" variant="ghost" onClick={handleSave}>
-              <Check className="h-4 w-4" />
+            <Button
+              size="icon"
+              variant="default"
+              onClick={handleSave}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Check className="h-5 w-5" />
             </Button>
             <Button size="icon" variant="ghost" onClick={handleCancel}>
               <X className="h-4 w-4" />

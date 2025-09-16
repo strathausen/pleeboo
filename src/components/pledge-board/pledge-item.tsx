@@ -8,7 +8,13 @@ import {
   Clock,
   Edit3,
   type LucideIcon,
+  Minus,
+  Plus,
+  ToggleLeft,
+  ToggleRight,
   Trash2,
+  Users,
+  Package,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -27,6 +33,7 @@ export interface PledgeItemData {
   volunteers: Volunteer[];
   icon: LucideIcon;
   category: string;
+  isTask?: boolean;
 }
 
 interface PledgeItemProps {
@@ -82,6 +89,7 @@ export function PledgeItem({
   const [tempTitle, setTempTitle] = useState(item.title);
   const [tempDescription, setTempDescription] = useState(item.description);
   const [tempNeeded, setTempNeeded] = useState(item.needed);
+  const [tempIsTask, setTempIsTask] = useState(item.isTask ?? isTask);
 
   const Icon = item.icon;
 
@@ -91,6 +99,7 @@ export function PledgeItem({
         title: tempTitle,
         description: tempDescription,
         needed: tempNeeded,
+        isTask: tempIsTask,
       });
     }
     setIsEditing(false);
@@ -100,6 +109,7 @@ export function PledgeItem({
     setTempTitle(item.title);
     setTempDescription(item.description);
     setTempNeeded(item.needed);
+    setTempIsTask(item.isTask ?? isTask);
     setIsEditing(false);
   };
 
@@ -131,22 +141,49 @@ export function PledgeItem({
                 placeholder="Item description"
                 className="text-sm"
               />
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm">Needed:</span>
-                <Input
-                  type="number"
-                  min="1"
-                  value={tempNeeded}
-                  onChange={(e) =>
-                    setTempNeeded(Number.parseInt(e.target.value) || 1)
-                  }
-                  className="w-20"
-                />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">Needed:</span>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={tempNeeded}
+                    onChange={(e) =>
+                      setTempNeeded(Number.parseInt(e.target.value) || 1)
+                    }
+                    className="w-20"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setTempIsTask(!tempIsTask)}
+                  >
+                    {tempIsTask ? (
+                      <><Users className="h-4 w-4" /> Task</>
+                    ) : (
+                      <><Package className="h-4 w-4" /> Item</>
+                    )}
+                    {tempIsTask ? (
+                      <ToggleRight className="h-4 w-4" />
+                    ) : (
+                      <ToggleLeft className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="flex gap-1">
-              <Button size="icon" variant="ghost" onClick={handleSave}>
-                <Check className="h-4 w-4" />
+              <Button
+                size="icon"
+                variant="default"
+                onClick={handleSave}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Check className="h-5 w-5" />
               </Button>
               <Button size="icon" variant="ghost" onClick={handleCancel}>
                 <X className="h-4 w-4" />
@@ -188,7 +225,7 @@ export function PledgeItem({
               )}
             </h3>
           </div>
-          <p className="text-muted-foreground text-sm">{item.description}</p>
+          <p className="text-muted-foreground text-sm whitespace-pre-wrap">{item.description}</p>
         </div>
 
         {/* Right column - All volunteer slots */}
@@ -209,12 +246,42 @@ export function PledgeItem({
       </div>
 
       {/* Progress status at the bottom */}
-      <div className="flex items-center gap-2 border-t pt-3">
-        {getStatusBadge(item.needed, item.volunteers.length)}
-        <span className="text-muted-foreground text-sm">
-          {item.volunteers.length} of {item.needed}{" "}
-          {isTask ? "volunteers" : "contributions"}
-        </span>
+      <div className="flex items-center justify-between border-t pt-3">
+        <div className="flex items-center gap-2">
+          {getStatusBadge(item.needed, item.volunteers.length)}
+          <span className="text-muted-foreground text-sm">
+            {item.volunteers.length} of {item.needed}{" "}
+            {(item.isTask ?? isTask) ? "volunteers" : "contributions"}
+          </span>
+        </div>
+        {editable && onItemUpdate && (
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={() => {
+                if (item.needed > 1) {
+                  onItemUpdate(item.id, { needed: item.needed - 1 });
+                }
+              }}
+              disabled={item.needed <= 1}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            <span className="px-2 text-sm font-medium">{item.needed}</span>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={() => {
+                onItemUpdate(item.id, { needed: item.needed + 1 });
+              }}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

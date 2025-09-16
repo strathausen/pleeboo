@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Check, Edit3, type LucideIcon, Plus, Trash2, X } from "lucide-react";
+import { ArrowUp, ArrowDown, Check, Edit3, type LucideIcon, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { PledgeItem, type PledgeItemData } from "./pledge-item";
 
@@ -41,6 +41,10 @@ interface PledgeSectionProps {
   onItemUpdate?: (itemId: number, updates: Partial<PledgeItemData>) => void;
   onItemDelete?: (itemId: number) => void;
   onItemAdd?: (sectionId: number) => void;
+  onMoveUp?: (sectionId: number) => void;
+  onMoveDown?: (sectionId: number) => void;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 
 export function PledgeSection({
@@ -59,6 +63,10 @@ export function PledgeSection({
   onItemUpdate,
   onItemDelete,
   onItemAdd,
+  onMoveUp,
+  onMoveDown,
+  isFirst = false,
+  isLast = false,
 }: PledgeSectionProps) {
   const [isEditingSection, setIsEditingSection] = useState(false);
   const [tempTitle, setTempTitle] = useState(title);
@@ -80,7 +88,29 @@ export function PledgeSection({
     setIsEditingSection(false);
   };
   return (
-    <Card>
+    <Card className={`relative ${editable && !isEditingSection ? 'mt-3' : ''}`}>
+      {editable && !isEditingSection && onMoveUp && onMoveDown && sectionId && (
+        <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-8 w-8 shadow-sm border bg-background hover:bg-accent"
+            onClick={() => onMoveUp(sectionId)}
+            disabled={isFirst}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-8 w-8 shadow-sm border bg-background hover:bg-accent"
+            onClick={() => onMoveDown(sectionId)}
+            disabled={isLast}
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
       <CardHeader>
         {isEditingSection && editable ? (
           <div className="space-y-3">
@@ -98,8 +128,13 @@ export function PledgeSection({
                 className="font-semibold"
               />
               <div className="flex gap-1">
-                <Button size="icon" variant="ghost" onClick={handleSaveSection}>
-                  <Check className="h-4 w-4" />
+                <Button
+                  size="icon"
+                  variant="default"
+                  onClick={handleSaveSection}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Check className="h-5 w-5" />
                 </Button>
                 <Button
                   size="icon"
@@ -147,7 +182,7 @@ export function PledgeSection({
                 </Button>
               )}
             </CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <CardDescription className="whitespace-pre-wrap">{description}</CardDescription>
           </>
         )}
       </CardHeader>

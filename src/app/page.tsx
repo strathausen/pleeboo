@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Header } from "@/components/ui/header";
 import { Logo } from "@/components/ui/logo";
+import { SectionHeading } from "@/components/ui/section-heading";
 import {
   ArrowRight,
   Bot,
@@ -231,7 +232,7 @@ export default function LandingPage() {
       <section className="bg-muted/30 px-4 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 font-bold text-3xl">See How It Works</h2>
+            <SectionHeading>See How It Works</SectionHeading>
             <p className="text-lg text-muted-foreground">
               Three simple steps to organized success
             </p>
@@ -341,7 +342,7 @@ export default function LandingPage() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 font-bold text-3xl">Everything You Need</h2>
+            <SectionHeading>Everything You Need</SectionHeading>
             <p className="text-lg text-muted-foreground">
               Powerful features that make organizing effortless
             </p>
@@ -372,7 +373,7 @@ export default function LandingPage() {
       <section className="bg-muted/30 px-4 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 font-bold text-3xl">Perfect For Any Event</h2>
+            <SectionHeading>Perfect For Any Event</SectionHeading>
             <p className="text-lg text-muted-foreground">
               From small gatherings to large community events
             </p>
@@ -399,7 +400,9 @@ export default function LandingPage() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-4xl text-center">
           <div className="rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 p-12 text-white">
-            <h2 className="mb-4 font-bold text-3xl">Start Organizing Today</h2>
+            <SectionHeading variant="white" className="text-white">
+              Start Organizing Today
+            </SectionHeading>
             <p className="mb-8 text-white/90 text-xl">
               Join thousands of communities using Pleeboo to coordinate better.
               No credit card required. Ever.

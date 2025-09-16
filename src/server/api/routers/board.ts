@@ -107,7 +107,24 @@ export const boardRouter = createTRPCRouter({
         }
       }
 
-      return { boardId };
+      // Generate access tokens for the board
+      const adminToken = nanoid(32);
+      const viewToken = nanoid(32);
+
+      await ctx.db.insert(boardAccessTokens).values([
+        {
+          id: adminToken,
+          boardId,
+          type: "admin",
+        },
+        {
+          id: viewToken,
+          boardId,
+          type: "view",
+        },
+      ]);
+
+      return { boardId, adminToken };
     }),
 
   get: publicProcedure
@@ -297,47 +314,27 @@ export const boardRouter = createTRPCRouter({
       return newItem;
     }),
 
-  generateTokens: publicProcedure
+  getTokens: publicProcedure
     .input(z.object({ boardId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      // Check if board exists
-      const board = await ctx.db.query.boards.findFirst({
-        where: eq(boards.id, input.boardId),
+    .query(async ({ ctx, input }) => {
+      // Get existing tokens for this board
+      const tokens = await ctx.db.query.boardAccessTokens.findMany({
+        where: eq(boardAccessTokens.boardId, input.boardId),
       });
 
-      if (!board) {
+      const adminToken = tokens.find((t) => t.type === "admin");
+      const viewToken = tokens.find((t) => t.type === "view");
+
+      if (!adminToken || !viewToken) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Board not found",
+          message: "Tokens not found for this board",
         });
       }
 
-      // Generate tokens
-      const adminToken = nanoid(32);
-      const viewToken = nanoid(32);
-
-      // Delete existing tokens for this board
-      await ctx.db
-        .delete(boardAccessTokens)
-        .where(eq(boardAccessTokens.boardId, input.boardId));
-
-      // Create new tokens
-      await ctx.db.insert(boardAccessTokens).values([
-        {
-          id: adminToken,
-          boardId: input.boardId,
-          type: "admin",
-        },
-        {
-          id: viewToken,
-          boardId: input.boardId,
-          type: "view",
-        },
-      ]);
-
       return {
-        adminToken,
-        viewToken,
+        adminToken: adminToken.id,
+        viewToken: viewToken.id,
       };
     }),
 

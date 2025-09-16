@@ -131,7 +131,7 @@ export function PledgeSection({
             <CardTitle className="group flex items-center gap-2">
               <Icon className="h-5 w-5 text-primary" />
               <div
-                className="-underline-offset-1 underline decoration-[8px] decoration-yellow-200"
+                className="-underline-offset-1 underline decoration-[8px] decoration-yellow-200 dark:decoration-yellow-600"
                 style={{ textDecorationSkipInk: "none" }}
               >
                 {title}

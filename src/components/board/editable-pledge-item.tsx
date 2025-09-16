@@ -1,6 +1,5 @@
 "use client";
 
-import type { BoardItemData } from "@/app/board/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -16,6 +15,17 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { IconSelector } from "./icon-selector";
+
+// Define BoardItemData type locally since the page was refactored
+interface BoardItemData {
+  id: number;
+  title: string;
+  description: string;
+  needed: number;
+  volunteers: { name: string; details: string }[];
+  icon: LucideIcon;
+  category: "tasks" | "items";
+}
 
 interface EditablePledgeItemProps {
   item: BoardItemData;

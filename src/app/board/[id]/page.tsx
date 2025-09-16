@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
-import BoardView from "./board-view";
+import BoardClient from "./board-client";
 
 export default function BoardPage() {
   return (
@@ -11,7 +11,7 @@ export default function BoardPage() {
         </div>
       }
     >
-      <BoardView />
+      <BoardClient />
     </Suspense>
   );
 }

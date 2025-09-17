@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MarkdownText } from "@/components/ui/markdown-text";
-import { ArrowUp, ArrowDown, Check, Edit3, type LucideIcon, Plus, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Edit3, type LucideIcon, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { PledgeItem, type PledgeItemData } from "./pledge-item";
 
@@ -91,11 +91,11 @@ export function PledgeSection({
   return (
     <Card className={`relative ${editable && !isEditingSection ? 'mt-3' : ''}`}>
       {editable && !isEditingSection && onMoveUp && onMoveDown && sectionId && (
-        <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+        <div className="-top-5 -translate-x-1/2 absolute left-1/2 z-10 flex gap-1">
           <Button
             size="icon"
             variant="secondary"
-            className="h-8 w-8 shadow-sm border bg-background hover:bg-accent"
+            className="h-8 w-8 border bg-background shadow-sm hover:bg-accent"
             onClick={() => onMoveUp(sectionId)}
             disabled={isFirst}
           >
@@ -104,7 +104,7 @@ export function PledgeSection({
           <Button
             size="icon"
             variant="secondary"
-            className="h-8 w-8 shadow-sm border bg-background hover:bg-accent"
+            className="h-8 w-8 border bg-background shadow-sm hover:bg-accent"
             onClick={() => onMoveDown(sectionId)}
             disabled={isLast}
           >
@@ -133,7 +133,7 @@ export function PledgeSection({
                   size="icon"
                   variant="default"
                   onClick={handleSaveSection}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-green-600 text-white hover:bg-green-700"
                 >
                   <Check className="h-5 w-5" />
                 </Button>

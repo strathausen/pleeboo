@@ -10,12 +10,12 @@ import {
   Edit3,
   type LucideIcon,
   Minus,
+  Package,
   Plus,
   ToggleLeft,
   ToggleRight,
   Trash2,
   Users,
-  Package,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -86,7 +86,8 @@ export function PledgeItem({
   onItemUpdate,
   onItemDelete,
 }: PledgeItemProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  // Start in edit mode if it's a new item (negative ID)
+  const [isEditing, setIsEditing] = useState(item.id < 0);
   const [tempTitle, setTempTitle] = useState(item.title);
   const [tempDescription, setTempDescription] = useState(item.description);
   const [tempNeeded, setTempNeeded] = useState(item.needed);
@@ -95,6 +96,11 @@ export function PledgeItem({
   const Icon = item.icon;
 
   const handleSave = () => {
+    // Require at least a title to save
+    if (!tempTitle.trim()) {
+      return;
+    }
+
     if (onItemUpdate) {
       onItemUpdate(item.id, {
         title: tempTitle,
@@ -107,11 +113,19 @@ export function PledgeItem({
   };
 
   const handleCancel = () => {
-    setTempTitle(item.title);
-    setTempDescription(item.description);
-    setTempNeeded(item.needed);
-    setTempIsTask(item.isTask ?? isTask);
-    setIsEditing(false);
+    // If this is a new unsaved item, delete it
+    if (item.id < 0) {
+      if (onItemDelete) {
+        onItemDelete(item.id);
+      }
+    } else {
+      // Otherwise just reset the values
+      setTempTitle(item.title);
+      setTempDescription(item.description);
+      setTempNeeded(item.needed);
+      setTempIsTask(item.isTask ?? isTask);
+      setIsEditing(false);
+    }
   };
 
   // Create array with empty slots for remaining needed volunteers
@@ -133,13 +147,26 @@ export function PledgeItem({
               <Input
                 value={tempTitle}
                 onChange={(e) => setTempTitle(e.target.value)}
-                placeholder="Item title"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && tempTitle.trim()) {
+                    e.preventDefault();
+                    handleSave();
+                  }
+                }}
+                placeholder="Item title (required)"
                 className="font-medium"
+                autoFocus={item.id < 0}
               />
               <Input
                 value={tempDescription}
                 onChange={(e) => setTempDescription(e.target.value)}
-                placeholder="Item description (supports markdown)"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && tempTitle.trim()) {
+                    e.preventDefault();
+                    handleSave();
+                  }
+                }}
+                placeholder="Item description (optional, supports markdown)"
                 className="text-sm"
               />
               <div className="flex items-center gap-4">
@@ -152,6 +179,12 @@ export function PledgeItem({
                     onChange={(e) =>
                       setTempNeeded(Number.parseInt(e.target.value) || 1)
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && tempTitle.trim()) {
+                        e.preventDefault();
+                        handleSave();
+                      }
+                    }}
                     className="w-20"
                   />
                 </div>
@@ -164,9 +197,13 @@ export function PledgeItem({
                     onClick={() => setTempIsTask(!tempIsTask)}
                   >
                     {tempIsTask ? (
-                      <><Users className="h-4 w-4" /> Task</>
+                      <>
+                        <Users className="h-4 w-4" /> Task
+                      </>
                     ) : (
-                      <><Package className="h-4 w-4" /> Item</>
+                      <>
+                        <Package className="h-4 w-4" /> Item
+                      </>
                     )}
                     {tempIsTask ? (
                       <ToggleRight className="h-4 w-4" />
@@ -182,7 +219,9 @@ export function PledgeItem({
                 size="icon"
                 variant="default"
                 onClick={handleSave}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                disabled={!tempTitle.trim()}
+                title={!tempTitle.trim() ? "Title is required" : "Save"}
               >
                 <Check className="h-5 w-5" />
               </Button>
@@ -272,7 +311,7 @@ export function PledgeItem({
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <span className="px-2 text-sm font-medium">{item.needed}</span>
+            <span className="px-2 font-medium text-sm">{item.needed}</span>
             <Button
               size="icon"
               variant="ghost"

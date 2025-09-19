@@ -155,24 +155,48 @@ export function PledgeBoard({
   const reorderSections = api.board.reorderSections.useMutation({
     onSuccess: () => void refetch(),
   });
+  const addSection = api.board.addSection.useMutation({
+    onSuccess: (newSection) => {
+      if (localBoard && newSection) {
+        // Replace the temporary section with the server-saved section
+        setLocalBoard((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sections: prev.sections.map((section) =>
+              // Replace temp section with the real one from server
+              section.id < 0
+                ? { ...newSection, items: [], icon: getIconName(newSection.icon as any) }
+                : section
+            ),
+          };
+        });
+      }
+      void refetch();
+    },
+  });
+
   const addItem = api.board.addItem.useMutation({
     onSuccess: (newItem) => {
-      if (localBoard) {
-        setLocalBoard({
-          ...localBoard,
-          sections: localBoard.sections.map((section) => {
-            if (section.items.some((item) => item.id === newItem?.id)) {
-              return {
-                ...section,
-                items: section.items.map((item) =>
-                  item.id < 0 && item.sectionId === newItem?.sectionId
-                    ? { ...newItem!, volunteers: [] }
-                    : item,
-                ),
-              };
-            }
-            return section;
-          }),
+      if (localBoard && newItem) {
+        // Replace the temporary item with the server-saved item
+        setLocalBoard((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sections: prev.sections.map((section) => {
+              if (section.id === newItem.sectionId) {
+                return {
+                  ...section,
+                  items: section.items.map((item) =>
+                    // Replace temp item with the real one from server
+                    item.id < 0 ? { ...newItem, volunteers: [] } : item
+                  ),
+                };
+              }
+              return section;
+            }),
+          };
         });
       }
       void refetch();
@@ -336,6 +360,55 @@ export function PledgeBoard({
   );
 
   const handleSectionUpdate = (sectionId: number, updates: any) => {
+    // For new sections in creation mode, just update locally
+    if (mode === "create") {
+      setLocalBoard((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          sections: prev.sections.map((section) => {
+            if (section.id === sectionId) {
+              return { ...section, ...updates };
+            }
+            return section;
+          }),
+        };
+      });
+      return;
+    }
+
+    // In view mode, handle new sections (negative IDs)
+    if (sectionId < 0 && mode === "view") {
+      const section = localBoard?.sections.find(s => s.id === sectionId);
+
+      if (section && boardId) {
+        // Save the new section to the database
+        addSection.mutate({
+          boardId,
+          title: updates.title || section.title,
+          description: updates.description || section.description,
+          icon: typeof (updates.icon || section.icon) === "string"
+            ? (updates.icon || section.icon) as string
+            : getIconName(updates.icon || section.icon),
+        });
+        // Update local state with the new values
+        setLocalBoard((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sections: prev.sections.map((s) => {
+              if (s.id === sectionId) {
+                return { ...s, ...updates };
+              }
+              return s;
+            }),
+          };
+        });
+      }
+      return;
+    }
+
+    // Update existing section
     setLocalBoard((prev) => {
       if (!prev) return prev;
       return {
@@ -360,6 +433,45 @@ export function PledgeBoard({
   };
 
   const handleItemUpdate = (itemId: number, updates: any) => {
+    // If this is a new item (negative ID) being saved for the first time
+    if (itemId < 0 && mode === "view") {
+      const section = localBoard?.sections.find(s =>
+        s.items.some(item => item.id === itemId)
+      );
+      const item = section?.items.find(i => i.id === itemId);
+
+      if (section && item && section.id > 0) {
+        // Save the new item to the database
+        addItem.mutate({
+          sectionId: section.id,
+          title: updates.title || item.title,
+          description: updates.description || item.description,
+          icon: typeof (updates.icon || item.icon) === "string"
+            ? (updates.icon || item.icon) as string
+            : getIconName(updates.icon || item.icon),
+          needed: updates.needed || item.needed,
+        });
+        // Update local state with the new values
+        setLocalBoard((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sections: prev.sections.map((s) => ({
+              ...s,
+              items: s.items.map((i) => {
+                if (i.id === itemId) {
+                  return { ...i, ...updates };
+                }
+                return i;
+              }),
+            })),
+          };
+        });
+        return;
+      }
+    }
+
+    // Update local state
     setLocalBoard((prev) => {
       if (!prev) return prev;
       return {
@@ -376,7 +488,7 @@ export function PledgeBoard({
       };
     });
 
-    // Send to server in view mode
+    // Send to server in view mode (for existing items)
     if (mode === "view" && itemId > 0) {
       updateItem.mutate({
         id: itemId,
@@ -393,14 +505,15 @@ export function PledgeBoard({
     const newItem = {
       id: tempId,
       sectionId,
-      title: "New Item",
-      description: "Add a description",
+      title: "",
+      description: "",
       icon: "Star" as string,
       needed: 1,
       volunteers: [],
       sortOrder: 999,
       createdAt: new Date(),
       updatedAt: null,
+      isNew: true,  // Mark as new so it stays in edit mode
     };
 
     setLocalBoard((prev) => {
@@ -419,16 +532,7 @@ export function PledgeBoard({
       };
     });
 
-    // Send to server in view mode
-    if (mode === "view" && sectionId > 0) {
-      addItem.mutate({
-        sectionId,
-        title: "New Item",
-        description: "Add a description",
-        icon: "Star",
-        needed: 1,
-      });
-    }
+    // Don't save to server immediately - wait for user to save
   };
 
   const handleSectionMoveUp = (sectionId: number) => {
@@ -438,7 +542,10 @@ export function PledgeBoard({
       if (index <= 0) return prev;
 
       const newSections = [...prev.sections];
-      [newSections[index - 1], newSections[index]] = [newSections[index], newSections[index - 1]];
+      [newSections[index - 1], newSections[index]] = [
+        newSections[index],
+        newSections[index - 1],
+      ];
 
       // Update server if in view mode
       if (mode === "view" && boardId) {
@@ -460,7 +567,10 @@ export function PledgeBoard({
       if (index < 0 || index >= prev.sections.length - 1) return prev;
 
       const newSections = [...prev.sections];
-      [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
+      [newSections[index], newSections[index + 1]] = [
+        newSections[index + 1],
+        newSections[index],
+      ];
 
       // Update server if in view mode
       if (mode === "view" && boardId) {
@@ -481,8 +591,8 @@ export function PledgeBoard({
 
     const newSection = {
       id: tempId,
-      title: "New Section",
-      description: "Add a description for this section",
+      title: "",
+      description: "",
       icon: "Package",
       items: [],
     };
@@ -727,7 +837,7 @@ export function PledgeBoard({
           );
         })}
 
-        {editMode && canEdit && (
+        {(mode === "create" || (mode === "view" && editMode && canEdit)) && (
           <div className="flex justify-center">
             <Button
               onClick={handleSectionAdd}

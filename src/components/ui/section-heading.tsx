@@ -6,7 +6,11 @@ interface SectionHeadingProps {
   variant?: "default" | "white";
 }
 
-export function SectionHeading({ children, className, variant = "default" }: SectionHeadingProps) {
+export function SectionHeading({
+  children,
+  className,
+  variant = "default",
+}: SectionHeadingProps) {
   return (
     <h2
       className={cn(

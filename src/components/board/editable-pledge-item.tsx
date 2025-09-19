@@ -114,7 +114,7 @@ export function EditablePledgeItem({
               size="icon"
               variant="default"
               onClick={handleSave}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 text-white hover:bg-green-700"
             >
               <Check className="h-5 w-5" />
             </Button>

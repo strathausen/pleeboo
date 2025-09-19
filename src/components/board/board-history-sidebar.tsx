@@ -80,7 +80,7 @@ export function BoardHistorySidebar() {
               // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
               <div
                 key={`${board.id}-${board.token}`}
-                className="group cursor-pointer rounded-lg border p-3 transition-colors hover:bg-accent"
+                className="group cursor-pointer rounded-lg border p-3 transition-colors hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/30"
                 onClick={() => navigateToBoard(board.id, board.token)}
               >
                 <div className="space-y-1">

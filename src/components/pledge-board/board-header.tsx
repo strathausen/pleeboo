@@ -7,7 +7,7 @@ import { MarkdownText } from "@/components/ui/markdown-text";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Check, Edit3, Info } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface BoardHeaderProps {
   title: string;
@@ -76,13 +76,13 @@ export function BoardHeader({
                     }
                   }}
                   placeholder="Board title"
-                  className="font-bold text-4xl text-center border-0 bg-transparent p-0 pr-12 focus-visible:ring-0 focus-visible:ring-offset-0 text-card-foreground"
+                  className="border-0 bg-transparent p-0 pr-12 text-center font-bold text-4xl text-card-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <Button
                   size="icon"
                   variant="default"
                   onClick={handleSave}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white"
+                  className="-translate-y-1/2 absolute top-1/2 right-0 bg-green-600 text-white hover:bg-green-700"
                 >
                   <Check className="h-5 w-5" />
                 </Button>
@@ -99,11 +99,14 @@ export function BoardHeader({
                   }
                 }}
                 placeholder="Board description (supports markdown)"
-                className="min-h-[120px] text-lg text-muted-foreground resize-none border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="min-h-[120px] resize-none border-0 bg-transparent p-0 text-lg text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
               />
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs">
                 <Info className="h-3 w-3" />
-                <span>Supports **bold**, *italic*, [links](url), and lists • Cmd/Ctrl+Enter to save</span>
+                <span>
+                  Supports **bold**, *italic*, [links](url), and lists •
+                  Cmd/Ctrl+Enter to save
+                </span>
               </div>
             </div>
           </div>
@@ -118,11 +121,11 @@ export function BoardHeader({
               >
                 {title}
                 {editable && (
-                  <Edit3 className="absolute -right-8 top-1/2 -translate-y-1/2 h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <Edit3 className="-right-8 -translate-y-1/2 absolute top-1/2 h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
                 )}
               </h1>
             </div>
-            <div className="mx-auto max-w-3xl text-lg text-muted-foreground text-left">
+            <div className="mx-auto max-w-3xl text-left text-lg text-muted-foreground">
               <MarkdownText text={description} />
             </div>
           </div>

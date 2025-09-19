@@ -11,7 +11,16 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MarkdownText } from "@/components/ui/markdown-text";
-import { ArrowDown, ArrowUp, Check, Edit3, type LucideIcon, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Edit3,
+  type LucideIcon,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { PledgeItem, type PledgeItemData } from "./pledge-item";
 
@@ -69,11 +78,19 @@ export function PledgeSection({
   isFirst = false,
   isLast = false,
 }: PledgeSectionProps) {
-  const [isEditingSection, setIsEditingSection] = useState(false);
+  // Start in edit mode if it's a new section (negative ID)
+  const [isEditingSection, setIsEditingSection] = useState(
+    sectionId ? sectionId < 0 : false,
+  );
   const [tempTitle, setTempTitle] = useState(title);
   const [tempDescription, setTempDescription] = useState(description);
 
   const handleSaveSection = () => {
+    // Require at least a title to save
+    if (!tempTitle.trim()) {
+      return;
+    }
+
     if (onSectionUpdate && sectionId) {
       onSectionUpdate(sectionId, {
         title: tempTitle,
@@ -84,18 +101,26 @@ export function PledgeSection({
   };
 
   const handleCancelSection = () => {
-    setTempTitle(title);
-    setTempDescription(description);
-    setIsEditingSection(false);
+    // If this is a new unsaved section, delete it
+    if (sectionId && sectionId < 0) {
+      if (onSectionDelete) {
+        onSectionDelete(sectionId);
+      }
+    } else {
+      // Otherwise just reset the values
+      setTempTitle(title);
+      setTempDescription(description);
+      setIsEditingSection(false);
+    }
   };
   return (
-    <Card className={`relative ${editable && !isEditingSection ? 'mt-3' : ''}`}>
+    <Card className={`relative ${editable && !isEditingSection ? "mt-3" : ""}`}>
       {editable && !isEditingSection && onMoveUp && onMoveDown && sectionId && (
         <div className="-top-5 -translate-x-1/2 absolute left-1/2 z-10 flex gap-1">
           <Button
             size="icon"
             variant="secondary"
-            className="h-8 w-8 border bg-background shadow-sm hover:bg-accent"
+            className="h-8 w-8 border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
             onClick={() => onMoveUp(sectionId)}
             disabled={isFirst}
           >
@@ -104,7 +129,7 @@ export function PledgeSection({
           <Button
             size="icon"
             variant="secondary"
-            className="h-8 w-8 border bg-background shadow-sm hover:bg-accent"
+            className="h-8 w-8 border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
             onClick={() => onMoveDown(sectionId)}
             disabled={isLast}
           >
@@ -125,15 +150,24 @@ export function PledgeSection({
               <Input
                 value={tempTitle}
                 onChange={(e) => setTempTitle(e.target.value)}
-                placeholder="Section title"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && tempTitle.trim()) {
+                    e.preventDefault();
+                    handleSaveSection();
+                  }
+                }}
+                placeholder="Section title (required)"
                 className="font-semibold"
+                autoFocus={sectionId ? sectionId < 0 : false}
               />
               <div className="flex gap-1">
                 <Button
                   size="icon"
                   variant="default"
                   onClick={handleSaveSection}
-                  className="bg-green-600 text-white hover:bg-green-700"
+                  className="bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                  disabled={!tempTitle.trim()}
+                  title={!tempTitle.trim() ? "Title is required" : "Save"}
                 >
                   <Check className="h-5 w-5" />
                 </Button>
@@ -158,7 +192,13 @@ export function PledgeSection({
             <Input
               value={tempDescription}
               onChange={(e) => setTempDescription(e.target.value)}
-              placeholder="Section description (supports markdown)"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && tempTitle.trim()) {
+                  e.preventDefault();
+                  handleSaveSection();
+                }
+              }}
+              placeholder="Section description (optional, supports markdown)"
               className="text-sm"
             />
           </div>
@@ -203,7 +243,7 @@ export function PledgeSection({
             onItemDelete={onItemDelete}
           />
         ))}
-        {editable && onItemAdd && sectionId && (
+        {editable && onItemAdd && sectionId && sectionId > 0 && (
           <Button
             onClick={() => onItemAdd(sectionId)}
             variant="outline"

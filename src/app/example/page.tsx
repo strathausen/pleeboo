@@ -94,7 +94,7 @@ export default function PledgeBoard() {
   const [items, setItems] = useState(initialItems);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPledge, setSelectedPledge] = useState<PledgeItemData | null>(
-    null
+    null,
   );
   const [formData, setFormData] = useState({ name: "", details: "" });
 
@@ -106,7 +106,7 @@ export default function PledgeBoard() {
   const handleVolunteerNameChange = (
     itemId: number,
     volunteerIndex: number,
-    newName: string
+    newName: string,
   ) => {
     // Update tasks
     setTasks(
@@ -126,7 +126,7 @@ export default function PledgeBoard() {
           };
           // Filter out empty volunteers at the end
           const filteredVolunteers = newVolunteers.filter(
-            (v, i) => v.name.trim() !== "" || i < task.needed
+            (v, i) => v.name.trim() !== "" || i < task.needed,
           );
           return {
             ...task,
@@ -134,7 +134,7 @@ export default function PledgeBoard() {
           };
         }
         return task;
-      })
+      }),
     );
 
     // Update items
@@ -155,7 +155,7 @@ export default function PledgeBoard() {
           };
           // Filter out empty volunteers at the end
           const filteredVolunteers = newVolunteers.filter(
-            (v, i) => v.name.trim() !== "" || i < item.needed
+            (v, i) => v.name.trim() !== "" || i < item.needed,
           );
           return {
             ...item,
@@ -163,14 +163,14 @@ export default function PledgeBoard() {
           };
         }
         return item;
-      })
+      }),
     );
   };
 
   const handleVolunteerDetailsChange = (
     itemId: number,
     volunteerIndex: number,
-    newDetails: string
+    newDetails: string,
   ) => {
     // Update tasks
     setTasks(
@@ -191,7 +191,7 @@ export default function PledgeBoard() {
           return { ...task, volunteers: newVolunteers.slice(0, task.needed) };
         }
         return task;
-      })
+      }),
     );
 
     // Update items
@@ -213,7 +213,7 @@ export default function PledgeBoard() {
           return { ...item, volunteers: newVolunteers.slice(0, item.needed) };
         }
         return item;
-      })
+      }),
     );
   };
 
@@ -231,16 +231,16 @@ export default function PledgeBoard() {
         tasks.map((task) =>
           task.id === selectedPledge.id
             ? { ...task, volunteers: [...task.volunteers, newVolunteer] }
-            : task
-        )
+            : task,
+        ),
       );
     } else {
       setItems(
         items.map((item) =>
           item.id === selectedPledge.id
             ? { ...item, volunteers: [...item.volunteers, newVolunteer] }
-            : item
-        )
+            : item,
+        ),
       );
     }
 

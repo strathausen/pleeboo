@@ -284,6 +284,38 @@ export const boardRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  addSection: publicProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        title: z.string().min(1).max(256),
+        description: z.string().optional(),
+        icon: z.string().max(50),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the max sort order for this board
+      const maxSortSection = await ctx.db.query.boardSections.findFirst({
+        where: eq(boardSections.boardId, input.boardId),
+        orderBy: (sections, { desc }) => [desc(sections.sortOrder)],
+      });
+
+      const sortOrder = (maxSortSection?.sortOrder || 0) + 1;
+
+      const [newSection] = await ctx.db
+        .insert(boardSections)
+        .values({
+          boardId: input.boardId,
+          title: input.title,
+          description: input.description,
+          icon: input.icon,
+          sortOrder,
+        })
+        .returning();
+
+      return newSection;
+    }),
+
   addItem: publicProcedure
     .input(
       z.object({

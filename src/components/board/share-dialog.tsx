@@ -1,6 +1,8 @@
 "use client";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { api } from "@/trpc/react";
 import { Check, Copy, Info, Loader2, Shield, Users } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -34,7 +34,7 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
     { boardId },
     {
       enabled: open && !!boardId,
-    }
+    },
   );
 
   // Update URLs when tokens are loaded
@@ -83,14 +83,14 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="border-yellow-500/20 bg-yellow-50/50 dark:bg-yellow-950/20">
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="space-y-3 p-4">
                   <div className="flex items-start gap-3">
                     <div className="rounded-lg bg-yellow-500/10 p-2">
                       <Shield className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
                     </div>
                     <div className="flex-1 space-y-1">
                       <h3 className="font-semibold text-base">Admin Access</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         For co-organizers who need to edit
                       </p>
                     </div>
@@ -99,7 +99,7 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
                     <Input
                       value={adminUrl}
                       readOnly
-                      className="font-mono text-xs bg-background"
+                      className="bg-background font-mono text-xs"
                       onClick={(e) => e.currentTarget.select()}
                     />
                     <Button
@@ -119,14 +119,16 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
               </Card>
 
               <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="space-y-3 p-4">
                   <div className="flex items-start gap-3">
                     <div className="rounded-lg bg-primary/10 p-2">
                       <Users className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1 space-y-1">
-                      <h3 className="font-semibold text-base">Volunteer Access</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-semibold text-base">
+                        Volunteer Access
+                      </h3>
+                      <p className="text-muted-foreground text-sm">
                         For people signing up to help
                       </p>
                     </div>
@@ -135,7 +137,7 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
                     <Input
                       value={viewUrl}
                       readOnly
-                      className="font-mono text-xs bg-background"
+                      className="bg-background font-mono text-xs"
                       onClick={(e) => e.currentTarget.select()}
                     />
                     <Button
@@ -158,8 +160,9 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
             <Alert className="border-muted-foreground/20 bg-muted/50">
               <Info className="h-4 w-4" />
               <AlertDescription>
-                <strong>Security Note:</strong> These links provide permanent access to your board.
-                Only share them with people you trust. Admin links allow full editing capabilities.
+                <strong>Security Note:</strong> These links provide permanent
+                access to your board. Only share them with people you trust.
+                Admin links allow full editing capabilities.
               </AlertDescription>
             </Alert>
 

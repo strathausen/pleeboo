@@ -1,6 +1,5 @@
 "use client";
 
-import { EditablePledgeItem } from "@/components/board/editable-pledge-item";
 import { IconPicker } from "@/components/board/icon-picker";
 import { IconSelector } from "@/components/board/icon-selector";
 import { BoardHeader } from "@/components/pledge-board/board-header";
@@ -350,24 +349,6 @@ export default function ScrapbookPage() {
                 onVolunteerDetailsChange={(id, index, details) =>
                   console.log("Details change:", id, index, details)
                 }
-                isTask={true}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-muted-foreground text-sm">
-                Editable Pledge Item
-              </p>
-              <EditablePledgeItem
-                item={mockEditableItem}
-                onVolunteerNameChange={(index, name) =>
-                  console.log("Name change:", index, name)
-                }
-                onVolunteerDetailsChange={(index, details) =>
-                  console.log("Details change:", index, details)
-                }
-                onUpdate={(updates) => console.log("Update:", updates)}
-                onDelete={() => console.log("Delete")}
                 isTask={true}
               />
             </div>

@@ -8,8 +8,14 @@ export default function BoardClient() {
   const searchParams = useSearchParams();
   const boardId = params.id as string;
   const token = searchParams.get("token");
+  const isNew = searchParams.get("new") === "true";
 
   return (
-    <PledgeBoard mode="view" boardId={boardId} token={token || undefined} />
+    <PledgeBoard
+      mode="view"
+      boardId={boardId}
+      token={token || undefined}
+      startInEditMode={isNew}
+    />
   );
 }

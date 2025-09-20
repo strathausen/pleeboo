@@ -21,7 +21,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { PledgeItem, type PledgeItemData } from "./pledge-item";
 
 interface PledgeSectionProps {
@@ -85,6 +85,14 @@ export function PledgeSection({
   const [tempTitle, setTempTitle] = useState(title);
   const [tempDescription, setTempDescription] = useState(description);
 
+  // Auto-add an empty item when section is saved and has no items
+  React.useEffect(() => {
+    if (editable && sectionId && sectionId > 0 && items.length === 0 && onItemAdd) {
+      // Only add if the section has been saved (has a positive ID)
+      onItemAdd(sectionId);
+    }
+  }, [editable, sectionId, items.length, onItemAdd]);
+
   const handleSaveSection = () => {
     // Require at least a title to save
     if (!tempTitle.trim()) {
@@ -116,7 +124,7 @@ export function PledgeSection({
   return (
     <Card className={`relative ${editable && !isEditingSection ? "mt-3" : ""}`}>
       {editable && !isEditingSection && onMoveUp && onMoveDown && sectionId && (
-        <div className="-top-5 -translate-x-1/2 absolute left-1/2 z-10 flex gap-1">
+        <div className="-top-5 -translate-x-1/2 absolute left-1/2 z-10 flex gap-1 opacity-50 transition-opacity hover:opacity-100">
           <Button
             size="icon"
             variant="secondary"
@@ -156,8 +164,8 @@ export function PledgeSection({
                     handleSaveSection();
                   }
                 }}
-                placeholder="Section title (required)"
-                className="font-semibold"
+                placeholder="e.g., Food & Drinks, Setup Crew, Activities"
+                className="font-semibold text-base placeholder:font-normal placeholder:text-muted-foreground/50"
                 autoFocus={sectionId ? sectionId < 0 : false}
               />
               <div className="flex gap-1">
@@ -198,8 +206,8 @@ export function PledgeSection({
                   handleSaveSection();
                 }
               }}
-              placeholder="Section description (optional, supports markdown)"
-              className="text-sm"
+              placeholder="Describe this category of tasks or items (optional)"
+              className="text-sm placeholder:text-muted-foreground/50"
             />
           </div>
         ) : (
@@ -216,7 +224,7 @@ export function PledgeSection({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="h-6 w-6 opacity-50 transition-opacity group-hover:opacity-100"
                   onClick={() => setIsEditingSection(true)}
                 >
                   <Edit3 className="h-3 w-3" />

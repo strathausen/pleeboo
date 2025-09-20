@@ -76,7 +76,7 @@ export function BoardHeader({
                     }
                   }}
                   placeholder="Board title"
-                  className="border-0 bg-transparent p-0 pr-12 text-center font-bold text-4xl text-card-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="h-auto border-0 bg-transparent p-0 pr-12 text-center font-bold text-4xl text-card-foreground placeholder:font-normal placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <Button
                   size="icon"
@@ -111,17 +111,20 @@ export function BoardHeader({
             </div>
           </div>
         ) : (
+          // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
           <div
             className={`space-y-4 ${editable ? "group cursor-pointer" : ""}`}
             onClick={() => editable && setIsEditing(true)}
           >
             <div className="text-center">
               <h1
-                className={`relative inline-block font-bold text-4xl text-card-foreground ${editable ? "transition-colors group-hover:text-primary" : ""}`}
+                className={`relative inline-block font-bold text-4xl text-card-foreground ${
+                  editable ? "transition-colors group-hover:text-primary" : ""
+                }`}
               >
                 {title}
                 {editable && (
-                  <Edit3 className="-right-8 -translate-y-1/2 absolute top-1/2 h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <Edit3 className="-right-8 -translate-y-1/2 absolute top-1/2 h-5 w-5 opacity-50 transition-opacity group-hover:opacity-100" />
                 )}
               </h1>
             </div>

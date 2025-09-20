@@ -21,6 +21,46 @@ export const boardRouter = createTRPCRouter({
       z.object({
         title: z.string().min(1).max(256),
         description: z.string().optional(),
+        prompt: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const boardId = generateBoardId();
+
+      // Create the board
+      const [board] = await ctx.db.insert(boards).values({
+        id: boardId,
+        title: input.title,
+        description: input.description,
+        prompt: input.prompt,
+        createdById: ctx.session?.user?.id,
+      }).returning();
+
+      // Generate access tokens for the board
+      const adminToken = nanoid(32);
+      const viewToken = nanoid(32);
+
+      await ctx.db.insert(boardAccessTokens).values([
+        {
+          id: adminToken,
+          boardId,
+          type: "admin",
+        },
+        {
+          id: viewToken,
+          boardId,
+          type: "view",
+        },
+      ]);
+
+      return { id: boardId, adminToken, ...board };
+    }),
+
+  createWithSections: publicProcedure
+    .input(
+      z.object({
+        title: z.string().min(1).max(256),
+        description: z.string().optional(),
         sections: z.array(
           z.object({
             title: z.string().min(1).max(256),

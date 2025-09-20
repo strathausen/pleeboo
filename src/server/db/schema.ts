@@ -16,6 +16,7 @@ export const boards = createTable(
     id: d.varchar({ length: 32 }).primaryKey(),
     title: d.varchar({ length: 256 }).notNull(),
     description: d.text(),
+    prompt: d.text(),
     createdById: d.varchar({ length: 255 }).references(() => users.id),
     createdAt: d
       .timestamp({ withTimezone: true })

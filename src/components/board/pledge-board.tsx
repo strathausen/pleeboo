@@ -8,18 +8,7 @@ import { useBoardHistory } from "@/hooks/use-board-history";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getIconByName, getIconName } from "@/lib/available-icons";
 import { api } from "@/trpc/react";
-import {
-  Edit3,
-  Eye,
-  Gift,
-  Loader2,
-  Package,
-  Plus,
-  Save,
-  Share2,
-  Star,
-  Users,
-} from "lucide-react";
+import { Edit3, Eye, Loader2, Plus, Save, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -41,7 +30,7 @@ export type BoardData = {
     description?: string | null;
     icon: string;
     items: Array<{
-      id: number;
+      id: number | string;
       sectionId?: number;
       title: string;
       description?: string | null;
@@ -64,9 +53,10 @@ export type BoardData = {
 
 interface PledgeBoardProps {
   mode: "create" | "view";
-  boardId?: string;
+  boardId: string;
   token?: string;
   initialData?: BoardData;
+  startInEditMode?: boolean;
 }
 
 export function PledgeBoard({
@@ -74,6 +64,7 @@ export function PledgeBoard({
   boardId,
   token,
   initialData,
+  startInEditMode = false,
 }: PledgeBoardProps) {
   const router = useRouter();
   const { addToHistory } = useBoardHistory();
@@ -102,16 +93,18 @@ export function PledgeBoard({
           items: [],
         },
       ],
-    },
+    }
   );
 
   const [pendingUpdates, setPendingUpdates] = useState<
     Map<string, VolunteerUpdate>
   >(new Map());
-  const [editMode, setEditMode] = useState(mode === "create");
+  const [editMode, setEditMode] = useState(
+    mode === "create" || startInEditMode
+  );
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [accessLevel, setAccessLevel] = useState<"admin" | "view" | "none">(
-    mode === "create" ? "admin" : "none",
+    mode === "create" ? "admin" : "none"
   );
   const [isSaving, setIsSaving] = useState(false);
   const [nextTempId, setNextTempId] = useState(-1000);
@@ -122,13 +115,13 @@ export function PledgeBoard({
     isLoading,
     refetch,
   } = api.board.get.useQuery(
-    { id: boardId! },
-    { enabled: mode === "view" && !!boardId },
+    { id: boardId },
+    { enabled: mode === "view" && !!boardId }
   );
 
   const { data: tokenData } = api.board.validateToken.useQuery(
-    { boardId: boardId!, token: token || undefined },
-    { enabled: mode === "view" && !!boardId },
+    { boardId, token: token || undefined },
+    { enabled: mode === "view" && !!boardId }
   );
 
   // Debounced updates
@@ -166,11 +159,20 @@ export function PledgeBoard({
             sections: prev.sections.map((section) =>
               // Replace temp section with the real one from server
               section.id < 0
-                ? { ...newSection, items: [], icon: getIconName(newSection.icon as any) }
+                ? {
+                    ...newSection,
+                    items: [],
+                    icon: getIconName(newSection.icon),
+                  }
                 : section
             ),
           };
         });
+
+        // Auto-add an empty item to the new section if in edit mode
+        if (editMode && newSection.id) {
+          handleItemAdd(newSection.id);
+        }
       }
       void refetch();
     },
@@ -207,8 +209,12 @@ export function PledgeBoard({
   useEffect(() => {
     if (tokenData) {
       setAccessLevel(tokenData.access);
+      // If it's a new board and we have admin access, start in edit mode
+      if (startInEditMode && tokenData.access === "admin") {
+        setEditMode(true);
+      }
     }
-  }, [tokenData]);
+  }, [tokenData, startInEditMode]);
 
   // Update local board when server data changes
   useEffect(() => {
@@ -227,6 +233,7 @@ export function PledgeBoard({
   }, [board, boardId, token, accessLevel, addToHistory, mode]);
 
   // Process debounced updates
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (debouncedUpdates.size > 0) {
       for (const update of debouncedUpdates.values()) {
@@ -236,6 +243,30 @@ export function PledgeBoard({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedUpdates]);
+
+  // Ensure there's always an empty section when in edit mode and board is empty
+  useEffect(() => {
+    if (editMode && localBoard && localBoard.sections.length === 0) {
+      const tempId = nextTempId;
+      setNextTempId(nextTempId - 1);
+
+      setLocalBoard((prev) => {
+        if (!prev || prev.sections.length > 0) return prev;
+        return {
+          ...prev,
+          sections: [
+            {
+              id: tempId,
+              title: "",
+              description: "",
+              icon: "Package",
+              items: [],
+            },
+          ],
+        };
+      });
+    }
+  }, [editMode, localBoard, nextTempId]);
 
   const handleVolunteerNameChange = useCallback(
     (itemId: number, volunteerIndex: number, newName: string) => {
@@ -290,12 +321,12 @@ export function PledgeBoard({
               volunteerIndex,
               name: newName,
               details,
-            }),
-          ),
+            })
+          )
         );
       }
     },
-    [localBoard, pendingUpdates, mode],
+    [localBoard, pendingUpdates, mode]
   );
 
   const handleVolunteerDetailsChange = useCallback(
@@ -320,10 +351,11 @@ export function PledgeBoard({
                     updatedAt: null,
                   });
                 }
-                newVolunteers[volunteerIndex] = {
-                  ...newVolunteers[volunteerIndex],
-                  details: newDetails,
-                };
+                if (newVolunteers[volunteerIndex])
+                  newVolunteers[volunteerIndex] = {
+                    ...newVolunteers[volunteerIndex],
+                    details: newDetails,
+                  };
                 return { ...item, volunteers: newVolunteers };
               }
               return item;
@@ -351,12 +383,12 @@ export function PledgeBoard({
               volunteerIndex,
               name,
               details: newDetails,
-            }),
-          ),
+            })
+          )
         );
       }
     },
-    [localBoard, pendingUpdates, mode],
+    [localBoard, pendingUpdates, mode]
   );
 
   const handleSectionUpdate = (sectionId: number, updates: any) => {
@@ -379,7 +411,7 @@ export function PledgeBoard({
 
     // In view mode, handle new sections (negative IDs)
     if (sectionId < 0 && mode === "view") {
-      const section = localBoard?.sections.find(s => s.id === sectionId);
+      const section = localBoard?.sections.find((s) => s.id === sectionId);
 
       if (section && boardId) {
         // Save the new section to the database
@@ -387,9 +419,10 @@ export function PledgeBoard({
           boardId,
           title: updates.title || section.title,
           description: updates.description || section.description,
-          icon: typeof (updates.icon || section.icon) === "string"
-            ? (updates.icon || section.icon) as string
-            : getIconName(updates.icon || section.icon),
+          icon:
+            typeof (updates.icon || section.icon) === "string"
+              ? ((updates.icon || section.icon) as string)
+              : getIconName(updates.icon || section.icon),
         });
         // Update local state with the new values
         setLocalBoard((prev) => {
@@ -435,10 +468,10 @@ export function PledgeBoard({
   const handleItemUpdate = (itemId: number, updates: any) => {
     // If this is a new item (negative ID) being saved for the first time
     if (itemId < 0 && mode === "view") {
-      const section = localBoard?.sections.find(s =>
-        s.items.some(item => item.id === itemId)
+      const section = localBoard?.sections.find((s) =>
+        s.items.some((item) => item.id === itemId)
       );
-      const item = section?.items.find(i => i.id === itemId);
+      const item = section?.items.find((i) => i.id === itemId);
 
       if (section && item && section.id > 0) {
         // Save the new item to the database
@@ -446,9 +479,10 @@ export function PledgeBoard({
           sectionId: section.id,
           title: updates.title || item.title,
           description: updates.description || item.description,
-          icon: typeof (updates.icon || item.icon) === "string"
-            ? (updates.icon || item.icon) as string
-            : getIconName(updates.icon || item.icon),
+          icon:
+            typeof (updates.icon || item.icon) === "string"
+              ? ((updates.icon || item.icon) as string)
+              : getIconName(updates.icon || item.icon),
           needed: updates.needed || item.needed,
         });
         // Update local state with the new values
@@ -513,7 +547,7 @@ export function PledgeBoard({
       sortOrder: 999,
       createdAt: new Date(),
       updatedAt: null,
-      isNew: true,  // Mark as new so it stays in edit mode
+      isNew: true, // Mark as new so it stays in edit mode
     };
 
     setLocalBoard((prev) => {
@@ -542,10 +576,11 @@ export function PledgeBoard({
       if (index <= 0) return prev;
 
       const newSections = [...prev.sections];
-      [newSections[index - 1], newSections[index]] = [
-        newSections[index],
-        newSections[index - 1],
-      ];
+      if (newSections[index - 1] && newSections[index])
+        [newSections[index - 1], newSections[index]] = [
+          newSections[index],
+          newSections[index - 1],
+        ];
 
       // Update server if in view mode
       if (mode === "view" && boardId) {
@@ -567,10 +602,11 @@ export function PledgeBoard({
       if (index < 0 || index >= prev.sections.length - 1) return prev;
 
       const newSections = [...prev.sections];
-      [newSections[index], newSections[index + 1]] = [
-        newSections[index + 1],
-        newSections[index],
-      ];
+      if (newSections[index + 1] && newSections[index])
+        [newSections[index], newSections[index + 1]] = [
+          newSections[index + 1],
+          newSections[index],
+        ];
 
       // Update server if in view mode
       if (mode === "view" && boardId) {

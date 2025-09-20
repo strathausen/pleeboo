@@ -25,10 +25,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import Typewriter from "typewriter-effect";
 
 export default function LandingPage() {
   const [activeDemo, setActiveDemo] = useState<"create" | "share" | "pledge">(
-    "create",
+    "create"
   );
 
   const features = [
@@ -55,9 +56,9 @@ export default function LandingPage() {
     {
       id: 4,
       icon: <Bot className="h-6 w-6 text-purple-500" />,
-      title: "AI Assistance",
+      title: "Smart Suggestions",
       description:
-        "Get smart suggestions to populate your board based on your event type.",
+        "Get helpful recommendations to populate your board based on your event type.",
     },
     {
       id: 5,
@@ -119,7 +120,7 @@ export default function LandingPage() {
           />
           <Button className="w-full">
             <Sparkles className="mr-2 h-4 w-4" />
-            AI Suggest Tasks
+            Get Suggestions
           </Button>
         </div>
       ),
@@ -204,7 +205,39 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl text-center">
           <div className="mx-auto max-w-3xl">
             <h1 className="mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text font-bold text-5xl text-transparent tracking-tight sm:text-6xl">
-              Organize Community Efforts with Ease
+              <style jsx>{`
+                .typewriter-gradient .Typewriter__wrapper,
+                .typewriter-gradient .Typewriter__cursor {
+                  background: inherit;
+                  -webkit-background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  background-clip: text;
+                }
+              `}</style>
+              <div>Organize Your</div>
+              <div className="typewriter-gradient my-2">
+                <Typewriter
+                  options={{
+                    strings: [
+                      "Community Picnic",
+                      "Office Potluck",
+                      "School Fundraiser",
+                      "Birthday Party",
+                      "Team Building",
+                      "Holiday Gathering",
+                      "Block Party",
+                      "Company Retreat",
+                      "Family Reunion",
+                      "Volunteer Drive",
+                    ],
+                    autoStart: true,
+                    loop: true,
+                    delay: 80,
+                    deleteSpeed: 50,
+                  }}
+                />
+              </div>
+              <div>with Ease</div>
             </h1>
             <p className="mb-10 text-muted-foreground text-xl">
               Pleeboo is the free, simple way to coordinate volunteers and
@@ -212,7 +245,7 @@ export default function LandingPage() {
               and watch your community come together.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/board">
+              <Link href="/board/new">
                 <Button size="lg" className="min-w-[200px]">
                   Create Your First Board
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -262,7 +295,7 @@ export default function LandingPage() {
                   <div>
                     <h3 className="font-semibold">1. Create Your Board</h3>
                     <p className="text-muted-foreground text-sm">
-                      Set up your pledge board with AI-powered suggestions
+                      Set up your pledge board with smart suggestions
                     </p>
                   </div>
                 </div>
@@ -408,7 +441,7 @@ export default function LandingPage() {
               No credit card required. Ever.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/">
+              <Link href="/board/new">
                 <Button size="lg" variant="secondary" className="min-w-[200px]">
                   Create Free Board
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -416,7 +449,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="mt-6 text-sm text-white/70">
-              ✨ AI-powered • 🔒 No sign-up required • 💯 Free forever
+              ✨ Smart suggestions • 🔒 No sign-up required • 💯 Free forever
             </p>
           </div>
         </div>
@@ -440,7 +473,7 @@ export default function LandingPage() {
                 About
               </Link>
               <Link
-                href="/"
+                href="/board/new"
                 className="text-muted-foreground hover:text-foreground"
               >
                 Create Board

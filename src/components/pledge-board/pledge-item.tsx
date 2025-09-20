@@ -22,6 +22,7 @@ import { useState } from "react";
 import { VolunteerItem } from "./volunteer-item";
 
 export interface Volunteer {
+  id: string;
   name: string;
   details: string;
 }
@@ -43,12 +44,12 @@ interface PledgeItemProps {
   onVolunteerNameChange?: (
     itemId: number,
     volunteerIndex: number,
-    newName: string,
+    newName: string
   ) => void;
   onVolunteerDetailsChange?: (
     itemId: number,
     volunteerIndex: number,
-    newDetails: string,
+    newDetails: string
   ) => void;
   isTask?: boolean;
   editable?: boolean;
@@ -78,7 +79,6 @@ function getStatusBadge(needed: number, current: number) {
 
 export function PledgeItem({
   item,
-  onPledge,
   onVolunteerNameChange,
   onVolunteerDetailsChange,
   isTask = false,
@@ -131,7 +131,7 @@ export function PledgeItem({
   // Create array with empty slots for remaining needed volunteers
   const allSlots = [...item.volunteers];
   while (allSlots.length < item.needed) {
-    allSlots.push({ name: "", details: "" });
+    allSlots.push({ id: `${Math.random()}`, name: "", details: "" });
   }
 
   if (editable && isEditing) {
@@ -153,8 +153,8 @@ export function PledgeItem({
                     handleSave();
                   }
                 }}
-                placeholder="Item title (required)"
-                className="font-medium"
+                placeholder="e.g., Bring hamburger buns, Set up tables, Face painting"
+                className="font-semibold text-base placeholder:font-normal placeholder:text-muted-foreground/50"
                 autoFocus={item.id < 0}
               />
               <Input
@@ -166,8 +166,8 @@ export function PledgeItem({
                     handleSave();
                   }
                 }}
-                placeholder="Item description (optional, supports markdown)"
-                className="text-sm"
+                placeholder="Add details like quantity, time, or special instructions (optional)"
+                className="text-sm placeholder:text-muted-foreground/50"
               />
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export function PledgeItem({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="h-6 w-6 opacity-50 transition-opacity group-hover:opacity-100"
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit3 className="h-3 w-3" />
@@ -271,11 +271,11 @@ export function PledgeItem({
         </div>
 
         {/* Right column - All volunteer slots */}
-        <div className="space-y-2 border-0 pl-0 md:border-l-1 md:pl-4">
+        <div className="space-y-2 border-t-1 border-l-0 pt-4 pl-0 md:border-t-0 md:border-l-1 md:pt-0 md:pl-4">
           <div className="space-y-2">
             {allSlots.map((volunteer, index) => (
               <VolunteerItem
-                key={`volunteer-${index}`}
+                key={`volunteer-${index.toString()}`}
                 volunteer={volunteer}
                 itemId={item.id}
                 volunteerIndex={index}
@@ -293,7 +293,7 @@ export function PledgeItem({
           {getStatusBadge(item.needed, item.volunteers.length)}
           <span className="text-muted-foreground text-sm">
             {item.volunteers.length} of {item.needed}{" "}
-            {(item.isTask ?? isTask) ? "volunteers" : "contributions"}
+            {item.isTask ?? isTask ? "volunteers" : "contributions"}
           </span>
         </div>
         {editable && onItemUpdate && (

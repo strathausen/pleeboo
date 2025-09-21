@@ -42,7 +42,7 @@ export default function NewBoardPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Question Header */}
           <div className="text-center">
-            <h1 className="text-2xl font-medium text-muted-foreground">
+            <h1 className="font-medium text-2xl text-muted-foreground">
               <span
                 className="underline decoration-[8px] decoration-yellow-200 dark:decoration-yellow-600"
                 style={{ textDecorationSkipInk: "none" }}

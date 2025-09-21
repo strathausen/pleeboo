@@ -29,7 +29,7 @@ import Typewriter from "typewriter-effect";
 
 export default function LandingPage() {
   const [activeDemo, setActiveDemo] = useState<"create" | "share" | "pledge">(
-    "create"
+    "create",
   );
 
   const features = [

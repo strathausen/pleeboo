@@ -28,7 +28,7 @@ export interface Volunteer {
 }
 
 export interface PledgeItemData {
-  id: number;
+  id: string;
   title: string;
   description: string;
   needed: number;
@@ -42,19 +42,19 @@ interface PledgeItemProps {
   item: PledgeItemData;
   onPledge: (item: PledgeItemData) => void;
   onVolunteerNameChange?: (
-    itemId: number,
+    itemId: string,
     volunteerIndex: number,
     newName: string
   ) => void;
   onVolunteerDetailsChange?: (
-    itemId: number,
+    itemId: string,
     volunteerIndex: number,
     newDetails: string
   ) => void;
   isTask?: boolean;
   editable?: boolean;
-  onItemUpdate?: (itemId: number, updates: Partial<PledgeItemData>) => void;
-  onItemDelete?: (itemId: number) => void;
+  onItemUpdate?: (itemId: string, updates: Partial<PledgeItemData>) => void;
+  onItemDelete?: (itemId: string) => void;
 }
 
 function getStatusBadge(needed: number, current: number) {
@@ -86,8 +86,10 @@ export function PledgeItem({
   onItemUpdate,
   onItemDelete,
 }: PledgeItemProps) {
-  // Start in edit mode if it's a new item (negative ID)
-  const [isEditing, setIsEditing] = useState(item.id < 0);
+  // Start in edit mode if it's a new item (temp ID)
+  const [isEditing, setIsEditing] = useState(
+    item.id.startsWith("temp-")
+  );
   const [tempTitle, setTempTitle] = useState(item.title);
   const [tempDescription, setTempDescription] = useState(item.description);
   const [tempNeeded, setTempNeeded] = useState(item.needed);
@@ -114,7 +116,7 @@ export function PledgeItem({
 
   const handleCancel = () => {
     // If this is a new unsaved item, delete it
-    if (item.id < 0) {
+    if (item.id.startsWith("temp-")) {
       if (onItemDelete) {
         onItemDelete(item.id);
       }
@@ -155,7 +157,7 @@ export function PledgeItem({
                 }}
                 placeholder="e.g., Bring hamburger buns, Set up tables, Face painting"
                 className="font-semibold text-base placeholder:font-normal placeholder:text-muted-foreground/50"
-                autoFocus={item.id < 0}
+                autoFocus={item.id.startsWith("temp-")}
               />
               <Input
                 value={tempDescription}
@@ -289,7 +291,7 @@ export function PledgeItem({
 
       {/* Progress status at the bottom */}
       <div className="flex items-center justify-between border-t pt-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pt-1">
           {getStatusBadge(item.needed, item.volunteers.length)}
           <span className="text-muted-foreground text-sm">
             {item.volunteers.length} of {item.needed}{" "}
@@ -301,7 +303,7 @@ export function PledgeItem({
             <Button
               size="icon"
               variant="ghost"
-              className="h-7 w-7"
+              className="h-6 w-6"
               onClick={() => {
                 if (item.needed > 1) {
                   onItemUpdate(item.id, { needed: item.needed - 1 });
@@ -315,7 +317,7 @@ export function PledgeItem({
             <Button
               size="icon"
               variant="ghost"
-              className="h-7 w-7"
+              className="h-6 w-6"
               onClick={() => {
                 onItemUpdate(item.id, { needed: item.needed + 1 });
               }}

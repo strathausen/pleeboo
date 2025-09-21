@@ -3,7 +3,6 @@
 import { IconPicker } from "@/components/board/icon-picker";
 import { IconSelector } from "@/components/board/icon-selector";
 import { BoardHeader } from "@/components/pledge-board/board-header";
-import { PledgeDialog } from "@/components/pledge-board/pledge-dialog";
 import { PledgeItem } from "@/components/pledge-board/pledge-item";
 import { PledgeSection } from "@/components/pledge-board/pledge-section";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,14 +18,12 @@ import { Header } from "@/components/ui/header";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/ui/logo";
 import { Progress } from "@/components/ui/progress";
-import { Stats } from "@/components/ui/stats";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { availableIcons } from "@/lib/available-icons";
 import {
   ArrowRight,
   Book as Broom,
-  Camera,
   Check,
   ChevronDown,
   ChevronUp,
@@ -48,42 +45,28 @@ import { useState } from "react";
 export default function ScrapbookPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
-  const [selectedIcon, setSelectedIcon] = useState(Star);
+  const [selectedIcon, setSelectedIcon] = useState<typeof Star>(Star);
 
   const mockPledgeItem = {
-    id: 1,
+    id: "1",
     title: "Setup & Cleanup Crew",
     description: "Help set up tables, chairs, and clean up after the event",
     needed: 4,
     volunteers: [
-      { name: "Sarah Johnson", details: "Can bring cleaning supplies" },
-      { name: "Mike Chen", details: "Available all day" },
+      {
+        id: "1",
+        name: "Sarah Johnson",
+        details: "Can bring cleaning supplies",
+      },
+      { id: "2", name: "Mike Chen", details: "Available all day" },
     ],
     icon: Broom,
     category: "tasks" as const,
   };
 
-  const mockEditableItem = {
-    id: 2,
-    title: "Photography Team",
-    description: "Capture memories throughout the event",
-    needed: 2,
-    volunteers: [
-      { name: "Alex Rivera", details: "Professional camera equipment" },
-    ],
-    icon: Camera,
-    category: "tasks" as const,
-  };
-
-  const mockStats = [
-    { label: "Total Tasks", value: 12 },
-    { label: "Completed", value: 8, className: "text-green-500" },
-    { label: "Volunteers", value: 15 },
-  ];
-
   const mockSectionItems = [
     {
-      id: 3,
+      id: "3",
       title: "Music & Entertainment",
       description: "DJ or live music for the event",
       needed: 1,
@@ -92,11 +75,13 @@ export default function ScrapbookPage() {
       category: "tasks" as const,
     },
     {
-      id: 4,
+      id: "4",
       title: "Decorations",
       description: "Set up and take down decorations",
       needed: 3,
-      volunteers: [{ name: "Emma Davis", details: "Has party supplies" }],
+      volunteers: [
+        { id: "4", name: "Emma Davis", details: "Has party supplies" },
+      ],
       icon: Gift,
       category: "tasks" as const,
     },
@@ -322,16 +307,6 @@ export default function ScrapbookPage() {
           </Card>
         </section>
 
-        {/* Stats */}
-        <section className="space-y-4">
-          <h2 className="font-semibold text-2xl">Stats Component</h2>
-          <Card>
-            <CardContent className="pt-6">
-              <Stats stats={mockStats} />
-            </CardContent>
-          </Card>
-        </section>
-
         {/* Pledge Items */}
         <section className="space-y-4">
           <h2 className="font-semibold text-2xl">Pledge Items</h2>
@@ -463,29 +438,6 @@ export default function ScrapbookPage() {
                   Toggle between light and dark themes
                 </span>
               </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Dialog */}
-        <section className="space-y-4">
-          <h2 className="font-semibold text-2xl">Dialog</h2>
-          <Card>
-            <CardContent className="pt-6">
-              <Button onClick={() => setIsDialogOpen(true)}>
-                Open Pledge Dialog
-              </Button>
-              <PledgeDialog
-                isOpen={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                selectedPledge={mockPledgeItem}
-                formData={{ name: "", details: "" }}
-                onFormDataChange={(data) => console.log("Form data:", data)}
-                onSubmit={() => {
-                  console.log("Submit pledge");
-                  setIsDialogOpen(false);
-                }}
-              />
             </CardContent>
           </Card>
         </section>

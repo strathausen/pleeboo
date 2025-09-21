@@ -8,13 +8,22 @@ import { useBoardHistory } from "@/hooks/use-board-history";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getIconByName, getIconName } from "@/lib/available-icons";
 import { api } from "@/trpc/react";
-import { Edit3, Eye, Loader2, Plus, Save, Share2 } from "lucide-react";
+import {
+  Edit3,
+  Eye,
+  Loader2,
+  type LucideIcon,
+  Plus,
+  Save,
+  Share2,
+  Star,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type VolunteerUpdate = {
-  itemId: number;
+  itemId: string;
   volunteerIndex: number;
   name: string;
   details: string;
@@ -25,20 +34,20 @@ export type BoardData = {
   title: string;
   description?: string | null;
   sections: Array<{
-    id: number;
+    id: string;
     title: string;
     description?: string | null;
     icon: string;
     items: Array<{
-      id: number | string;
-      sectionId?: number;
+      id: string;
+      sectionId?: string;
       title: string;
       description?: string | null;
       icon: string;
       needed: number;
       volunteers: Array<{
-        id?: number;
-        itemId?: number;
+        id: string;
+        itemId?: string;
         name: string;
         details?: string | null;
         createdAt?: Date;
@@ -77,7 +86,7 @@ export function PledgeBoard({
         "Join us in making our community event amazing! Sign up to volunteer for tasks or bring items. Every contribution makes a difference! 🌟",
       sections: [
         {
-          id: -1,
+          id: "temp-1",
           title: "Volunteer Tasks",
           description:
             "Help make our event run smoothly by volunteering for these tasks",
@@ -85,7 +94,7 @@ export function PledgeBoard({
           items: [],
         },
         {
-          id: -2,
+          id: "temp-2",
           title: "Items to Bring",
           description:
             "Sign up to bring food, drinks, or other items for the event",
@@ -107,7 +116,7 @@ export function PledgeBoard({
     mode === "create" ? "admin" : "none"
   );
   const [isSaving, setIsSaving] = useState(false);
-  const [nextTempId, setNextTempId] = useState(-1000);
+  const [nextTempId, setNextTempId] = useState(1);
 
   // API hooks
   const {
@@ -132,7 +141,7 @@ export function PledgeBoard({
   const updateBoard = api.board.update.useMutation({
     onSuccess: () => void refetch(),
   });
-  const updateVolunteer = api.board.updateVolunteer.useMutation();
+  const upsertVolunteer = api.board.upsertVolunteer.useMutation();
   const updateSection = api.board.updateSection.useMutation({
     onSuccess: () => void refetch(),
   });
@@ -158,11 +167,14 @@ export function PledgeBoard({
             ...prev,
             sections: prev.sections.map((section) =>
               // Replace temp section with the real one from server
-              section.id < 0
+              section.id.startsWith("temp-")
                 ? {
                     ...newSection,
                     items: [],
-                    icon: getIconName(newSection.icon),
+                    icon:
+                      typeof newSection.icon === "string"
+                        ? newSection.icon
+                        : getIconName(newSection.icon),
                   }
                 : section
             ),
@@ -192,7 +204,9 @@ export function PledgeBoard({
                   ...section,
                   items: section.items.map((item) =>
                     // Replace temp item with the real one from server
-                    item.id < 0 ? { ...newItem, volunteers: [] } : item
+                    item.id.startsWith("temp-")
+                      ? { ...newItem, volunteers: [] }
+                      : item
                   ),
                 };
               }
@@ -222,7 +236,7 @@ export function PledgeBoard({
       setLocalBoard(board);
       // Save to board history
       addToHistory({
-        id: boardId!,
+        id: boardId,
         title: board.title,
         description: board.description || undefined,
         token: token || undefined,
@@ -237,7 +251,7 @@ export function PledgeBoard({
   useEffect(() => {
     if (debouncedUpdates.size > 0) {
       for (const update of debouncedUpdates.values()) {
-        updateVolunteer.mutate(update);
+        upsertVolunteer.mutate(update);
       }
       setPendingUpdates(new Map());
     }
@@ -247,8 +261,8 @@ export function PledgeBoard({
   // Ensure there's always an empty section when in edit mode and board is empty
   useEffect(() => {
     if (editMode && localBoard && localBoard.sections.length === 0) {
-      const tempId = nextTempId;
-      setNextTempId(nextTempId - 1);
+      const tempId = `temp-section-${nextTempId}`;
+      setNextTempId(nextTempId + 1);
 
       setLocalBoard((prev) => {
         if (!prev || prev.sections.length > 0) return prev;
@@ -269,7 +283,7 @@ export function PledgeBoard({
   }, [editMode, localBoard, nextTempId]);
 
   const handleVolunteerNameChange = useCallback(
-    (itemId: number, volunteerIndex: number, newName: string) => {
+    (itemId: string, volunteerIndex: number, newName: string) => {
       setLocalBoard((prev) => {
         if (!prev) return prev;
 
@@ -282,7 +296,7 @@ export function PledgeBoard({
                 const newVolunteers = [...item.volunteers];
                 while (newVolunteers.length <= volunteerIndex) {
                   newVolunteers.push({
-                    id: Date.now() + volunteerIndex,
+                    id: `temp-volunteer-${Date.now()}-${volunteerIndex}`,
                     itemId,
                     name: "",
                     details: null,
@@ -290,10 +304,11 @@ export function PledgeBoard({
                     updatedAt: null,
                   });
                 }
-                newVolunteers[volunteerIndex] = {
-                  ...newVolunteers[volunteerIndex],
-                  name: newName,
-                };
+                if (newVolunteers[volunteerIndex])
+                  newVolunteers[volunteerIndex] = {
+                    ...newVolunteers[volunteerIndex],
+                    name: newName,
+                  };
                 return { ...item, volunteers: newVolunteers };
               }
               return item;
@@ -303,7 +318,7 @@ export function PledgeBoard({
       });
 
       // Only queue updates in view mode
-      if (mode === "view" && itemId > 0) {
+      if (mode === "view" && !itemId.startsWith("temp-")) {
         const key = `${itemId}-${volunteerIndex}`;
         const existingUpdate = pendingUpdates.get(key);
         const details =
@@ -330,7 +345,7 @@ export function PledgeBoard({
   );
 
   const handleVolunteerDetailsChange = useCallback(
-    (itemId: number, volunteerIndex: number, newDetails: string) => {
+    (itemId: string, volunteerIndex: number, newDetails: string) => {
       setLocalBoard((prev) => {
         if (!prev) return prev;
 
@@ -343,7 +358,7 @@ export function PledgeBoard({
                 const newVolunteers = [...item.volunteers];
                 while (newVolunteers.length <= volunteerIndex) {
                   newVolunteers.push({
-                    id: Date.now() + volunteerIndex,
+                    id: `temp-volunteer-${Date.now()}-${volunteerIndex}`,
                     itemId,
                     name: "",
                     details: null,
@@ -365,7 +380,7 @@ export function PledgeBoard({
       });
 
       // Only queue updates in view mode
-      if (mode === "view" && itemId > 0) {
+      if (mode === "view" && !itemId.startsWith("temp-")) {
         const key = `${itemId}-${volunteerIndex}`;
         const existingUpdate = pendingUpdates.get(key);
         const name =
@@ -391,7 +406,10 @@ export function PledgeBoard({
     [localBoard, pendingUpdates, mode]
   );
 
-  const handleSectionUpdate = (sectionId: number, updates: any) => {
+  const handleSectionUpdate = (
+    sectionId: string,
+    updates: { title?: string; description?: string; icon?: LucideIcon }
+  ) => {
     // For new sections in creation mode, just update locally
     if (mode === "create") {
       setLocalBoard((prev) => {
@@ -400,7 +418,15 @@ export function PledgeBoard({
           ...prev,
           sections: prev.sections.map((section) => {
             if (section.id === sectionId) {
-              return { ...section, ...updates };
+              return {
+                ...section,
+                title: updates.title ?? section.title,
+                description:
+                  updates.description !== undefined
+                    ? updates.description
+                    : section.description,
+                icon: updates.icon ? getIconName(updates.icon) : section.icon,
+              };
             }
             return section;
           }),
@@ -410,7 +436,7 @@ export function PledgeBoard({
     }
 
     // In view mode, handle new sections (negative IDs)
-    if (sectionId < 0 && mode === "view") {
+    if (sectionId.startsWith("temp-") && mode === "view") {
       const section = localBoard?.sections.find((s) => s.id === sectionId);
 
       if (section && boardId) {
@@ -418,11 +444,16 @@ export function PledgeBoard({
         addSection.mutate({
           boardId,
           title: updates.title || section.title,
-          description: updates.description || section.description,
+          description:
+            updates.description !== undefined
+              ? updates.description
+              : section.description ?? undefined,
           icon:
-            typeof (updates.icon || section.icon) === "string"
-              ? ((updates.icon || section.icon) as string)
-              : getIconName(updates.icon || section.icon),
+            typeof section.icon === "string"
+              ? section.icon
+              : updates.icon
+              ? getIconName(updates.icon)
+              : getIconName(getIconByName("Star") || Star),
         });
         // Update local state with the new values
         setLocalBoard((prev) => {
@@ -431,7 +462,15 @@ export function PledgeBoard({
             ...prev,
             sections: prev.sections.map((s) => {
               if (s.id === sectionId) {
-                return { ...s, ...updates };
+                return {
+                  ...s,
+                  title: updates.title ?? s.title,
+                  description:
+                    updates.description !== undefined
+                      ? updates.description
+                      : s.description,
+                  icon: updates.icon ? getIconName(updates.icon) : s.icon,
+                };
               }
               return s;
             }),
@@ -444,11 +483,15 @@ export function PledgeBoard({
     // Update existing section
     setLocalBoard((prev) => {
       if (!prev) return prev;
+      const icon =
+        updates.icon && getIconName(updates.icon)
+          ? getIconName(updates.icon)
+          : undefined;
       return {
         ...prev,
         sections: prev.sections.map((section) => {
           if (section.id === sectionId) {
-            return { ...section, ...updates };
+            return { ...section, ...updates, icon: icon || section.icon };
           }
           return section;
         }),
@@ -456,7 +499,7 @@ export function PledgeBoard({
     });
 
     // Send to server in view mode
-    if (mode === "view" && sectionId > 0) {
+    if (mode === "view" && !sectionId.startsWith("temp-")) {
       updateSection.mutate({
         id: sectionId,
         ...updates,
@@ -465,24 +508,33 @@ export function PledgeBoard({
     }
   };
 
-  const handleItemUpdate = (itemId: number, updates: any) => {
+  const handleItemUpdate = (
+    itemId: string,
+    updates: Partial<{
+      title: string;
+      description: string;
+      icon: LucideIcon;
+      needed: number;
+      isTask?: boolean;
+    }>
+  ) => {
     // If this is a new item (negative ID) being saved for the first time
-    if (itemId < 0 && mode === "view") {
+    if (itemId.startsWith("temp-") && mode === "view") {
       const section = localBoard?.sections.find((s) =>
         s.items.some((item) => item.id === itemId)
       );
       const item = section?.items.find((i) => i.id === itemId);
 
-      if (section && item && section.id > 0) {
+      if (section && item && !section.id.startsWith("temp-")) {
+        const iconObj = updates.icon || item.icon;
+        const icon =
+          typeof iconObj === "string" ? iconObj : getIconName(iconObj);
         // Save the new item to the database
         addItem.mutate({
           sectionId: section.id,
           title: updates.title || item.title,
-          description: updates.description || item.description,
-          icon:
-            typeof (updates.icon || item.icon) === "string"
-              ? ((updates.icon || item.icon) as string)
-              : getIconName(updates.icon || item.icon),
+          description: updates.description || item.description || undefined,
+          icon,
           needed: updates.needed || item.needed,
         });
         // Update local state with the new values
@@ -494,7 +546,7 @@ export function PledgeBoard({
               ...s,
               items: s.items.map((i) => {
                 if (i.id === itemId) {
-                  return { ...i, ...updates };
+                  return { ...i, ...updates, icon };
                 }
                 return i;
               }),
@@ -508,13 +560,17 @@ export function PledgeBoard({
     // Update local state
     setLocalBoard((prev) => {
       if (!prev) return prev;
+      const icon =
+        updates.icon && getIconName(updates.icon)
+          ? getIconName(updates.icon)
+          : undefined;
       return {
         ...prev,
         sections: prev.sections.map((section) => ({
           ...section,
           items: section.items.map((item) => {
             if (item.id === itemId) {
-              return { ...item, ...updates };
+              return { ...item, ...updates, icon: icon || item.icon };
             }
             return item;
           }),
@@ -523,7 +579,7 @@ export function PledgeBoard({
     });
 
     // Send to server in view mode (for existing items)
-    if (mode === "view" && itemId > 0) {
+    if (mode === "view" && !itemId.startsWith("temp-")) {
       updateItem.mutate({
         id: itemId,
         ...updates,
@@ -532,9 +588,9 @@ export function PledgeBoard({
     }
   };
 
-  const handleItemAdd = (sectionId: number) => {
-    const tempId = nextTempId;
-    setNextTempId(nextTempId - 1);
+  const handleItemAdd = (sectionId: string) => {
+    const tempId = `temp-item-${nextTempId}`;
+    setNextTempId(nextTempId + 1);
 
     const newItem = {
       id: tempId,
@@ -569,22 +625,25 @@ export function PledgeBoard({
     // Don't save to server immediately - wait for user to save
   };
 
-  const handleSectionMoveUp = (sectionId: number) => {
+  const handleSectionMoveUp = (sectionId: string) => {
     setLocalBoard((prev) => {
       if (!prev) return prev;
       const index = prev.sections.findIndex((s) => s.id === sectionId);
       if (index <= 0) return prev;
 
       const newSections = [...prev.sections];
-      if (newSections[index - 1] && newSections[index])
-        [newSections[index - 1], newSections[index]] = [
-          newSections[index],
-          newSections[index - 1],
-        ];
+      if (newSections[index - 1] && newSections[index]) {
+        const temp = newSections[index];
+        const prev = newSections[index - 1];
+        if (temp && prev) {
+          newSections[index] = prev;
+          newSections[index - 1] = temp;
+        }
+      }
 
       // Update server if in view mode
       if (mode === "view" && boardId) {
-        const sectionIds = newSections.map((s) => s.id).filter((id) => id > 0);
+        const sectionIds = newSections.map((s) => s.id).filter((id) => !id.startsWith("temp-"));
         reorderSections.mutate({ boardId, sectionIds });
       }
 
@@ -595,22 +654,25 @@ export function PledgeBoard({
     });
   };
 
-  const handleSectionMoveDown = (sectionId: number) => {
+  const handleSectionMoveDown = (sectionId: string) => {
     setLocalBoard((prev) => {
       if (!prev) return prev;
       const index = prev.sections.findIndex((s) => s.id === sectionId);
       if (index < 0 || index >= prev.sections.length - 1) return prev;
 
       const newSections = [...prev.sections];
-      if (newSections[index + 1] && newSections[index])
-        [newSections[index], newSections[index + 1]] = [
-          newSections[index + 1],
-          newSections[index],
-        ];
+      if (newSections[index + 1] && newSections[index]) {
+        const temp = newSections[index];
+        const next = newSections[index + 1];
+        if (temp && next) {
+          newSections[index] = next;
+          newSections[index + 1] = temp;
+        }
+      }
 
       // Update server if in view mode
       if (mode === "view" && boardId) {
-        const sectionIds = newSections.map((s) => s.id).filter((id) => id > 0);
+        const sectionIds = newSections.map((s) => s.id).filter((id) => !id.startsWith("temp-"));
         reorderSections.mutate({ boardId, sectionIds });
       }
 
@@ -625,7 +687,7 @@ export function PledgeBoard({
     const tempId = nextTempId;
     setNextTempId(nextTempId - 1);
 
-    const newSection = {
+    const newSection: BoardData['sections'][number] = {
       id: tempId,
       title: "",
       description: "",
@@ -642,7 +704,7 @@ export function PledgeBoard({
     });
   };
 
-  const handleSectionDelete = (sectionId: number) => {
+  const handleSectionDelete = (sectionId: string) => {
     setLocalBoard((prev) => {
       if (!prev) return prev;
       return {
@@ -652,12 +714,12 @@ export function PledgeBoard({
     });
 
     // Send to server in view mode
-    if (mode === "view" && sectionId > 0) {
+    if (mode === "view" && !sectionId.startsWith("temp-")) {
       deleteSection.mutate({ id: sectionId });
     }
   };
 
-  const handleItemDelete = (itemId: number) => {
+  const handleItemDelete = (itemId: string) => {
     setLocalBoard((prev) => {
       if (!prev) return prev;
       return {
@@ -670,7 +732,7 @@ export function PledgeBoard({
     });
 
     // Send to server in view mode
-    if (mode === "view" && itemId > 0) {
+    if (mode === "view" && !itemId.startsWith("temp-")) {
       deleteItem.mutate({ id: itemId });
     }
   };
@@ -721,7 +783,7 @@ export function PledgeBoard({
 
       toast.success("Board created successfully!");
       // Redirect with admin token (returned from create)
-      router.push(`/board/${result.boardId}?token=${result.adminToken}`);
+      router.push(`/board/${result.id}?token=${result.adminToken}`);
     } catch (error) {
       toast.error("Failed to create board");
       console.error(error);
@@ -839,10 +901,11 @@ export function PledgeBoard({
               description: item.description || "",
               needed: item.needed,
               volunteers: item.volunteers.map((v) => ({
+                id: v.id,
                 name: v.name,
                 details: v.details || "",
               })),
-              icon: itemIcon || getIconByName("Star")!,
+              icon: itemIcon || getIconByName("Star") || Star,
               category: "items" as const,
             };
           });

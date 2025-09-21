@@ -39,7 +39,7 @@ export const boardsRelations = relations(boards, ({ many, one }) => ({
 export const boardSections = createTable(
   "board_section",
   (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    id: d.varchar({ length: 32 }).primaryKey(),
     boardId: d
       .varchar({ length: 32 })
       .notNull()
@@ -74,9 +74,9 @@ export const boardSectionsRelations = relations(
 export const boardItems = createTable(
   "board_item",
   (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    id: d.varchar({ length: 32 }).primaryKey(),
     sectionId: d
-      .integer()
+      .varchar({ length: 32 })
       .notNull()
       .references(() => boardSections.id, { onDelete: "cascade" }),
     title: d.varchar({ length: 256 }).notNull(),
@@ -107,9 +107,9 @@ export const boardItemsRelations = relations(boardItems, ({ one, many }) => ({
 export const boardVolunteers = createTable(
   "board_volunteer",
   (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    id: d.varchar({ length: 32 }).primaryKey(),
     itemId: d
-      .integer()
+      .varchar({ length: 32 })
       .notNull()
       .references(() => boardItems.id, { onDelete: "cascade" }),
     name: d.varchar({ length: 256 }).notNull(),

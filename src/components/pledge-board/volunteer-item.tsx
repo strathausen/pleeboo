@@ -3,17 +3,17 @@ import type { Volunteer } from "./pledge-item";
 
 interface VolunteerItemProps {
   volunteer: Volunteer;
-  itemId: number;
+  itemId: string;
   volunteerIndex: number;
   onNameChange?: (
-    itemId: number,
+    itemId: string,
     volunteerIndex: number,
-    newName: string,
+    newName: string
   ) => void;
   onDetailsChange?: (
-    itemId: number,
+    itemId: string,
     volunteerIndex: number,
-    newDetails: string,
+    newDetails: string
   ) => void;
 }
 
@@ -53,8 +53,8 @@ export function VolunteerItem({
               isEditingName
                 ? "rounded px-1 ring-2 ring-primary ring-offset-1"
                 : isEmpty
-                  ? "px-1 placeholder:text-muted-foreground/50 placeholder:italic"
-                  : "cursor-text rounded px-1 hover:bg-muted/50"
+                ? "px-1 placeholder:text-muted-foreground/50 placeholder:italic"
+                : "cursor-text rounded px-1 hover:bg-muted/50"
             }`}
             style={{ minWidth: "100px" }}
           />

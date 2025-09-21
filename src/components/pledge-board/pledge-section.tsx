@@ -25,34 +25,37 @@ import React, { useState } from "react";
 import { PledgeItem, type PledgeItemData } from "./pledge-item";
 
 interface PledgeSectionProps {
-  sectionId?: number;
+  sectionId?: string;
   title: string;
   description: string;
   icon: LucideIcon;
   items: PledgeItemData[];
   onPledge: (item: PledgeItemData) => void;
   onVolunteerNameChange: (
-    itemId: number,
+    itemId: string,
     volunteerIndex: number,
-    newName: string,
+    newName: string
   ) => void;
   onVolunteerDetailsChange: (
-    itemId: number,
+    itemId: string,
     volunteerIndex: number,
-    newDetails: string,
+    newDetails: string
   ) => void;
   isTask: boolean;
   editable?: boolean;
   onSectionUpdate?: (
-    sectionId: number,
-    updates: { title?: string; description?: string; icon?: LucideIcon },
+    sectionId: string,
+    updates: { title?: string; description?: string; icon?: LucideIcon }
   ) => void;
-  onSectionDelete?: (sectionId: number) => void;
-  onItemUpdate?: (itemId: number, updates: Partial<PledgeItemData>) => void;
-  onItemDelete?: (itemId: number) => void;
-  onItemAdd?: (sectionId: number) => void;
-  onMoveUp?: (sectionId: number) => void;
-  onMoveDown?: (sectionId: number) => void;
+  onSectionDelete?: (sectionId: string) => void;
+  onItemUpdate?: (
+    itemId: string,
+    updates: Partial<PledgeItemData>
+  ) => void;
+  onItemDelete?: (itemId: string) => void;
+  onItemAdd?: (sectionId: string) => void;
+  onMoveUp?: (sectionId: string) => void;
+  onMoveDown?: (sectionId: string) => void;
   isFirst?: boolean;
   isLast?: boolean;
 }
@@ -78,17 +81,23 @@ export function PledgeSection({
   isFirst = false,
   isLast = false,
 }: PledgeSectionProps) {
-  // Start in edit mode if it's a new section (negative ID)
+  // Start in edit mode if it's a new section (temp ID)
   const [isEditingSection, setIsEditingSection] = useState(
-    sectionId ? sectionId < 0 : false,
+    sectionId && sectionId.startsWith("temp-")
   );
   const [tempTitle, setTempTitle] = useState(title);
   const [tempDescription, setTempDescription] = useState(description);
 
   // Auto-add an empty item when section is saved and has no items
   React.useEffect(() => {
-    if (editable && sectionId && sectionId > 0 && items.length === 0 && onItemAdd) {
-      // Only add if the section has been saved (has a positive ID)
+    if (
+      editable &&
+      sectionId &&
+      !sectionId.startsWith("temp-") &&
+      items.length === 0 &&
+      onItemAdd
+    ) {
+      // Only add if the section has been saved (not a temp ID)
       onItemAdd(sectionId);
     }
   }, [editable, sectionId, items.length, onItemAdd]);
@@ -110,7 +119,7 @@ export function PledgeSection({
 
   const handleCancelSection = () => {
     // If this is a new unsaved section, delete it
-    if (sectionId && sectionId < 0) {
+    if (sectionId && sectionId.startsWith("temp-")) {
       if (onSectionDelete) {
         onSectionDelete(sectionId);
       }
@@ -166,7 +175,7 @@ export function PledgeSection({
                 }}
                 placeholder="e.g., Food & Drinks, Setup Crew, Activities"
                 className="font-semibold text-base placeholder:font-normal placeholder:text-muted-foreground/50"
-                autoFocus={sectionId ? sectionId < 0 : false}
+                autoFocus={!!sectionId && sectionId.startsWith("temp-")}
               />
               <div className="flex gap-1">
                 <Button
@@ -224,7 +233,7 @@ export function PledgeSection({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-6 w-6 opacity-50 transition-opacity group-hover:opacity-100"
+                  className="h-5 w-5 opacity-50 transition-opacity group-hover:opacity-100"
                   onClick={() => setIsEditingSection(true)}
                 >
                   <Edit3 className="h-3 w-3" />
@@ -251,7 +260,7 @@ export function PledgeSection({
             onItemDelete={onItemDelete}
           />
         ))}
-        {editable && onItemAdd && sectionId && sectionId > 0 && (
+        {editable && onItemAdd && sectionId && !sectionId.startsWith("temp-") && (
           <Button
             onClick={() => onItemAdd(sectionId)}
             variant="outline"

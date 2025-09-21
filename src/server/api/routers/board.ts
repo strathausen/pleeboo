@@ -22,19 +22,22 @@ export const boardRouter = createTRPCRouter({
         title: z.string().min(1).max(256),
         description: z.string().optional(),
         prompt: z.string().optional(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const boardId = generateBoardId();
 
       // Create the board
-      const [board] = await ctx.db.insert(boards).values({
-        id: boardId,
-        title: input.title,
-        description: input.description,
-        prompt: input.prompt,
-        createdById: ctx.session?.user?.id,
-      }).returning();
+      const [board] = await ctx.db
+        .insert(boards)
+        .values({
+          id: boardId,
+          title: input.title,
+          description: input.description,
+          prompt: input.prompt,
+          createdById: ctx.session?.user?.id,
+        })
+        .returning();
 
       // Generate access tokens for the board
       const adminToken = nanoid(32);
@@ -54,117 +57,6 @@ export const boardRouter = createTRPCRouter({
       ]);
 
       return { id: boardId, adminToken, ...board };
-    }),
-
-  createWithSections: publicProcedure
-    .input(
-      z.object({
-        title: z.string().min(1).max(256),
-        description: z.string().optional(),
-        sections: z.array(
-          z.object({
-            title: z.string().min(1).max(256),
-            description: z.string().optional(),
-            icon: z.string().max(50),
-            items: z.array(
-              z.object({
-                title: z.string().min(1).max(256),
-                description: z.string().optional(),
-                icon: z.string().max(50),
-                needed: z.number().min(1).max(100),
-                volunteers: z.array(
-                  z.object({
-                    name: z.string().min(1).max(256),
-                    details: z.string().optional(),
-                  }),
-                ),
-              }),
-            ),
-          }),
-        ),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const boardId = generateBoardId();
-
-      // Create the board
-      await ctx.db.insert(boards).values({
-        id: boardId,
-        title: input.title,
-        description: input.description,
-        createdById: ctx.session?.user?.id,
-      });
-
-      // Create sections and items
-      for (
-        let sectionIndex = 0;
-        sectionIndex < input.sections.length;
-        sectionIndex++
-      ) {
-        const section = input.sections[sectionIndex];
-
-        const [insertedSection] = await ctx.db
-          .insert(boardSections)
-          .values({
-            boardId,
-            title: section.title,
-            description: section.description,
-            icon: section.icon,
-            sortOrder: sectionIndex,
-          })
-          .returning({ id: boardSections.id });
-
-        if (!insertedSection) continue;
-
-        // Create items for this section
-        for (let itemIndex = 0; itemIndex < section.items.length; itemIndex++) {
-          const item = section.items[itemIndex];
-
-          const [insertedItem] = await ctx.db
-            .insert(boardItems)
-            .values({
-              sectionId: insertedSection.id,
-              title: item.title,
-              description: item.description,
-              icon: item.icon,
-              needed: item.needed,
-              sortOrder: itemIndex,
-            })
-            .returning({ id: boardItems.id });
-
-          if (!insertedItem) continue;
-
-          // Create volunteers for this item
-          for (const volunteer of item.volunteers) {
-            if (volunteer.name.trim()) {
-              await ctx.db.insert(boardVolunteers).values({
-                itemId: insertedItem.id,
-                name: volunteer.name,
-                details: volunteer.details,
-              });
-            }
-          }
-        }
-      }
-
-      // Generate access tokens for the board
-      const adminToken = nanoid(32);
-      const viewToken = nanoid(32);
-
-      await ctx.db.insert(boardAccessTokens).values([
-        {
-          id: adminToken,
-          boardId,
-          type: "admin",
-        },
-        {
-          id: viewToken,
-          boardId,
-          type: "view",
-        },
-      ]);
-
-      return { boardId, adminToken };
     }),
 
   get: publicProcedure
@@ -203,7 +95,7 @@ export const boardRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...updates } = input;
@@ -217,14 +109,14 @@ export const boardRouter = createTRPCRouter({
       return board;
     }),
 
-  updateVolunteer: publicProcedure
+  upsertVolunteer: publicProcedure
     .input(
       z.object({
-        itemId: z.number(),
+        itemId: z.string(),
         volunteerIndex: z.number(),
         name: z.string(),
         details: z.string().optional(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       // Get existing volunteers for this item
@@ -252,6 +144,7 @@ export const boardRouter = createTRPCRouter({
       } else if (input.name.trim()) {
         // Create new volunteer
         await ctx.db.insert(boardVolunteers).values({
+          id: nanoid(24),
           itemId: input.itemId,
           name: input.name,
           details: input.details,
@@ -273,11 +166,11 @@ export const boardRouter = createTRPCRouter({
   updateSection: publicProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
         icon: z.string().max(50).optional(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...updates } = input;
@@ -291,7 +184,7 @@ export const boardRouter = createTRPCRouter({
     }),
 
   deleteSection: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.delete(boardSections).where(eq(boardSections.id, input.id));
 
@@ -301,12 +194,12 @@ export const boardRouter = createTRPCRouter({
   updateItem: publicProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
         icon: z.string().max(50).optional(),
         needed: z.number().min(1).max(100).optional(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...updates } = input;
@@ -317,7 +210,7 @@ export const boardRouter = createTRPCRouter({
     }),
 
   deleteItem: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.delete(boardItems).where(eq(boardItems.id, input.id));
 
@@ -331,7 +224,7 @@ export const boardRouter = createTRPCRouter({
         title: z.string().min(1).max(256),
         description: z.string().optional(),
         icon: z.string().max(50),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       // Get the max sort order for this board
@@ -342,9 +235,11 @@ export const boardRouter = createTRPCRouter({
 
       const sortOrder = (maxSortSection?.sortOrder || 0) + 1;
 
+      const sectionId = nanoid(24);
       const [newSection] = await ctx.db
         .insert(boardSections)
         .values({
+          id: sectionId,
           boardId: input.boardId,
           title: input.title,
           description: input.description,
@@ -359,12 +254,12 @@ export const boardRouter = createTRPCRouter({
   addItem: publicProcedure
     .input(
       z.object({
-        sectionId: z.number(),
+        sectionId: z.string(),
         title: z.string().min(1).max(256),
         description: z.string().optional(),
         icon: z.string().max(50),
         needed: z.number().min(1).max(100),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       // Get the max sort order for this section
@@ -375,9 +270,11 @@ export const boardRouter = createTRPCRouter({
 
       const sortOrder = (maxSortItem?.sortOrder || 0) + 1;
 
+      const itemId = nanoid(24);
       const [newItem] = await ctx.db
         .insert(boardItems)
         .values({
+          id: itemId,
           ...input,
           sortOrder,
         })
@@ -415,7 +312,7 @@ export const boardRouter = createTRPCRouter({
       z.object({
         boardId: z.string(),
         token: z.string().optional(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       if (!input.token) {
@@ -425,7 +322,7 @@ export const boardRouter = createTRPCRouter({
       const accessToken = await ctx.db.query.boardAccessTokens.findFirst({
         where: and(
           eq(boardAccessTokens.id, input.token),
-          eq(boardAccessTokens.boardId, input.boardId),
+          eq(boardAccessTokens.boardId, input.boardId)
         ),
       });
 
@@ -439,8 +336,8 @@ export const boardRouter = createTRPCRouter({
     .input(
       z.object({
         boardId: z.string(),
-        sectionIds: z.array(z.number()),
-      }),
+        sectionIds: z.array(z.string()),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       // Update sort order for each section
@@ -451,9 +348,9 @@ export const boardRouter = createTRPCRouter({
           .where(
             and(
               eq(boardSections.id, sectionId),
-              eq(boardSections.boardId, input.boardId),
-            ),
-          ),
+              eq(boardSections.boardId, input.boardId)
+            )
+          )
       );
 
       await Promise.all(updates);

@@ -41,6 +41,10 @@ This is a T3 Stack application with the following technology stack:
 - **Tailwind CSS v4** - Utility-first CSS framework
 - Path alias: `@/*` maps to `./src/*`
 
+### Scrapbook
+
+- the scrapbook page will showcase only low-level ui components
+
 ## Project Structure
 
 ```
@@ -68,6 +72,7 @@ src/
 - All tables prefixed with `pleeboo_`
 - Relations defined using Drizzle's relations API
 - Indexes on foreign keys and commonly queried fields
+- Indexes should be strings
 
 ### Authentication Flow
 - Discord OAuth provider configured

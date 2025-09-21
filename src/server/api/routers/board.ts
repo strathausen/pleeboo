@@ -1,3 +1,8 @@
+import {
+  validateAdminToken,
+  validateAdminTokenForItem,
+  validateAdminTokenForSection,
+} from "@/server/api/auth/board-auth";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import {
   boardAccessTokens,
@@ -95,10 +100,14 @@ export const boardRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...updates } = input;
+      const { id, token, ...updates } = input;
+
+      // Validate admin token before allowing update
+      await validateAdminToken(id, token);
 
       const [board] = await ctx.db
         .update(boards)
@@ -116,23 +125,29 @@ export const boardRouter = createTRPCRouter({
         volunteerIndex: z.number(),
         name: z.string(),
         details: z.string().optional(),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { itemId, token, ...volunteerData } = input;
+
+      // Validate admin token before allowing volunteer modification
+      await validateAdminTokenForItem(itemId, token);
+
       // Get existing volunteers for this item
       const existingVolunteers = await ctx.db.query.boardVolunteers.findMany({
-        where: eq(boardVolunteers.itemId, input.itemId),
+        where: eq(boardVolunteers.itemId, itemId),
         orderBy: (volunteers, { asc }) => [asc(volunteers.id)],
       });
 
-      if (input.volunteerIndex < existingVolunteers.length) {
+      if (volunteerData.volunteerIndex < existingVolunteers.length) {
         // Update existing volunteer
-        const volunteer = existingVolunteers[input.volunteerIndex];
+        const volunteer = existingVolunteers[volunteerData.volunteerIndex];
         if (volunteer) {
-          if (input.name.trim()) {
+          if (volunteerData.name.trim()) {
             await ctx.db
               .update(boardVolunteers)
-              .set({ name: input.name, details: input.details })
+              .set({ name: volunteerData.name, details: volunteerData.details })
               .where(eq(boardVolunteers.id, volunteer.id));
           } else {
             // Delete if name is empty
@@ -141,13 +156,13 @@ export const boardRouter = createTRPCRouter({
               .where(eq(boardVolunteers.id, volunteer.id));
           }
         }
-      } else if (input.name.trim()) {
+      } else if (volunteerData.name.trim()) {
         // Create new volunteer
         await ctx.db.insert(boardVolunteers).values({
           id: nanoid(24),
-          itemId: input.itemId,
-          name: input.name,
-          details: input.details,
+          itemId,
+          name: volunteerData.name,
+          details: volunteerData.details,
         });
       }
 
@@ -170,10 +185,14 @@ export const boardRouter = createTRPCRouter({
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
         icon: z.string().max(50).optional(),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...updates } = input;
+      const { id, token, ...updates } = input;
+
+      // Validate admin token before allowing update
+      await validateAdminTokenForSection(id, token);
 
       await ctx.db
         .update(boardSections)
@@ -184,8 +203,16 @@ export const boardRouter = createTRPCRouter({
     }),
 
   deleteSection: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(
+      z.object({
+        id: z.string(),
+        token: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
+      // Validate admin token before allowing deletion
+      await validateAdminTokenForSection(input.id, input.token);
+
       await ctx.db.delete(boardSections).where(eq(boardSections.id, input.id));
 
       return { success: true };
@@ -199,10 +226,14 @@ export const boardRouter = createTRPCRouter({
         description: z.string().optional(),
         icon: z.string().max(50).optional(),
         needed: z.number().min(1).max(100).optional(),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...updates } = input;
+      const { id, token, ...updates } = input;
+
+      // Validate admin token before allowing update
+      await validateAdminTokenForItem(id, token);
 
       await ctx.db.update(boardItems).set(updates).where(eq(boardItems.id, id));
 
@@ -210,8 +241,16 @@ export const boardRouter = createTRPCRouter({
     }),
 
   deleteItem: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(
+      z.object({
+        id: z.string(),
+        token: z.string().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
+      // Validate admin token before allowing deletion
+      await validateAdminTokenForItem(input.id, input.token);
+
       await ctx.db.delete(boardItems).where(eq(boardItems.id, input.id));
 
       return { success: true };
@@ -224,12 +263,18 @@ export const boardRouter = createTRPCRouter({
         title: z.string().min(1).max(256),
         description: z.string().optional(),
         icon: z.string().max(50),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { boardId, token, ...sectionData } = input;
+
+      // Validate admin token before allowing section creation
+      await validateAdminToken(boardId, token);
+
       // Get the max sort order for this board
       const maxSortSection = await ctx.db.query.boardSections.findFirst({
-        where: eq(boardSections.boardId, input.boardId),
+        where: eq(boardSections.boardId, boardId),
         orderBy: (sections, { desc }) => [desc(sections.sortOrder)],
       });
 
@@ -240,10 +285,8 @@ export const boardRouter = createTRPCRouter({
         .insert(boardSections)
         .values({
           id: sectionId,
-          boardId: input.boardId,
-          title: input.title,
-          description: input.description,
-          icon: input.icon,
+          boardId,
+          ...sectionData,
           sortOrder,
         })
         .returning();
@@ -259,12 +302,18 @@ export const boardRouter = createTRPCRouter({
         description: z.string().optional(),
         icon: z.string().max(50),
         needed: z.number().min(1).max(100),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { sectionId, token, ...itemData } = input;
+
+      // Validate admin token before allowing item creation
+      await validateAdminTokenForSection(sectionId, token);
+
       // Get the max sort order for this section
       const maxSortItem = await ctx.db.query.boardItems.findFirst({
-        where: eq(boardItems.sectionId, input.sectionId),
+        where: eq(boardItems.sectionId, sectionId),
         orderBy: (items, { desc }) => [desc(items.sortOrder)],
       });
 
@@ -275,7 +324,8 @@ export const boardRouter = createTRPCRouter({
         .insert(boardItems)
         .values({
           id: itemId,
-          ...input,
+          sectionId,
+          ...itemData,
           sortOrder,
         })
         .returning();
@@ -337,18 +387,24 @@ export const boardRouter = createTRPCRouter({
       z.object({
         boardId: z.string(),
         sectionIds: z.array(z.string()),
+        token: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { boardId, token, sectionIds } = input;
+
+      // Validate admin token before allowing reordering
+      await validateAdminToken(boardId, token);
+
       // Update sort order for each section
-      const updates = input.sectionIds.map((sectionId, index) =>
+      const updates = sectionIds.map((sectionId, index) =>
         ctx.db
           .update(boardSections)
           .set({ sortOrder: index })
           .where(
             and(
               eq(boardSections.id, sectionId),
-              eq(boardSections.boardId, input.boardId)
+              eq(boardSections.boardId, boardId)
             )
           )
       );

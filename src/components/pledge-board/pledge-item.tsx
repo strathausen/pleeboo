@@ -44,12 +44,12 @@ interface PledgeItemProps {
   onVolunteerNameChange?: (
     itemId: string,
     volunteerIndex: number,
-    newName: string
+    newName: string,
   ) => void;
   onVolunteerDetailsChange?: (
     itemId: string,
     volunteerIndex: number,
-    newDetails: string
+    newDetails: string,
   ) => void;
   isTask?: boolean;
   editable?: boolean;
@@ -87,9 +87,7 @@ export function PledgeItem({
   onItemDelete,
 }: PledgeItemProps) {
   // Start in edit mode if it's a new item (temp ID)
-  const [isEditing, setIsEditing] = useState(
-    item.id.startsWith("temp-")
-  );
+  const [isEditing, setIsEditing] = useState(item.id.startsWith("temp-"));
   const [tempTitle, setTempTitle] = useState(item.title);
   const [tempDescription, setTempDescription] = useState(item.description);
   const [tempNeeded, setTempNeeded] = useState(item.needed);
@@ -295,7 +293,7 @@ export function PledgeItem({
           {getStatusBadge(item.needed, item.volunteers.length)}
           <span className="text-muted-foreground text-sm">
             {item.volunteers.length} of {item.needed}{" "}
-            {item.isTask ?? isTask ? "volunteers" : "contributions"}
+            {(item.isTask ?? isTask) ? "volunteers" : "contributions"}
           </span>
         </div>
         {editable && onItemUpdate && (

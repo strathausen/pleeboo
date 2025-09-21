@@ -245,7 +245,7 @@ export default function LandingPage() {
               and watch your community come together.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/board/new">
+              <Link href="/board">
                 <Button size="lg" className="min-w-[200px]">
                   Create Your First Board
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -441,7 +441,7 @@ export default function LandingPage() {
               No credit card required. Ever.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Link href="/board/new">
+              <Link href="/board">
                 <Button size="lg" variant="secondary" className="min-w-[200px]">
                   Create Free Board
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -473,7 +473,7 @@ export default function LandingPage() {
                 About
               </Link>
               <Link
-                href="/board/new"
+                href="/board"
                 className="text-muted-foreground hover:text-foreground"
               >
                 Create Board

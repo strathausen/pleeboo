@@ -34,24 +34,21 @@ interface PledgeSectionProps {
   onVolunteerNameChange: (
     itemId: string,
     volunteerIndex: number,
-    newName: string
+    newName: string,
   ) => void;
   onVolunteerDetailsChange: (
     itemId: string,
     volunteerIndex: number,
-    newDetails: string
+    newDetails: string,
   ) => void;
   isTask: boolean;
   editable?: boolean;
   onSectionUpdate?: (
     sectionId: string,
-    updates: { title?: string; description?: string; icon?: LucideIcon }
+    updates: { title?: string; description?: string; icon?: LucideIcon },
   ) => void;
   onSectionDelete?: (sectionId: string) => void;
-  onItemUpdate?: (
-    itemId: string,
-    updates: Partial<PledgeItemData>
-  ) => void;
+  onItemUpdate?: (itemId: string, updates: Partial<PledgeItemData>) => void;
   onItemDelete?: (itemId: string) => void;
   onItemAdd?: (sectionId: string) => void;
   onMoveUp?: (sectionId: string) => void;
@@ -83,7 +80,7 @@ export function PledgeSection({
 }: PledgeSectionProps) {
   // Start in edit mode if it's a new section (temp ID)
   const [isEditingSection, setIsEditingSection] = useState(
-    sectionId && sectionId.startsWith("temp-")
+    sectionId && sectionId.startsWith("temp-"),
   );
   const [tempTitle, setTempTitle] = useState(title);
   const [tempDescription, setTempDescription] = useState(description);
@@ -260,16 +257,19 @@ export function PledgeSection({
             onItemDelete={onItemDelete}
           />
         ))}
-        {editable && onItemAdd && sectionId && !sectionId.startsWith("temp-") && (
-          <Button
-            onClick={() => onItemAdd(sectionId)}
-            variant="outline"
-            className="w-full gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Item
-          </Button>
-        )}
+        {editable &&
+          onItemAdd &&
+          sectionId &&
+          !sectionId.startsWith("temp-") && (
+            <Button
+              onClick={() => onItemAdd(sectionId)}
+              variant="outline"
+              className="w-full gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add Item
+            </Button>
+          )}
       </CardContent>
     </Card>
   );

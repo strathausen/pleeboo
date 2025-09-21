@@ -12,7 +12,6 @@ export default function BoardClient() {
 
   return (
     <PledgeBoard
-      mode="view"
       boardId={boardId}
       token={token || undefined}
       startInEditMode={isNew}

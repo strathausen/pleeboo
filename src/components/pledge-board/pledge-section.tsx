@@ -80,7 +80,7 @@ export function PledgeSection({
 }: PledgeSectionProps) {
   // Start in edit mode if it's a new section (temp ID)
   const [isEditingSection, setIsEditingSection] = useState(
-    sectionId && sectionId.startsWith("temp-"),
+    sectionId?.startsWith("temp-"),
   );
   const [tempTitle, setTempTitle] = useState(title);
   const [tempDescription, setTempDescription] = useState(description);
@@ -116,7 +116,7 @@ export function PledgeSection({
 
   const handleCancelSection = () => {
     // If this is a new unsaved section, delete it
-    if (sectionId && sectionId.startsWith("temp-")) {
+    if (sectionId?.startsWith("temp-")) {
       if (onSectionDelete) {
         onSectionDelete(sectionId);
       }

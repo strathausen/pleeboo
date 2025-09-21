@@ -27,7 +27,7 @@ export const boardRouter = createTRPCRouter({
         title: z.string().min(1).max(256),
         description: z.string().optional(),
         prompt: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const boardId = generateBoardId();
@@ -101,7 +101,7 @@ export const boardRouter = createTRPCRouter({
         title: z.string().min(1).max(256).optional(),
         description: z.string().optional(),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, token, ...updates } = input;
@@ -126,7 +126,7 @@ export const boardRouter = createTRPCRouter({
         name: z.string(),
         details: z.string().optional(),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { itemId, token, ...volunteerData } = input;
@@ -186,7 +186,7 @@ export const boardRouter = createTRPCRouter({
         description: z.string().optional(),
         icon: z.string().max(50).optional(),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, token, ...updates } = input;
@@ -207,7 +207,7 @@ export const boardRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Validate admin token before allowing deletion
@@ -227,7 +227,7 @@ export const boardRouter = createTRPCRouter({
         icon: z.string().max(50).optional(),
         needed: z.number().min(1).max(100).optional(),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, token, ...updates } = input;
@@ -245,7 +245,7 @@ export const boardRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Validate admin token before allowing deletion
@@ -264,7 +264,7 @@ export const boardRouter = createTRPCRouter({
         description: z.string().optional(),
         icon: z.string().max(50),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { boardId, token, ...sectionData } = input;
@@ -303,7 +303,7 @@ export const boardRouter = createTRPCRouter({
         icon: z.string().max(50),
         needed: z.number().min(1).max(100),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { sectionId, token, ...itemData } = input;
@@ -362,7 +362,7 @@ export const boardRouter = createTRPCRouter({
       z.object({
         boardId: z.string(),
         token: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       if (!input.token) {
@@ -372,7 +372,7 @@ export const boardRouter = createTRPCRouter({
       const accessToken = await ctx.db.query.boardAccessTokens.findFirst({
         where: and(
           eq(boardAccessTokens.id, input.token),
-          eq(boardAccessTokens.boardId, input.boardId)
+          eq(boardAccessTokens.boardId, input.boardId),
         ),
       });
 
@@ -388,7 +388,7 @@ export const boardRouter = createTRPCRouter({
         boardId: z.string(),
         sectionIds: z.array(z.string()),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { boardId, token, sectionIds } = input;
@@ -404,9 +404,9 @@ export const boardRouter = createTRPCRouter({
           .where(
             and(
               eq(boardSections.id, sectionId),
-              eq(boardSections.boardId, boardId)
-            )
-          )
+              eq(boardSections.boardId, boardId),
+            ),
+          ),
       );
 
       await Promise.all(updates);

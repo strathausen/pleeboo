@@ -99,7 +99,7 @@ export function MarkdownText({ text, className }: MarkdownTextProps) {
           !line.includes("</ol>") &&
           line.trim() !== ""
         ) {
-          return line + "<br/>";
+          return `${line}<br/>`;
         }
         return line;
       })

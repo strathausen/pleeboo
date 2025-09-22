@@ -1,7 +1,7 @@
 "use client";
 
-import { PledgeBoard } from "@/components/board/pledge-board";
 import type { BoardData } from "@/components/board/pledge-board";
+import { PledgeBoard } from "@/components/board/pledge-board";
 
 // Example board data - no server interaction
 const EXAMPLE_BOARD: BoardData = {
@@ -25,8 +25,6 @@ const EXAMPLE_BOARD: BoardData = {
           volunteers: [
             { id: "v1", name: "Alex R.", details: "Bringing lasagna" },
           ],
-          category: "Food",
-          isTask: false,
         },
         {
           id: "sides",
@@ -35,8 +33,6 @@ const EXAMPLE_BOARD: BoardData = {
           icon: "Sandwich" as const,
           needed: 5,
           volunteers: [{ id: "v2", name: "Jamie L.", details: "Caesar salad" }],
-          category: "Food",
-          isTask: false,
         },
         {
           id: "desserts",
@@ -47,8 +43,6 @@ const EXAMPLE_BOARD: BoardData = {
           volunteers: [
             { id: "v3", name: "Sam K.", details: "Homemade cookies" },
           ],
-          category: "Food",
-          isTask: false,
         },
         {
           id: "drinks",
@@ -57,8 +51,6 @@ const EXAMPLE_BOARD: BoardData = {
           icon: "CupSoda" as const,
           needed: 2,
           volunteers: [],
-          category: "Drinks",
-          isTask: false,
         },
       ],
     },
@@ -75,8 +67,6 @@ const EXAMPLE_BOARD: BoardData = {
           icon: "Clock" as const,
           needed: 3,
           volunteers: [{ id: "v4", name: "Pat M.", details: "" }],
-          category: "Setup",
-          isTask: true,
         },
         {
           id: "cleanup",
@@ -85,8 +75,6 @@ const EXAMPLE_BOARD: BoardData = {
           icon: "Trash" as const,
           needed: 3,
           volunteers: [],
-          category: "Cleanup",
-          isTask: true,
         },
         {
           id: "tables",
@@ -97,8 +85,6 @@ const EXAMPLE_BOARD: BoardData = {
           volunteers: [
             { id: "v5", name: "Morgan D.", details: "2 tables + 8 chairs" },
           ],
-          category: "Equipment",
-          isTask: false,
         },
       ],
     },
@@ -118,8 +104,6 @@ const EXAMPLE_BOARD: BoardData = {
             { id: "v6", name: "Chris T.", details: "Catan & Ticket to Ride" },
             { id: "v7", name: "Jordan L.", details: "Uno & Exploding Kittens" },
           ],
-          category: "Games",
-          isTask: false,
         },
         {
           id: "kids-activities",
@@ -128,8 +112,6 @@ const EXAMPLE_BOARD: BoardData = {
           icon: "Users" as const,
           needed: 1,
           volunteers: [],
-          category: "Activities",
-          isTask: true,
         },
       ],
     },

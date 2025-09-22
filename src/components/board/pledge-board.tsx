@@ -6,9 +6,9 @@ import { PledgeSection } from "@/components/pledge-board/pledge-section";
 import { Button } from "@/components/ui/button";
 import { useBoardHistory } from "@/hooks/use-board-history";
 import { useDebounce } from "@/hooks/use-debounce";
-import { type IconName, getIcon } from "@/lib/available-icons";
+import type { IconName } from "@/lib/available-icons";
 import { api } from "@/trpc/react";
-import { Edit3, Eye, Loader2, Plus, Share2, Star } from "lucide-react";
+import { Edit3, Eye, Loader2, Plus, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -51,21 +51,29 @@ export type BoardData = {
 };
 
 interface PledgeBoardProps {
-  boardId: string;
+  boardId?: string;
   token?: string;
   startInEditMode?: boolean;
+  initialData?: BoardData;
+  editable?: boolean;
+  isExample?: boolean;
 }
 
 export function PledgeBoard({
   boardId,
   token,
   startInEditMode = false,
+  initialData,
+  editable,
+  isExample = false,
 }: PledgeBoardProps) {
   const router = useRouter();
   const { addToHistory } = useBoardHistory();
 
   // State
-  const [localBoard, setLocalBoard] = useState<BoardData | null>(null);
+  const [localBoard, setLocalBoard] = useState<BoardData | null>(
+    initialData || null,
+  );
 
   const [pendingUpdates, setPendingUpdates] = useState<
     Map<string, VolunteerUpdate>
@@ -78,16 +86,19 @@ export function PledgeBoard({
   const [isSaving, setIsSaving] = useState(false);
   const [nextTempId, setNextTempId] = useState(1);
 
-  // API hooks
+  // API hooks - only fetch if boardId is provided (not for example board)
   const {
     data: board,
     isLoading,
     refetch,
-  } = api.board.get.useQuery({ id: boardId }, { enabled: !!boardId });
+  } = api.board.get.useQuery(
+    { id: boardId || "" },
+    { enabled: !!boardId && !initialData },
+  );
 
   const { data: tokenData } = api.board.validateToken.useQuery(
-    { boardId, token: token || undefined },
-    { enabled: !!boardId },
+    { boardId: boardId || "", token: token || undefined },
+    { enabled: !!boardId && !initialData },
   );
 
   // Debounced updates
@@ -182,11 +193,11 @@ export function PledgeBoard({
 
   // Update local board when server data changes
   useEffect(() => {
-    if (board) {
+    if (board && !initialData) {
       setLocalBoard(board);
       // Save to board history
       addToHistory({
-        id: boardId,
+        id: boardId || "",
         title: board.title,
         description: board.description || undefined,
         token: token || undefined,
@@ -194,19 +205,19 @@ export function PledgeBoard({
         lastVisited: new Date().toISOString(),
       });
     }
-  }, [board, boardId, token, accessLevel, addToHistory]);
+  }, [board, boardId, token, accessLevel, addToHistory, initialData]);
 
   // Process debounced updates
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    if (debouncedUpdates.size > 0) {
+    if (debouncedUpdates.size > 0 && !isExample) {
       for (const update of debouncedUpdates.values()) {
         upsertVolunteer.mutate({ ...update, token });
       }
       setPendingUpdates(new Map());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedUpdates]);
+  }, [debouncedUpdates, isExample]);
 
   // Ensure there's always an empty section when in edit mode and board is empty
   useEffect(() => {
@@ -267,8 +278,8 @@ export function PledgeBoard({
         };
       });
 
-      // Only queue updates if not a temp item
-      if (!itemId.startsWith("temp-")) {
+      // Only queue updates if not a temp item and not an example board
+      if (!itemId.startsWith("temp-") && !isExample) {
         const key = `${itemId}-${volunteerIndex}`;
         const existingUpdate = pendingUpdates.get(key);
         const details =
@@ -291,7 +302,7 @@ export function PledgeBoard({
         );
       }
     },
-    [localBoard, pendingUpdates],
+    [localBoard, pendingUpdates, isExample],
   );
 
   const handleVolunteerDetailsChange = useCallback(
@@ -329,8 +340,8 @@ export function PledgeBoard({
         };
       });
 
-      // Only queue updates if not a temp item
-      if (!itemId.startsWith("temp-")) {
+      // Only queue updates if not a temp item and not an example board
+      if (!itemId.startsWith("temp-") && !isExample) {
         const key = `${itemId}-${volunteerIndex}`;
         const existingUpdate = pendingUpdates.get(key);
         const name =
@@ -353,7 +364,7 @@ export function PledgeBoard({
         );
       }
     },
-    [localBoard, pendingUpdates],
+    [localBoard, pendingUpdates, isExample],
   );
 
   const handleSectionUpdate = (
@@ -657,9 +668,11 @@ export function PledgeBoard({
   };
 
   // Determine if we can edit
-  const canEdit = accessLevel === "admin";
+  const canEdit =
+    accessLevel === "admin" || (editable !== false && !!initialData);
 
-  if (isLoading) {
+  // Loading state - don't show loading if we have initialData (example board)
+  if (isLoading && !initialData) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -704,6 +717,22 @@ export function PledgeBoard({
             }
           }}
         />
+
+        {/* Example banner */}
+        {isExample && (
+          <div className="rounded-lg bg-yellow-50 px-4 py-3 dark:bg-yellow-900/20">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              👀 This is an example board to show you how it works. Your entries
+              here won't be saved.{" "}
+              <a
+                href="/board"
+                className="font-medium underline hover:no-underline"
+              >
+                Create your own board
+              </a>
+            </p>
+          </div>
+        )}
 
         <div className="flex items-start justify-between">
           <div className="flex gap-2">

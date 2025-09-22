@@ -5,17 +5,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Core Commands
-- `npm run dev` - Start development server with Turbo
-- `npm run build` - Build production bundle
-- `npm run typecheck` - Run TypeScript type checking
-- `npm run check` - Run Biome linter/formatter check
-- `npm run check:write` - Auto-fix linting/formatting issues
+- `bun run dev` - Start development server with Turbo
+- `bun run build` - Build production bundle
+- `bun run typecheck` - Run TypeScript type checking
+- `bun run check` - Run Biome linter/formatter check
+- `bun run check:write` - Auto-fix linting/formatting issues
 
 ### Database Commands
-- `npm run db:push` - Push schema changes to database
-- `npm run db:generate` - Generate Drizzle migration files
-- `npm run db:migrate` - Run database migrations
-- `npm run db:studio` - Open Drizzle Studio for database management
+- `bun run db:push` - Push schema changes to database
+- `bun run db:generate` - Generate Drizzle migration files
+- `bun run db:migrate` - Run database migrations
+- `bun run db:studio` - Open Drizzle Studio for database management
 
 ## Architecture Overview
 
@@ -49,10 +49,10 @@ This is a T3 Stack application with the following technology stack:
 
 ```
 src/
-├── app/                  # Next.js App Router pages and components
-│   ├── api/             # API routes (tRPC and NextAuth)
-│   └── _components/     # Page-specific components
-├── server/              # Backend logic
+├── app/                # Next.js App Router pages and components
+│   ├── api/            # API routes (tRPC and NextAuth)
+│   └── _components/    # Page-specific components
+├── server/             # Backend logic
 │   ├── api/            # tRPC routers and procedures
 │   ├── auth/           # NextAuth configuration
 │   └── db/             # Database schema and connection

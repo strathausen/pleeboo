@@ -124,6 +124,7 @@ export function MarkdownText({ text, className }: MarkdownTextProps) {
   return (
     <div
       className={cn("prose prose-sm dark:prose-invert max-w-none", className)}
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: we're using sanitised HTML that we generated ourselves via markdown
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

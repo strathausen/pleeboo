@@ -69,7 +69,7 @@ export function useBoardHistory() {
   const getUniqueBoards = useCallback(() => {
     const boardMap = new Map<string, BoardHistoryItem>();
 
-    history.forEach((item) => {
+    for (const item of history) {
       const existing = boardMap.get(item.id);
       if (
         !existing ||
@@ -78,7 +78,7 @@ export function useBoardHistory() {
       ) {
         boardMap.set(item.id, item);
       }
-    });
+    }
 
     return Array.from(boardMap.values()).sort(
       (a, b) =>

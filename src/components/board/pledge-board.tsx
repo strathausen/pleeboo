@@ -193,11 +193,11 @@ export function PledgeBoard({
 
   // Update local board when server data changes
   useEffect(() => {
-    if (board && !initialData) {
+    if (board && !initialData && boardId) {
       setLocalBoard(board);
       // Save to board history
       addToHistory({
-        id: boardId || "",
+        id: boardId,
         title: board.title,
         description: board.description || undefined,
         token: token || undefined,

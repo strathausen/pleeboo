@@ -1,30 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { availableIcons as defaultIcons } from "@/lib/available-icons";
-import type { LucideIcon } from "lucide-react";
+import { type IconName, getIcon } from "@/lib/available-icons";
 import { useState } from "react";
 import { IconPicker } from "./icon-picker";
 
 interface IconSelectorProps {
-  currentIcon: LucideIcon;
-  availableIcons?: { icon: LucideIcon; name: string }[];
-  onIconSelect: (icon: LucideIcon) => void;
+  currentIcon: IconName;
+  onIconSelect: (icon: IconName) => void;
   size?: "default" | "sm" | "lg" | "icon";
   variant?: "default" | "outline" | "ghost" | "secondary";
   className?: string;
 }
 
 export function IconSelector({
-  currentIcon: CurrentIcon,
-  availableIcons,
+  currentIcon,
   onIconSelect,
   size = "icon",
   variant = "outline",
   className,
 }: IconSelectorProps) {
   const [showIconPicker, setShowIconPicker] = useState(false);
-  const icons = availableIcons || defaultIcons;
+  const CurrentIcon = getIcon(currentIcon);
 
   return (
     <div className="relative">
@@ -39,7 +36,6 @@ export function IconSelector({
       </Button>
       {showIconPicker && (
         <IconPicker
-          icons={icons}
           onSelect={(icon) => {
             onIconSelect(icon);
             setShowIconPicker(false);

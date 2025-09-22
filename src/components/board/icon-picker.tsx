@@ -1,17 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { type LucideIcon, X } from "lucide-react";
+import { type IconName, availableIcons, getIcon } from "@/lib/available-icons";
+import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 interface IconPickerProps {
-  icons: { icon: LucideIcon; name: string }[];
-  onSelect: (icon: LucideIcon) => void;
+  onSelect: (icon: IconName) => void;
   onClose: () => void;
 }
 
-export function IconPicker({ icons, onSelect, onClose }: IconPickerProps) {
+export function IconPicker({ onSelect, onClose }: IconPickerProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,18 +43,21 @@ export function IconPicker({ icons, onSelect, onClose }: IconPickerProps) {
         </Button>
       </div>
       <div className="grid max-h-60 grid-cols-8 gap-1 overflow-y-auto">
-        {icons.map(({ icon: Icon, name }) => (
-          <Button
-            key={name}
-            size="icon"
-            variant="ghost"
-            onClick={() => onSelect(Icon)}
-            className="h-8 w-8 hover:bg-primary/10"
-            title={name}
-          >
-            <Icon className="h-4 w-4" />
-          </Button>
-        ))}
+        {availableIcons.map(({ name }) => {
+          const Icon = getIcon(name);
+          return (
+            <Button
+              key={name}
+              size="icon"
+              variant="ghost"
+              onClick={() => onSelect(name)}
+              className="h-8 w-8 hover:bg-primary/10"
+              title={name}
+            >
+              <Icon className="h-4 w-4" />
+            </Button>
+          );
+        })}
       </div>
     </div>
   );

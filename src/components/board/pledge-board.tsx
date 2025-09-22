@@ -6,17 +6,9 @@ import { PledgeSection } from "@/components/pledge-board/pledge-section";
 import { Button } from "@/components/ui/button";
 import { useBoardHistory } from "@/hooks/use-board-history";
 import { useDebounce } from "@/hooks/use-debounce";
-import { getIconByName, getIconName } from "@/lib/available-icons";
+import { type IconName, getIcon } from "@/lib/available-icons";
 import { api } from "@/trpc/react";
-import {
-  Edit3,
-  Eye,
-  Loader2,
-  type LucideIcon,
-  Plus,
-  Share2,
-  Star,
-} from "lucide-react";
+import { Edit3, Eye, Loader2, Plus, Share2, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -35,13 +27,13 @@ export type BoardData = {
     id: string;
     title: string;
     description?: string | null;
-    icon: string;
+    icon: IconName | string; // string for backward compatibility
     items: Array<{
       id: string;
       sectionId?: string;
       title: string;
       description?: string | null;
-      icon: string;
+      icon: IconName | string; // string for backward compatibility
       needed: number;
       volunteers: Array<{
         id: string;
@@ -366,7 +358,7 @@ export function PledgeBoard({
 
   const handleSectionUpdate = (
     sectionId: string,
-    updates: { title?: string; description?: string; icon?: LucideIcon },
+    updates: { title?: string; description?: string; icon?: IconName },
   ) => {
     // Handle new sections (temp IDs)
     if (sectionId.startsWith("temp-")) {
@@ -378,12 +370,7 @@ export function PledgeBoard({
           boardId,
           title: updates.title || section.title,
           description: updates.description || undefined,
-          icon:
-            typeof section.icon === "string"
-              ? section.icon
-              : updates.icon
-                ? getIconName(updates.icon)
-                : getIconName(getIconByName("Star") || Star),
+          icon: updates.icon || section.icon || "Star",
           token,
         });
         // Update local state with the new values
@@ -400,7 +387,7 @@ export function PledgeBoard({
                     updates.description !== undefined
                       ? updates.description
                       : s.description,
-                  icon: updates.icon ? getIconName(updates.icon) : s.icon,
+                  icon: updates.icon || s.icon,
                 };
               }
               return s;
@@ -414,15 +401,15 @@ export function PledgeBoard({
     // Update existing section
     setLocalBoard((prev) => {
       if (!prev) return prev;
-      const icon =
-        updates.icon && getIconName(updates.icon)
-          ? getIconName(updates.icon)
-          : undefined;
       return {
         ...prev,
         sections: prev.sections.map((section) => {
           if (section.id === sectionId) {
-            return { ...section, ...updates, icon: icon || section.icon };
+            return {
+              ...section,
+              ...updates,
+              icon: updates.icon || section.icon,
+            };
           }
           return section;
         }),
@@ -434,7 +421,7 @@ export function PledgeBoard({
       updateSection.mutate({
         id: sectionId,
         ...updates,
-        icon: updates.icon ? getIconName(updates.icon) : undefined,
+        icon: updates.icon,
         token,
       });
     }
@@ -445,7 +432,7 @@ export function PledgeBoard({
     updates: Partial<{
       title: string;
       description: string;
-      icon: LucideIcon;
+      icon: IconName;
       needed: number;
       isTask?: boolean;
     }>,
@@ -458,9 +445,7 @@ export function PledgeBoard({
       const item = section?.items.find((i) => i.id === itemId);
 
       if (section && item && !section.id.startsWith("temp-")) {
-        const iconObj = updates.icon || item.icon;
-        const icon =
-          typeof iconObj === "string" ? iconObj : getIconName(iconObj);
+        const icon = updates.icon || item.icon || "Star";
         // Save the new item to the database
         addItem.mutate({
           sectionId: section.id,
@@ -479,7 +464,7 @@ export function PledgeBoard({
               ...s,
               items: s.items.map((i) => {
                 if (i.id === itemId) {
-                  return { ...i, ...updates, icon };
+                  return { ...i, ...updates, icon: updates.icon || i.icon };
                 }
                 return i;
               }),
@@ -493,17 +478,13 @@ export function PledgeBoard({
     // Update local state
     setLocalBoard((prev) => {
       if (!prev) return prev;
-      const icon =
-        updates.icon && getIconName(updates.icon)
-          ? getIconName(updates.icon)
-          : undefined;
       return {
         ...prev,
         sections: prev.sections.map((section) => ({
           ...section,
           items: section.items.map((item) => {
             if (item.id === itemId) {
-              return { ...item, ...updates, icon: icon || item.icon };
+              return { ...item, ...updates, icon: updates.icon || item.icon };
             }
             return item;
           }),
@@ -516,7 +497,7 @@ export function PledgeBoard({
       updateItem.mutate({
         id: itemId,
         ...updates,
-        icon: updates.icon ? getIconName(updates.icon) : undefined,
+        icon: updates.icon,
         token,
       });
     }
@@ -531,7 +512,7 @@ export function PledgeBoard({
       sectionId,
       title: "",
       description: "",
-      icon: "Star" as string,
+      icon: "Star" as IconName,
       needed: 1,
       volunteers: [],
       sortOrder: 999,
@@ -759,19 +740,7 @@ export function PledgeBoard({
         </div>
 
         {localBoard?.sections.map((section, sectionIndex) => {
-          const sectionIcon =
-            typeof section.icon === "string"
-              ? getIconByName(section.icon)
-              : section.icon;
-
-          if (!sectionIcon) return null;
-
           const items = section.items.map((item) => {
-            const itemIcon =
-              typeof item.icon === "string"
-                ? getIconByName(item.icon)
-                : item.icon;
-
             return {
               id: item.id,
               title: item.title,
@@ -782,7 +751,7 @@ export function PledgeBoard({
                 name: v.name,
                 details: v.details || "",
               })),
-              icon: itemIcon || getIconByName("Star") || Star,
+              icon: item.icon as IconName,
               category: "items" as const,
             };
           });
@@ -793,7 +762,7 @@ export function PledgeBoard({
               sectionId={section.id}
               title={section.title}
               description={section.description || ""}
-              icon={sectionIcon}
+              icon={section.icon as IconName}
               items={items}
               onPledge={() => {}}
               onVolunteerNameChange={handleVolunteerNameChange}

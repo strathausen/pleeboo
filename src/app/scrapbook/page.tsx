@@ -20,7 +20,7 @@ import { Logo } from "@/components/ui/logo";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { availableIcons } from "@/lib/available-icons";
+import { type IconName, availableIcons, getIcon } from "@/lib/available-icons";
 import {
   ArrowRight,
   Book as Broom,
@@ -45,7 +45,7 @@ import { useState } from "react";
 export default function ScrapbookPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
-  const [selectedIcon, setSelectedIcon] = useState<typeof Star>(Star);
+  const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
 
   const mockPledgeItem = {
     id: "1",
@@ -60,7 +60,7 @@ export default function ScrapbookPage() {
       },
       { id: "2", name: "Mike Chen", details: "Available all day" },
     ],
-    icon: Broom,
+    icon: "Book" as IconName,
     category: "tasks" as const,
   };
 
@@ -71,7 +71,7 @@ export default function ScrapbookPage() {
       description: "DJ or live music for the event",
       needed: 1,
       volunteers: [],
-      icon: Music,
+      icon: "Music" as IconName,
       category: "tasks" as const,
     },
     {
@@ -82,7 +82,7 @@ export default function ScrapbookPage() {
       volunteers: [
         { id: "4", name: "Emma Davis", details: "Has party supplies" },
       ],
-      icon: Gift,
+      icon: "Gift" as IconName,
       category: "tasks" as const,
     },
   ];
@@ -336,7 +336,7 @@ export default function ScrapbookPage() {
           <PledgeSection
             title="Volunteer Tasks"
             description="Help make our event run smoothly by volunteering for these tasks"
-            icon={Users}
+            icon="Users"
             items={mockSectionItems}
             onPledge={() => setIsDialogOpen(true)}
             onVolunteerNameChange={(id, index, name) =>
@@ -382,9 +382,8 @@ export default function ScrapbookPage() {
                   </Button>
                   {showIconPicker && (
                     <IconPicker
-                      icons={availableIcons}
-                      onSelect={(icon) => {
-                        setSelectedIcon(icon);
+                      onSelect={(iconName) => {
+                        setSelectedIcon(iconName);
                         setShowIconPicker(false);
                       }}
                       onClose={() => setShowIconPicker(false)}

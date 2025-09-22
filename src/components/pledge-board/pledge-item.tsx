@@ -3,12 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownText } from "@/components/ui/markdown-text";
+import { type IconName, getIcon } from "@/lib/available-icons";
 import {
   Check,
   CheckCircle,
   Clock,
   Edit3,
-  type LucideIcon,
   Minus,
   Package,
   Plus,
@@ -33,7 +33,7 @@ export interface PledgeItemData {
   description: string;
   needed: number;
   volunteers: Volunteer[];
-  icon: LucideIcon;
+  icon: IconName;
   category: string;
   isTask?: boolean;
 }
@@ -93,7 +93,7 @@ export function PledgeItem({
   const [tempNeeded, setTempNeeded] = useState(item.needed);
   const [tempIsTask, setTempIsTask] = useState(item.isTask ?? isTask);
 
-  const Icon = item.icon;
+  const IconComponent = getIcon(item.icon);
 
   const handleSave = () => {
     // Require at least a title to save
@@ -251,7 +251,7 @@ export function PledgeItem({
         <div className="space-y-2">
           <div className="mb-3">
             <h3 className="group flex items-center gap-2 font-semibold text-card-foreground">
-              <Icon className="h-5 w-5 text-primary" />
+              <IconComponent className="h-5 w-5 text-primary" />
               {item.title}
               {editable && (
                 <Button

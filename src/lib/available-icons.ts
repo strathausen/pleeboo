@@ -66,89 +66,195 @@ import {
   Zap,
 } from "lucide-react";
 
-export const availableIcons: { icon: LucideIcon; name: string }[] = [
+// Define all icon mappings as a const object
+const ICON_MAP = {
   // Party & Celebration
-  { icon: PartyPopper, name: "PartyPopper" },
-  { icon: Gift, name: "Gift" },
-  { icon: Cake, name: "Cake" },
-  { icon: CakeSlice, name: "CakeSlice" },
-  { icon: Sparkles, name: "Sparkles" },
-  { icon: Sparkle, name: "Sparkle" },
-  { icon: Star, name: "Star" },
-  { icon: Trophy, name: "Trophy" },
-  { icon: Heart, name: "Heart" },
-  { icon: Ticket, name: "Ticket" },
+  PartyPopper,
+  Gift,
+  Cake,
+  CakeSlice,
+  Sparkles,
+  Sparkle,
+  Star,
+  Trophy,
+  Heart,
+  Ticket,
 
   // Food & Drinks
-  { icon: Utensils, name: "Utensils" },
-  { icon: UtensilsCrossed, name: "UtensilsCrossed" },
-  { icon: Pizza, name: "Pizza" },
-  { icon: Sandwich, name: "Sandwich" },
-  { icon: Soup, name: "Soup" },
-  { icon: Cookie, name: "Cookie" },
-  { icon: Popcorn, name: "Popcorn" },
-  { icon: IceCreamCone, name: "IceCreamCone" },
-  { icon: Cherry, name: "Cherry" },
-  { icon: Coffee, name: "Coffee" },
-  { icon: Beer, name: "Beer" },
-  { icon: Wine, name: "Wine" },
-  { icon: CupSoda, name: "CupSoda" },
-  { icon: GlassWater, name: "GlassWater" },
-  { icon: Beef, name: "Beef" },
+  Utensils,
+  UtensilsCrossed,
+  Pizza,
+  Sandwich,
+  Soup,
+  Cookie,
+  Popcorn,
+  IceCreamCone,
+  Cherry,
+  Coffee,
+  Beer,
+  Wine,
+  CupSoda,
+  GlassWater,
+  Beef,
 
   // Activities & Entertainment
-  { icon: Music, name: "Music" },
-  { icon: Music2, name: "Music2" },
-  { icon: Music3, name: "Music3" },
-  { icon: Music4, name: "Music4" },
-  { icon: Headphones, name: "Headphones" },
-  { icon: Mic, name: "Mic" },
-  { icon: Speaker, name: "Speaker" },
-  { icon: Gamepad2, name: "Gamepad" },
-  { icon: Camera, name: "Camera" },
-  { icon: Video, name: "Video" },
-  { icon: Activity, name: "Activity" },
-  { icon: Bike, name: "Bike" },
-  { icon: Tent, name: "Tent" },
-  { icon: Palette, name: "Palette" },
-  { icon: Book, name: "Book" },
+  Music,
+  Music2,
+  Music3,
+  Music4,
+  Headphones,
+  Mic,
+  Speaker,
+  Gamepad: Gamepad2,
+  Camera,
+  Video,
+  Activity,
+  Bike,
+  Tent,
+  Palette,
+  Book,
 
   // Setup & Logistics
-  { icon: Users, name: "Users" },
-  { icon: Package, name: "Package" },
-  { icon: ShoppingCart, name: "ShoppingCart" },
-  { icon: ShoppingBag, name: "ShoppingBag" },
-  { icon: Truck, name: "Truck" },
-  { icon: Car, name: "Car" },
-  { icon: Home, name: "Home" },
-  { icon: MapPin, name: "MapPin" },
-  { icon: Clock, name: "Clock" },
-  { icon: Timer, name: "Timer" },
-  { icon: Calendar, name: "Calendar" },
-  { icon: Megaphone, name: "Megaphone" },
+  Users,
+  Package,
+  ShoppingCart,
+  ShoppingBag,
+  Truck,
+  Car,
+  Home,
+  MapPin,
+  Clock,
+  Timer,
+  Calendar,
+  Megaphone,
 
   // Decorations & Ambiance
-  { icon: Flower, name: "Flower" },
-  { icon: Flower2, name: "Flower2" },
-  { icon: Sun, name: "Sun" },
-  { icon: Lightbulb, name: "Lightbulb" },
-  { icon: Lamp, name: "Lamp" },
-  { icon: Flame, name: "Flame" },
-  { icon: Trees, name: "Trees" },
-  { icon: TreePine, name: "TreePine" },
-  { icon: Flag, name: "Flag" },
-  { icon: Shirt, name: "Shirt" },
+  Flower,
+  Flower2,
+  Sun,
+  Lightbulb,
+  Lamp,
+  Flame,
+  Trees,
+  TreePine,
+  Flag,
+  Shirt,
 
   // Utility
-  { icon: Zap, name: "Zap" },
-  { icon: Trash2, name: "Trash" },
-];
+  Zap,
+  Trash: Trash2,
+} as const;
 
-export function getIconByName(name: string): LucideIcon | undefined {
-  return availableIcons.find((item) => item.name === name)?.icon;
+// Type for valid icon names
+export type IconName = keyof typeof ICON_MAP;
+
+// Default icon name
+export const DEFAULT_ICON: IconName = "Star";
+
+// Array of available icons for UI selection
+export const availableIcons: { icon: LucideIcon; name: IconName }[] = (
+  Object.entries(ICON_MAP) as Array<[IconName, LucideIcon]>
+).map(([name, icon]) => ({ name, icon }));
+
+// Grouped icons for better UI organization
+export const iconGroups = {
+  "Party & Celebration": [
+    "PartyPopper",
+    "Gift",
+    "Cake",
+    "CakeSlice",
+    "Sparkles",
+    "Sparkle",
+    "Star",
+    "Trophy",
+    "Heart",
+    "Ticket",
+  ] as IconName[],
+  "Food & Drinks": [
+    "Utensils",
+    "UtensilsCrossed",
+    "Pizza",
+    "Sandwich",
+    "Soup",
+    "Cookie",
+    "Popcorn",
+    "IceCreamCone",
+    "Cherry",
+    "Coffee",
+    "Beer",
+    "Wine",
+    "CupSoda",
+    "GlassWater",
+    "Beef",
+  ] as IconName[],
+  "Activities & Entertainment": [
+    "Music",
+    "Music2",
+    "Music3",
+    "Music4",
+    "Headphones",
+    "Mic",
+    "Speaker",
+    "Gamepad",
+    "Camera",
+    "Video",
+    "Activity",
+    "Bike",
+    "Tent",
+    "Palette",
+    "Book",
+  ] as IconName[],
+  "Setup & Logistics": [
+    "Users",
+    "Package",
+    "ShoppingCart",
+    "ShoppingBag",
+    "Truck",
+    "Car",
+    "Home",
+    "MapPin",
+    "Clock",
+    "Timer",
+    "Calendar",
+    "Megaphone",
+  ] as IconName[],
+  "Decorations & Ambiance": [
+    "Flower",
+    "Flower2",
+    "Sun",
+    "Lightbulb",
+    "Lamp",
+    "Flame",
+    "Trees",
+    "TreePine",
+    "Flag",
+    "Shirt",
+  ] as IconName[],
+  Utility: ["Zap", "Trash"] as IconName[],
+} as const;
+
+/**
+ * Get the Lucide icon component for a given icon name
+ */
+export function getIcon(name: IconName | string): LucideIcon {
+  return ICON_MAP[name as IconName] || ICON_MAP[DEFAULT_ICON];
 }
 
-export function getIconName(icon: LucideIcon): string {
-  const found = availableIcons.find((item) => item.icon === icon);
-  return found?.name || "Star";
+/**
+ * Check if a string is a valid icon name
+ */
+export function isValidIconName(name: string): name is IconName {
+  return name in ICON_MAP;
 }
+
+/**
+ * Get icon name from a LucideIcon component (for legacy compatibility)
+ * @deprecated Use IconName type directly instead
+ */
+export function getIconName(icon: LucideIcon): IconName {
+  const entry = Object.entries(ICON_MAP).find(([, i]) => i === icon);
+  return (entry?.[0] as IconName) || DEFAULT_ICON;
+}
+
+// For backward compatibility
+export const getIconByName = getIcon;

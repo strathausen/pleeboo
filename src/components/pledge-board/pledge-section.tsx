@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MarkdownText } from "@/components/ui/markdown-text";
+import { type IconName, getIcon } from "@/lib/available-icons";
 import {
   ArrowDown,
   ArrowUp,
   Check,
   Edit3,
-  type LucideIcon,
   Plus,
   Trash2,
   X,
@@ -28,7 +28,7 @@ interface PledgeSectionProps {
   sectionId?: string;
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: IconName;
   items: PledgeItemData[];
   onPledge: (item: PledgeItemData) => void;
   onVolunteerNameChange: (
@@ -45,7 +45,7 @@ interface PledgeSectionProps {
   editable?: boolean;
   onSectionUpdate?: (
     sectionId: string,
-    updates: { title?: string; description?: string; icon?: LucideIcon },
+    updates: { title?: string; description?: string; icon?: IconName },
   ) => void;
   onSectionDelete?: (sectionId: string) => void;
   onItemUpdate?: (itemId: string, updates: Partial<PledgeItemData>) => void;
@@ -61,7 +61,7 @@ export function PledgeSection({
   sectionId,
   title,
   description,
-  icon: Icon,
+  icon: iconName,
   items,
   onPledge,
   onVolunteerNameChange,
@@ -156,7 +156,7 @@ export function PledgeSection({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <IconSelector
-                currentIcon={Icon}
+                currentIcon={iconName}
                 onIconSelect={(icon) =>
                   sectionId && onSectionUpdate?.(sectionId, { icon })
                 }
@@ -219,7 +219,9 @@ export function PledgeSection({
         ) : (
           <>
             <CardTitle className="group flex items-center gap-2">
-              <Icon className="h-5 w-5 text-primary" />
+              {React.createElement(getIcon(iconName), {
+                className: "h-5 w-5 text-primary",
+              })}
               <div
                 className="-underline-offset-1 underline decoration-[8px] decoration-yellow-200 dark:decoration-yellow-600"
                 style={{ textDecorationSkipInk: "none" }}

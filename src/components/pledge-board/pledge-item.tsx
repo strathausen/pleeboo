@@ -24,6 +24,7 @@ import { VolunteerItem } from "./volunteer-item";
 export interface Volunteer {
   id: string;
   name: string;
+  slot: number;
   details: string;
 }
 
@@ -43,12 +44,12 @@ interface PledgeItemProps {
   onPledge: (item: PledgeItemData) => void;
   onVolunteerNameChange?: (
     itemId: string,
-    volunteerIndex: number,
+    slot: number,
     newName: string,
   ) => void;
   onVolunteerDetailsChange?: (
     itemId: string,
-    volunteerIndex: number,
+    slot: number,
     newDetails: string,
   ) => void;
   isTask?: boolean;
@@ -128,10 +129,16 @@ export function PledgeItem({
     }
   };
 
-  // Create array with empty slots for remaining needed volunteers
-  const allSlots = [...item.volunteers];
-  while (allSlots.length < item.needed) {
-    allSlots.push({ id: `${Math.random()}`, name: "", details: "" });
+  // Create array with all slots (0 to needed-1)
+  const allSlots = [];
+  for (let slot = 0; slot < item.needed; slot++) {
+    const volunteer = item.volunteers.find((v) => v.slot === slot) || {
+      id: `empty-${slot}`,
+      name: "",
+      details: "",
+      slot,
+    };
+    allSlots.push({ ...volunteer, slot });
   }
 
   if (editable && isEditing) {
@@ -273,12 +280,12 @@ export function PledgeItem({
         {/* Right column - All volunteer slots */}
         <div className="space-y-2 border-t-1 border-l-0 pt-4 pl-0 md:border-t-0 md:border-l-1 md:pt-0 md:pl-4">
           <div className="space-y-2">
-            {allSlots.map((volunteer, index) => (
+            {allSlots.map((volunteer) => (
               <VolunteerItem
-                key={`volunteer-${index.toString()}`}
+                key={`volunteer-${volunteer.slot}`}
                 volunteer={volunteer}
                 itemId={item.id}
-                volunteerIndex={index}
+                slot={volunteer.slot}
                 onNameChange={onVolunteerNameChange}
                 onDetailsChange={onVolunteerDetailsChange}
               />
@@ -290,9 +297,13 @@ export function PledgeItem({
       {/* Progress status at the bottom */}
       <div className="flex items-center justify-between border-t pt-3">
         <div className="flex items-center gap-2 pt-1">
-          {getStatusBadge(item.needed, item.volunteers.length)}
+          {getStatusBadge(
+            item.needed,
+            item.volunteers.filter((v) => !!v.name.trim()).length,
+          )}
           <span className="text-muted-foreground text-sm">
-            {item.volunteers.length} of {item.needed}{" "}
+            {item.volunteers.filter((v) => !!v.name.trim()).length} of{" "}
+            {item.needed}{" "}
             {(item.isTask ?? isTask) ? "volunteers" : "contributions"}
           </span>
         </div>

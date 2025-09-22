@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 
 type VolunteerUpdate = {
   itemId: string;
-  volunteerIndex: number;
+  slot: number;
   name: string;
   details: string;
 };
@@ -37,6 +37,7 @@ export type BoardData = {
       needed: number;
       volunteers: Array<{
         id: string;
+        slot: number;
         itemId?: string;
         name: string;
         details?: string | null;
@@ -244,7 +245,7 @@ export function PledgeBoard({
   }, [editMode, localBoard, nextTempId]);
 
   const handleVolunteerNameChange = useCallback(
-    (itemId: string, volunteerIndex: number, newName: string) => {
+    (itemId: string, slot: number, newName: string) => {
       setLocalBoard((prev) => {
         if (!prev) return prev;
 
@@ -254,22 +255,43 @@ export function PledgeBoard({
             ...section,
             items: section.items.map((item) => {
               if (item.id === itemId) {
+                // Find if volunteer already exists in this slot
+                const existingVolIndex = item.volunteers.findIndex(
+                  (v) => v.slot === slot,
+                );
+
                 const newVolunteers = [...item.volunteers];
-                while (newVolunteers.length <= volunteerIndex) {
-                  newVolunteers.push({
-                    id: `temp-volunteer-${Date.now()}-${volunteerIndex}`,
+
+                if (newName.trim()) {
+                  // Add or update volunteer
+                  const volunteer = {
+                    id:
+                      newVolunteers[existingVolIndex]?.id ??
+                      `temp-volunteer-${Date.now()}-${slot}`,
                     itemId,
-                    name: "",
-                    details: null,
-                    createdAt: new Date(),
-                    updatedAt: null,
-                  });
-                }
-                if (newVolunteers[volunteerIndex])
-                  newVolunteers[volunteerIndex] = {
-                    ...newVolunteers[volunteerIndex],
+                    slot,
                     name: newName,
+                    details:
+                      existingVolIndex >= 0
+                        ? newVolunteers[existingVolIndex]?.details
+                        : "",
+                    createdAt:
+                      existingVolIndex >= 0
+                        ? newVolunteers[existingVolIndex]?.createdAt
+                        : new Date(),
+                    updatedAt: new Date(),
                   };
+
+                  if (existingVolIndex >= 0) {
+                    newVolunteers[existingVolIndex] = volunteer;
+                  } else {
+                    newVolunteers.push(volunteer);
+                  }
+                } else if (existingVolIndex >= 0) {
+                  // Remove volunteer if name is empty
+                  newVolunteers.splice(existingVolIndex, 1);
+                }
+
                 return { ...item, volunteers: newVolunteers };
               }
               return item;
@@ -280,21 +302,21 @@ export function PledgeBoard({
 
       // Only queue updates if not a temp item and not an example board
       if (!itemId.startsWith("temp-") && !isExample) {
-        const key = `${itemId}-${volunteerIndex}`;
+        const key = `${itemId}-${slot}`;
         const existingUpdate = pendingUpdates.get(key);
         const details =
           existingUpdate?.details ||
           localBoard?.sections
             .find((s) => s.items.some((i) => i.id === itemId))
-            ?.items.find((i) => i.id === itemId)?.volunteers[volunteerIndex]
-            ?.details ||
+            ?.items.find((i) => i.id === itemId)
+            ?.volunteers.find((v) => v.slot === slot)?.details ||
           "";
 
         setPendingUpdates(
           new Map(
             pendingUpdates.set(key, {
               itemId,
-              volunteerIndex,
+              slot,
               name: newName,
               details,
             }),
@@ -306,7 +328,7 @@ export function PledgeBoard({
   );
 
   const handleVolunteerDetailsChange = useCallback(
-    (itemId: string, volunteerIndex: number, newDetails: string) => {
+    (itemId: string, slot: number, newDetails: string) => {
       setLocalBoard((prev) => {
         if (!prev) return prev;
 
@@ -316,23 +338,20 @@ export function PledgeBoard({
             ...section,
             items: section.items.map((item) => {
               if (item.id === itemId) {
-                const newVolunteers = [...item.volunteers];
-                while (newVolunteers.length <= volunteerIndex) {
-                  newVolunteers.push({
-                    id: `temp-volunteer-${Date.now()}-${volunteerIndex}`,
-                    itemId,
-                    name: "",
-                    details: null,
-                    createdAt: new Date(),
-                    updatedAt: null,
-                  });
-                }
-                if (newVolunteers[volunteerIndex])
-                  newVolunteers[volunteerIndex] = {
-                    ...newVolunteers[volunteerIndex],
+                // Find volunteer in this slot
+                const volIndex = item.volunteers.findIndex(
+                  (v) => v.slot === slot,
+                );
+
+                if (volIndex >= 0) {
+                  const newVolunteers = [...item.volunteers];
+                  if (!newVolunteers[volIndex]) return item;
+                  newVolunteers[volIndex] = {
+                    ...newVolunteers[volIndex],
                     details: newDetails,
                   };
-                return { ...item, volunteers: newVolunteers };
+                  return { ...item, volunteers: newVolunteers };
+                }
               }
               return item;
             }),
@@ -342,21 +361,21 @@ export function PledgeBoard({
 
       // Only queue updates if not a temp item and not an example board
       if (!itemId.startsWith("temp-") && !isExample) {
-        const key = `${itemId}-${volunteerIndex}`;
+        const key = `${itemId}-${slot}`;
         const existingUpdate = pendingUpdates.get(key);
         const name =
           existingUpdate?.name ||
           localBoard?.sections
             .find((s) => s.items.some((i) => i.id === itemId))
-            ?.items.find((i) => i.id === itemId)?.volunteers[volunteerIndex]
-            ?.name ||
+            ?.items.find((i) => i.id === itemId)
+            ?.volunteers.find((v) => v.slot === slot)?.name ||
           "";
 
         setPendingUpdates(
           new Map(
             pendingUpdates.set(key, {
               itemId,
-              volunteerIndex,
+              slot,
               name,
               details: newDetails,
             }),
@@ -777,6 +796,7 @@ export function PledgeBoard({
               needed: item.needed,
               volunteers: item.volunteers.map((v) => ({
                 id: v.id,
+                slot: v.slot,
                 name: v.name,
                 details: v.details || "",
               })),

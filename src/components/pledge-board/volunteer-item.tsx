@@ -4,23 +4,15 @@ import type { Volunteer } from "./pledge-item";
 interface VolunteerItemProps {
   volunteer: Volunteer;
   itemId: string;
-  volunteerIndex: number;
-  onNameChange?: (
-    itemId: string,
-    volunteerIndex: number,
-    newName: string,
-  ) => void;
-  onDetailsChange?: (
-    itemId: string,
-    volunteerIndex: number,
-    newDetails: string,
-  ) => void;
+  slot: number;
+  onNameChange?: (itemId: string, slot: number, newName: string) => void;
+  onDetailsChange?: (itemId: string, slot: number, newDetails: string) => void;
 }
 
 export function VolunteerItem({
   volunteer,
   itemId,
-  volunteerIndex,
+  slot,
   onNameChange,
   onDetailsChange,
 }: VolunteerItemProps) {
@@ -43,7 +35,7 @@ export function VolunteerItem({
             value={volunteer.name}
             onChange={(e) => {
               if (onNameChange) {
-                onNameChange(itemId, volunteerIndex, e.target.value);
+                onNameChange(itemId, slot, e.target.value);
               }
             }}
             onFocus={() => setIsEditingName(true)}
@@ -65,7 +57,7 @@ export function VolunteerItem({
             value={volunteer.details}
             onChange={(e) => {
               if (onDetailsChange) {
-                onDetailsChange(itemId, volunteerIndex, e.target.value);
+                onDetailsChange(itemId, slot, e.target.value);
               }
             }}
             onFocus={() => setIsEditingDetails(true)}

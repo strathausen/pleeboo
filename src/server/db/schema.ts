@@ -112,6 +112,7 @@ export const boardVolunteers = createTable(
       .varchar({ length: 32 })
       .notNull()
       .references(() => boardItems.id, { onDelete: "cascade" }),
+    slot: d.integer().notNull().default(0),
     name: d.varchar({ length: 256 }).notNull(),
     details: d.text(),
     createdAt: d
@@ -120,7 +121,10 @@ export const boardVolunteers = createTable(
       .notNull(),
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
   }),
-  (t) => [index("board_volunteer_item_idx").on(t.itemId)],
+  (t) => [
+    index("board_volunteer_item_idx").on(t.itemId),
+    index("board_volunteer_item_slot_idx").on(t.itemId, t.slot),
+  ],
 );
 
 export const boardVolunteersRelations = relations(

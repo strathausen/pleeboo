@@ -33,12 +33,12 @@ interface PledgeSectionProps {
   onPledge: (item: PledgeItemData) => void;
   onVolunteerNameChange: (
     itemId: string,
-    volunteerIndex: number,
+    slot: number,
     newName: string,
   ) => void;
   onVolunteerDetailsChange: (
     itemId: string,
-    volunteerIndex: number,
+    slot: number,
     newDetails: string,
   ) => void;
   isTask: boolean;

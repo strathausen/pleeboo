@@ -76,7 +76,9 @@ export const boardRouter = createTRPCRouter({
               items: {
                 orderBy: (items, { asc }) => [asc(items.sortOrder)],
                 with: {
-                  volunteers: true,
+                  volunteers: {
+                    orderBy: (volunteers, { asc }) => [asc(volunteers.slot)],
+                  },
                 },
               },
             },
@@ -122,45 +124,45 @@ export const boardRouter = createTRPCRouter({
     .input(
       z.object({
         itemId: z.string(),
-        volunteerIndex: z.number(),
+        slot: z.number().min(0).max(99),
         name: z.string(),
         details: z.string().optional(),
         token: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { itemId, token, ...volunteerData } = input;
+      const { itemId, token, slot, ...volunteerData } = input;
 
       // Validate admin token before allowing volunteer modification
       await validateAdminTokenForItem(itemId, token);
 
-      // Get existing volunteers for this item
-      const existingVolunteers = await ctx.db.query.boardVolunteers.findMany({
-        where: eq(boardVolunteers.itemId, itemId),
-        orderBy: (volunteers, { asc }) => [asc(volunteers.id)],
+      // Check if a volunteer exists in this slot
+      const existingVolunteer = await ctx.db.query.boardVolunteers.findFirst({
+        where: and(
+          eq(boardVolunteers.itemId, itemId),
+          eq(boardVolunteers.slot, slot),
+        ),
       });
 
-      if (volunteerData.volunteerIndex < existingVolunteers.length) {
-        // Update existing volunteer
-        const volunteer = existingVolunteers[volunteerData.volunteerIndex];
-        if (volunteer) {
-          if (volunteerData.name.trim()) {
-            await ctx.db
-              .update(boardVolunteers)
-              .set({ name: volunteerData.name, details: volunteerData.details })
-              .where(eq(boardVolunteers.id, volunteer.id));
-          } else {
-            // Delete if name is empty
-            await ctx.db
-              .delete(boardVolunteers)
-              .where(eq(boardVolunteers.id, volunteer.id));
-          }
+      if (existingVolunteer) {
+        if (volunteerData.name.trim()) {
+          // Update existing volunteer
+          await ctx.db
+            .update(boardVolunteers)
+            .set({ name: volunteerData.name, details: volunteerData.details })
+            .where(eq(boardVolunteers.id, existingVolunteer.id));
+        } else {
+          // Delete if name is empty
+          await ctx.db
+            .delete(boardVolunteers)
+            .where(eq(boardVolunteers.id, existingVolunteer.id));
         }
       } else if (volunteerData.name.trim()) {
-        // Create new volunteer
+        // Create new volunteer in this slot
         await ctx.db.insert(boardVolunteers).values({
           id: nanoid(24),
           itemId,
+          slot,
           name: volunteerData.name,
           details: volunteerData.details,
         });

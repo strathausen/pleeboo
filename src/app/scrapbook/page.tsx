@@ -20,22 +20,18 @@ import { Logo } from "@/components/ui/logo";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { type IconName, availableIcons, getIcon } from "@/lib/available-icons";
+import { type IconName, availableIcons } from "@/lib/available-icons";
 import {
   ArrowRight,
-  Book as Broom,
   Check,
   ChevronDown,
   ChevronUp,
   Edit3,
-  Gift,
   Heart,
   Info,
   Loader2,
-  Music,
   Plus,
   Settings,
-  Star,
   Trash2,
   Users,
   X,
@@ -56,9 +52,10 @@ export default function ScrapbookPage() {
       {
         id: "1",
         name: "Sarah Johnson",
+        slot: 0,
         details: "Can bring cleaning supplies",
       },
-      { id: "2", name: "Mike Chen", details: "Available all day" },
+      { id: "2", name: "Mike Chen", slot: 1, details: "Available all day" },
     ],
     icon: "Book" as IconName,
     category: "tasks" as const,
@@ -80,7 +77,7 @@ export default function ScrapbookPage() {
       description: "Set up and take down decorations",
       needed: 3,
       volunteers: [
-        { id: "4", name: "Emma Davis", details: "Has party supplies" },
+        { id: "4", name: "Emma Davis", details: "Has party supplies", slot: 0 },
       ],
       icon: "Gift" as IconName,
       category: "tasks" as const,

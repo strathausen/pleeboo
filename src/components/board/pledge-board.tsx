@@ -58,6 +58,7 @@ interface PledgeBoardProps {
   initialData?: BoardData;
   editable?: boolean;
   isExample?: boolean;
+  hideHeader?: boolean;
 }
 
 export function PledgeBoard({
@@ -67,6 +68,7 @@ export function PledgeBoard({
   initialData,
   editable,
   isExample = false,
+  hideHeader = false,
 }: PledgeBoardProps) {
   const router = useRouter();
   const { addToHistory } = useBoardHistory();
@@ -110,7 +112,7 @@ export function PledgeBoard({
   const updateBoard = api.board.update.useMutation({
     onSuccess: () => void refetch(),
   });
-  const upsertVolunteer = api.board.upsertVolunteer.useMutation();
+  const upsertVolunteer = api.pledge.upsertVolunteer.useMutation();
   const updateSection = api.board.updateSection.useMutation({
     onSuccess: () => void refetch(),
   });
@@ -715,27 +717,29 @@ export function PledgeBoard({
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <BoardHeader
-          title={localBoard?.title || ""}
-          description={localBoard?.description || ""}
-          editable={canEdit && editMode}
-          onTitleChange={(title) => {
-            if (localBoard) {
-              setLocalBoard({ ...localBoard, title });
-              if (boardId) {
-                updateBoard.mutate({ id: boardId, title, token });
+        {!hideHeader && (
+          <BoardHeader
+            title={localBoard?.title || ""}
+            description={localBoard?.description || ""}
+            editable={canEdit && editMode}
+            onTitleChange={(title) => {
+              if (localBoard) {
+                setLocalBoard({ ...localBoard, title });
+                if (boardId) {
+                  updateBoard.mutate({ id: boardId, title, token });
+                }
               }
-            }
-          }}
-          onDescriptionChange={(description) => {
-            if (localBoard) {
-              setLocalBoard({ ...localBoard, description });
-              if (boardId) {
-                updateBoard.mutate({ id: boardId, description, token });
+            }}
+            onDescriptionChange={(description) => {
+              if (localBoard) {
+                setLocalBoard({ ...localBoard, description });
+                if (boardId) {
+                  updateBoard.mutate({ id: boardId, description, token });
+                }
               }
-            }
-          }}
-        />
+            }}
+          />
+        )}
 
         {/* Example banner */}
         {isExample && (

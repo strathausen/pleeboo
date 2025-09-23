@@ -1,13 +1,9 @@
 "use client";
 
+import type { BoardData } from "@/components/board/pledge-board";
+import { PledgeBoard } from "@/components/board/pledge-board";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/ui/header";
 import { Logo } from "@/components/ui/logo";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -16,22 +12,115 @@ import {
   Bot,
   CheckCircle2,
   Gift,
-  Link2,
-  ListTodo,
   Share2,
-  Sparkles,
   Users,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import Typewriter from "typewriter-effect";
 
-export default function LandingPage() {
-  const [activeDemo, setActiveDemo] = useState<"create" | "share" | "pledge">(
-    "create",
-  );
+// Simple example board data
+const SIMPLE_EXAMPLE: BoardData = {
+  id: "demo",
+  title: "Summer Block Party",
+  description: "",
+  sections: [
+    {
+      id: "food",
+      title: "Food & Drinks",
+      icon: "Utensils" as const,
+      items: [
+        {
+          id: "pizza",
+          title: "Savoury snacks",
+          icon: "Pizza" as const,
+          needed: 1,
+          volunteers: [
+            {
+              id: "v1",
+              name: "Sarah M.",
+              details: "I can bring pizza! 🍕",
+              slot: 0,
+            },
+          ],
+        },
+        {
+          id: "drinks",
+          title: "Soft drinks & water",
+          description: "Non-alcoholic beverages",
+          icon: "CupSoda" as const,
+          needed: 2,
+          volunteers: [
+            {
+              id: "v2",
+              name: "Mike R.",
+              details: "home made lemonade 🍋",
+              slot: 0,
+            },
+          ],
+        },
+        {
+          id: "desserts",
+          title: "Desserts",
+          description: "Sweet treats for everyone",
+          icon: "Cake" as const,
+          needed: 3,
+          volunteers: [
+            { id: "v3", name: "Emma L.", details: "", slot: 0 },
+            { id: "v4", name: "Alex K.", details: "", slot: 1 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "setup",
+      title: "Setup & Cleanup",
+      icon: "Package" as const,
+      items: [
+        {
+          id: "tables",
+          title: "Set up tables (3pm)",
+          icon: "Clock" as const,
+          needed: 2,
+          volunteers: [
+            { id: "v5", name: "John D.", details: "", slot: 0 },
+            { id: "v6", name: "Lisa W.", details: "", slot: 1 },
+          ],
+        },
+        {
+          id: "cleanup",
+          title: "Cleanup crew",
+          icon: "Trash" as const,
+          needed: 3,
+          volunteers: [{ id: "v7", name: "Tom H.", details: "", slot: 0 }],
+        },
+      ],
+    },
+    {
+      id: "activities",
+      title: "Activities",
+      icon: "Gamepad" as const,
+      items: [
+        {
+          id: "games",
+          title: "Kids games coordinator",
+          icon: "Users" as const,
+          needed: 1,
+          volunteers: [],
+        },
+        {
+          id: "parking",
+          title: "Parking helper",
+          icon: "Car" as const,
+          needed: 1,
+          volunteers: [{ id: "v8", name: "Ryan P.", details: "", slot: 0 }],
+        },
+      ],
+    },
+  ],
+};
 
+export default function LandingPage() {
   const features = [
     {
       id: 1,
@@ -101,101 +190,6 @@ export default function LandingPage() {
     },
   ];
 
-  const demoBoards = {
-    create: {
-      title: "Create Your Board",
-      description: "Give your pledge board a name and description",
-      content: (
-        <div className="space-y-4 p-4">
-          <input
-            type="text"
-            placeholder="Summer Block Party 2024"
-            className="w-full rounded-md border bg-background px-3 py-2"
-            defaultValue="Summer Block Party 2024"
-          />
-          <textarea
-            placeholder="Help us make this the best block party ever!"
-            className="h-20 w-full rounded-md border bg-background px-3 py-2"
-            defaultValue="Help us make this the best block party ever! We need volunteers and supplies."
-          />
-          <Button className="w-full">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Get Suggestions
-          </Button>
-        </div>
-      ),
-    },
-    share: {
-      title: "Share With Your Community",
-      description: "Get a unique link to share with contributors",
-      content: (
-        <div className="space-y-4 p-4">
-          <div className="rounded-md bg-muted p-4">
-            <p className="mb-2 text-muted-foreground text-sm">
-              Your pledge board link:
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value="pleeboo.com/board/summer-party-2024"
-                readOnly
-                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-              />
-              <Button size="sm">
-                <Link2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1">
-              Share via Email
-            </Button>
-            <Button variant="outline" className="flex-1">
-              Share via Text
-            </Button>
-          </div>
-        </div>
-      ),
-    },
-    pledge: {
-      title: "Community Pledges",
-      description: "Watch as people sign up to help",
-      content: (
-        <div className="space-y-3 p-4">
-          <div className="rounded-md border p-3">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-500" />
-              <div className="flex-1">
-                <p className="font-medium text-sm">Set up tables and chairs</p>
-                <p className="text-muted-foreground text-xs">
-                  Pledged by: Sarah M.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-md border p-3">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 h-5 w-5 rounded-sm border-2" />
-              <div className="flex-1">
-                <p className="font-medium text-sm">Bring coolers with ice</p>
-                <p className="text-muted-foreground text-xs">2 needed</p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-md border p-3 opacity-60">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 h-5 w-5 rounded-sm border-2" />
-              <div className="flex-1">
-                <p className="font-medium text-sm">Organize games for kids</p>
-                <p className="text-muted-foreground text-xs">Pledging now...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -204,7 +198,7 @@ export default function LandingPage() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-7xl text-center">
           <div className="mx-auto max-w-3xl">
-            <h1 className="mb-6 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text font-bold text-5xl text-transparent tracking-tight sm:text-6xl">
+            <h1 className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text pb-2 font-bold text-5xl text-transparent tracking-tight sm:text-6xl">
               <style jsx>{`
                 .typewriter-gradient .Typewriter__wrapper,
                 .typewriter-gradient .Typewriter__cursor {
@@ -228,7 +222,15 @@ export default function LandingPage() {
                       "Block Party",
                       "Company Retreat",
                       "Family Reunion",
-                      "Volunteer Drive",
+                      "Charity Event",
+                      "Bake Sale",
+                      "Game Night",
+                      "Cookout",
+                      "Book Club",
+                      "Craft Fair",
+                      "Movie Night",
+                      "Picnic",
+                      "Barbecue",
                     ],
                     autoStart: true,
                     loop: true,
@@ -237,12 +239,12 @@ export default function LandingPage() {
                   }}
                 />
               </div>
-              <div>with Ease</div>
             </h1>
             <p className="mb-10 text-muted-foreground text-xl">
-              Pleeboo is the free, simple way to coordinate volunteers and
-              resources for any event. Create a pledge board, share the link,
-              and watch your community come together.
+              Coordinate volunteers and resources for any event.
+              <br />
+              Create a pledge board, share the link, and watch your community
+              come together.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link href="/board">
@@ -263,110 +265,18 @@ export default function LandingPage() {
 
       {/* Interactive Demo */}
       <section className="bg-muted/30 px-4 py-20">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <SectionHeading>See How It Works</SectionHeading>
-            <p className="text-lg text-muted-foreground">
-              Three simple steps to organized success
-            </p>
           </div>
 
-          <div className="grid items-center gap-8 lg:grid-cols-2">
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={() => setActiveDemo("create")}
-                className={`w-full rounded-lg border p-4 text-left transition-all ${
-                  activeDemo === "create"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`rounded-full p-2 ${
-                      activeDemo === "create"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <ListTodo className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">1. Create Your Board</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Set up your pledge board with smart suggestions
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveDemo("share")}
-                className={`w-full rounded-lg border p-4 text-left transition-all ${
-                  activeDemo === "share"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`rounded-full p-2 ${
-                      activeDemo === "share"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">2. Share the Link</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Send to your community via any platform
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveDemo("pledge")}
-                className={`w-full rounded-lg border p-4 text-left transition-all ${
-                  activeDemo === "pledge"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`rounded-full p-2 ${
-                      activeDemo === "pledge"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <Users className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">3. Collect Pledges</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Watch as people sign up to contribute
-                    </p>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            <Card className="min-h-[360px] border-2">
-              <CardHeader>
-                <CardTitle>{demoBoards[activeDemo].title}</CardTitle>
-                <CardDescription>
-                  {demoBoards[activeDemo].description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>{demoBoards[activeDemo].content}</CardContent>
-            </Card>
+          <div className="overflow-hidden rounded-2xl">
+            <PledgeBoard
+              initialData={SIMPLE_EXAMPLE}
+              editable={false}
+              isExample={true}
+              hideHeader={true}
+            />
           </div>
         </div>
       </section>

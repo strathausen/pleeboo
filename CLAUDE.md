@@ -40,6 +40,7 @@ This is a T3 Stack application with the following technology stack:
 - **Biome** - Linter and formatter (replaces ESLint/Prettier)
 - **Tailwind CSS v4** - Utility-first CSS framework
 - Path alias: `@/*` maps to `./src/*`
+- For environment variables, always use the env file at src/env.js and avoid using process.env directly
 
 ### Scrapbook
 

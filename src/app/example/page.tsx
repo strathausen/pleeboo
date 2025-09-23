@@ -9,7 +9,7 @@ const EXAMPLE_BOARD: BoardData = {
   title:
     "Annual Neighborhood Llama Wrestling Championship & Spaghetti Sculpture Contest",
   description:
-    "Join us for the most bizarre community event! Bring your wrestling llamas, artistic pasta, and your collection of antique spoons. Safety goggles required, common sense optional.",
+    "Bring your wrestling llamas, artistic pasta, and your collection of antique spoons. Safety goggles required, common sense optional.",
   sections: [
     {
       id: "food-drinks",

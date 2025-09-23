@@ -8,9 +8,9 @@ import {
   boardAccessTokens,
   boardItems,
   boardSections,
-  boardVolunteers,
   boards,
 } from "@/server/db/schema";
+import { evaluateBoard } from "@/server/services/board-evaluator";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -60,6 +60,26 @@ export const boardRouter = createTRPCRouter({
           type: "view",
         },
       ]);
+
+      // Evaluate the board with LLM (async, non-blocking)
+      evaluateBoard({
+        title: input.title,
+        description: input.description,
+        prompt: input.prompt,
+      })
+        .then((evaluation) => {
+          if (evaluation) {
+            console.log(
+              `[Board Router] LLM evaluation completed for board ${boardId}`,
+            );
+          }
+        })
+        .catch((error) => {
+          console.error(
+            `[Board Router] LLM evaluation failed for board ${boardId}:`,
+            error,
+          );
+        });
 
       return { id: boardId, adminToken, ...board };
     }),
@@ -118,57 +138,6 @@ export const boardRouter = createTRPCRouter({
         .returning();
 
       return board;
-    }),
-
-  upsertVolunteer: publicProcedure
-    .input(
-      z.object({
-        itemId: z.string(),
-        slot: z.number().min(0).max(99),
-        name: z.string(),
-        details: z.string().optional(),
-        token: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { itemId, token, slot, ...volunteerData } = input;
-
-      // Validate admin token before allowing volunteer modification
-      await validateAdminTokenForItem(itemId, token);
-
-      // Check if a volunteer exists in this slot
-      const existingVolunteer = await ctx.db.query.boardVolunteers.findFirst({
-        where: and(
-          eq(boardVolunteers.itemId, itemId),
-          eq(boardVolunteers.slot, slot),
-        ),
-      });
-
-      if (existingVolunteer) {
-        if (volunteerData.name.trim()) {
-          // Update existing volunteer
-          await ctx.db
-            .update(boardVolunteers)
-            .set({ name: volunteerData.name, details: volunteerData.details })
-            .where(eq(boardVolunteers.id, existingVolunteer.id));
-        } else {
-          // Delete if name is empty
-          await ctx.db
-            .delete(boardVolunteers)
-            .where(eq(boardVolunteers.id, existingVolunteer.id));
-        }
-      } else if (volunteerData.name.trim()) {
-        // Create new volunteer in this slot
-        await ctx.db.insert(boardVolunteers).values({
-          id: nanoid(24),
-          itemId,
-          slot,
-          name: volunteerData.name,
-          details: volunteerData.details,
-        });
-      }
-
-      return { success: true };
     }),
 
   list: publicProcedure.query(async ({ ctx }) => {
@@ -338,6 +307,18 @@ export const boardRouter = createTRPCRouter({
   getTokens: publicProcedure
     .input(z.object({ boardId: z.string() }))
     .query(async ({ ctx, input }) => {
+      // First check if the board exists and get the creator
+      const board = await ctx.db.query.boards.findFirst({
+        where: eq(boards.id, input.boardId),
+      });
+
+      if (!board) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Board not found",
+        });
+      }
+
       // Get existing tokens for this board
       const tokens = await ctx.db.query.boardAccessTokens.findMany({
         where: eq(boardAccessTokens.boardId, input.boardId),
@@ -346,15 +327,19 @@ export const boardRouter = createTRPCRouter({
       const adminToken = tokens.find((t) => t.type === "admin");
       const viewToken = tokens.find((t) => t.type === "view");
 
-      if (!adminToken || !viewToken) {
+      if (!viewToken) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Tokens not found for this board",
         });
       }
 
+      // Only return admin token if the user is the board creator
+      const isAdmin =
+        ctx.session?.user?.id && board.createdById === ctx.session.user.id;
+
       return {
-        adminToken: adminToken.id,
+        adminToken: isAdmin && adminToken ? adminToken.id : undefined,
         viewToken: viewToken.id,
       };
     }),
@@ -367,6 +352,18 @@ export const boardRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      // First check if the current user is the board creator
+      if (ctx.session?.user?.id) {
+        const board = await ctx.db.query.boards.findFirst({
+          where: eq(boards.id, input.boardId),
+        });
+
+        if (board && board.createdById === ctx.session.user.id) {
+          return { access: "admin" as const };
+        }
+      }
+
+      // Otherwise, check token-based access
       if (!input.token) {
         return { access: "none" as const };
       }
@@ -384,6 +381,7 @@ export const boardRouter = createTRPCRouter({
 
       return { access: accessToken.type };
     }),
+
   reorderSections: publicProcedure
     .input(
       z.object({

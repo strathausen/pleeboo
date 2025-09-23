@@ -38,7 +38,7 @@ const SIMPLE_EXAMPLE: BoardData = {
           volunteers: [
             {
               id: "v1",
-              name: "Sarah M.",
+              name: "Priya S.",
               details: "I can bring pizza! 🍕",
               slot: 0,
             },
@@ -53,7 +53,7 @@ const SIMPLE_EXAMPLE: BoardData = {
           volunteers: [
             {
               id: "v2",
-              name: "Mike R.",
+              name: "Carlos M.",
               details: "home made lemonade 🍋",
               slot: 0,
             },
@@ -66,8 +66,8 @@ const SIMPLE_EXAMPLE: BoardData = {
           icon: "Cake" as const,
           needed: 3,
           volunteers: [
-            { id: "v3", name: "Emma L.", details: "", slot: 0 },
-            { id: "v4", name: "Alex K.", details: "", slot: 1 },
+            { id: "v3", name: "Alexandra N.", details: "", slot: 0 },
+            { id: "v4", name: "Wei L.", details: "", slot: 1 },
           ],
         },
       ],
@@ -83,8 +83,8 @@ const SIMPLE_EXAMPLE: BoardData = {
           icon: "Clock" as const,
           needed: 2,
           volunteers: [
-            { id: "v5", name: "John D.", details: "", slot: 0 },
-            { id: "v6", name: "Lisa W.", details: "", slot: 1 },
+            { id: "v5", name: "John D. Jr.", details: "", slot: 0 },
+            { id: "v6", name: "Sofia R.", details: "", slot: 1 },
           ],
         },
         {
@@ -92,7 +92,7 @@ const SIMPLE_EXAMPLE: BoardData = {
           title: "Cleanup crew",
           icon: "Trash" as const,
           needed: 3,
-          volunteers: [{ id: "v7", name: "Tom H.", details: "", slot: 0 }],
+          volunteers: [{ id: "v7", name: "Hiroshi T.", details: "", slot: 0 }],
         },
       ],
     },
@@ -113,7 +113,7 @@ const SIMPLE_EXAMPLE: BoardData = {
           title: "Parking helper",
           icon: "Car" as const,
           needed: 1,
-          volunteers: [{ id: "v8", name: "Ryan P.", details: "", slot: 0 }],
+          volunteers: [{ id: "v8", name: "Fatima A.", details: "", slot: 0 }],
         },
       ],
     },
@@ -270,14 +270,12 @@ export default function LandingPage() {
             <SectionHeading>See How It Works</SectionHeading>
           </div>
 
-          <div className="overflow-hidden rounded-2xl">
-            <PledgeBoard
-              initialData={SIMPLE_EXAMPLE}
-              editable={false}
-              isExample={true}
-              hideHeader={true}
-            />
-          </div>
+          <PledgeBoard
+            initialData={SIMPLE_EXAMPLE}
+            editable={false}
+            isExample={true}
+            bare={true}
+          />
         </div>
       </section>
 

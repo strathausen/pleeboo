@@ -58,7 +58,7 @@ interface PledgeBoardProps {
   initialData?: BoardData;
   editable?: boolean;
   isExample?: boolean;
-  hideHeader?: boolean;
+  bare?: boolean; // Removes title, example banner, and background for embedding
 }
 
 export function PledgeBoard({
@@ -68,7 +68,7 @@ export function PledgeBoard({
   initialData,
   editable,
   isExample = false,
-  hideHeader = false,
+  bare = false,
 }: PledgeBoardProps) {
   const router = useRouter();
   const { addToHistory } = useBoardHistory();
@@ -714,10 +714,14 @@ export function PledgeBoard({
     );
   }
 
+  // Use conditional classes based on bare mode
+  const containerClasses = bare ? "" : "min-h-screen bg-background p-4 md:p-8";
+  const wrapperClasses = bare ? "space-y-8" : "mx-auto max-w-6xl space-y-8";
+
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-8">
-        {!hideHeader && (
+    <div className={containerClasses}>
+      <div className={wrapperClasses}>
+        {!bare && (
           <BoardHeader
             title={localBoard?.title || ""}
             description={localBoard?.description || ""}
@@ -742,7 +746,7 @@ export function PledgeBoard({
         )}
 
         {/* Example banner */}
-        {isExample && (
+        {isExample && !bare && (
           <div className="rounded-lg bg-yellow-50 px-4 py-3 dark:bg-yellow-900/20">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
               👀 This is an example board to show you how it works. Your entries

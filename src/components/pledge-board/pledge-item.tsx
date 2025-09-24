@@ -160,7 +160,11 @@ export function PledgeItem({
                     handleSave();
                   }
                 }}
-                placeholder="e.g., Bring hamburger buns, Set up tables, Face painting"
+                placeholder={
+                  tempIsTask
+                    ? "e.g., Set up tables, Face painting"
+                    : "e.g., Savoury foods, Drinks, Decorations"
+                }
                 className="font-semibold text-base placeholder:font-normal placeholder:text-muted-foreground/50"
                 autoFocus={item.id.startsWith("temp-")}
               />
@@ -173,7 +177,11 @@ export function PledgeItem({
                     handleSave();
                   }
                 }}
-                placeholder="Add details like quantity, time, or special instructions (optional)"
+                placeholder={
+                  tempIsTask
+                    ? "Add notes about availability, timing, or special requirements (optional)"
+                    : "Specify what to bring, quantity, or dietary info (optional)"
+                }
                 className="text-sm placeholder:text-muted-foreground/50"
               />
               <div className="flex items-center gap-4">
@@ -286,6 +294,7 @@ export function PledgeItem({
                 volunteer={volunteer}
                 itemId={item.id}
                 slot={volunteer.slot}
+                isTask={item.isTask}
                 onNameChange={onVolunteerNameChange}
                 onDetailsChange={onVolunteerDetailsChange}
               />

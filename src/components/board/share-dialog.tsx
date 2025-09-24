@@ -18,11 +18,17 @@ import { toast } from "sonner";
 
 interface ShareDialogProps {
   boardId: string;
+  token?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
+export function ShareDialog({
+  boardId,
+  token,
+  open,
+  onOpenChange,
+}: ShareDialogProps) {
   const [adminUrl, setAdminUrl] = useState("");
   const [viewUrl, setViewUrl] = useState("");
   const [copiedAdmin, setCopiedAdmin] = useState(false);
@@ -31,7 +37,7 @@ export function ShareDialog({ boardId, open, onOpenChange }: ShareDialogProps) {
 
   // Get existing tokens
   const { data: tokens, isLoading } = api.board.getTokens.useQuery(
-    { boardId },
+    { boardId, token: token || undefined },
     {
       enabled: open && !!boardId,
     },

@@ -6,6 +6,7 @@ import { PledgeSection } from "@/components/pledge-board/pledge-section";
 import { Button } from "@/components/ui/button";
 import { useBoardHistory } from "@/hooks/use-board-history";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useToken } from "@/hooks/use-token";
 import type { IconName } from "@/lib/available-icons";
 import { api } from "@/trpc/react";
 import { Edit3, Eye, Loader2, Plus, Share2 } from "lucide-react";
@@ -63,7 +64,7 @@ interface PledgeBoardProps {
 
 export function PledgeBoard({
   boardId,
-  token,
+  token: propToken,
   startInEditMode = false,
   initialData,
   editable,
@@ -72,6 +73,8 @@ export function PledgeBoard({
 }: PledgeBoardProps) {
   const router = useRouter();
   const { addToHistory } = useBoardHistory();
+  const hookToken = useToken();
+  const token = propToken || hookToken;
 
   // State
   const [localBoard, setLocalBoard] = useState<BoardData | null>(
@@ -857,6 +860,7 @@ export function PledgeBoard({
       {canEdit && boardId && (
         <ShareDialog
           boardId={boardId}
+          token={token}
           open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
         />

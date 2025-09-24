@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -122,4 +123,90 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Prose styling for markdown content */
+.prose {
+  @apply text-foreground/90;
+}
+
+.prose h1 {
+  @apply scroll-m-20 font-bold text-4xl text-foreground tracking-tight lg:text-5xl;
+}
+
+.prose h2 {
+  @apply scroll-m-20 border-b pb-2 font-semibold text-3xl text-foreground tracking-tight transition-colors first:mt-0;
+}
+
+.prose h3 {
+  @apply scroll-m-20 font-semibold text-2xl text-foreground tracking-tight;
+}
+
+.prose h4 {
+  @apply scroll-m-20 font-semibold text-xl text-foreground tracking-tight;
+}
+
+.prose p {
+  @apply leading-7 text-foreground/80 [&:not(:first-child)]:mt-6;
+}
+
+.prose a {
+  @apply font-medium text-primary underline underline-offset-4 hover:no-underline;
+}
+
+.prose strong {
+  @apply font-bold text-foreground;
+}
+
+.prose ul {
+  @apply my-6 ml-6 list-disc text-foreground/80 [&>li]:mt-2;
+}
+
+.prose ol {
+  @apply my-6 ml-6 list-decimal text-foreground/80 [&>li]:mt-2;
+}
+
+.prose li {
+  @apply text-foreground/80;
+}
+
+.prose blockquote {
+  @apply mt-6 border-l-4 border-primary/30 bg-muted/50 py-2 pr-4 pl-6 italic text-foreground/70;
+}
+
+.prose code {
+  @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-foreground text-sm;
+}
+
+.prose pre {
+  @apply my-6 overflow-x-auto rounded-lg bg-muted p-4;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-sm;
+}
+
+.prose hr {
+  @apply my-8 border-border;
+}
+
+/* Dark mode adjustments */
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4 {
+  @apply text-foreground;
+}
+
+.dark .prose p,
+.dark .prose li {
+  @apply text-foreground/90;
+}
+
+.dark .prose strong {
+  @apply text-foreground;
+}
+
+.dark .prose blockquote {
+  @apply border-primary/50 bg-muted/30 text-foreground/80;
 }

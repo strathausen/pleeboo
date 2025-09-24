@@ -305,7 +305,12 @@ export const boardRouter = createTRPCRouter({
     }),
 
   getTokens: publicProcedure
-    .input(z.object({ boardId: z.string() }))
+    .input(
+      z.object({
+        boardId: z.string(),
+        token: z.string().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       // First check if the board exists and get the creator
       const board = await ctx.db.query.boards.findFirst({
@@ -334,9 +339,15 @@ export const boardRouter = createTRPCRouter({
         });
       }
 
-      // Only return admin token if the user is the board creator
-      const isAdmin =
+      // Check if user has admin access via session or token
+      const isSessionAdmin =
         ctx.session?.user?.id && board.createdById === ctx.session.user.id;
+
+      // Check if the provided token is the admin token
+      const isTokenAdmin =
+        input.token && adminToken && input.token === adminToken.id;
+
+      const isAdmin = isSessionAdmin || isTokenAdmin;
 
       return {
         adminToken: isAdmin && adminToken ? adminToken.id : undefined,

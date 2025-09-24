@@ -5,6 +5,7 @@ interface VolunteerItemProps {
   volunteer: Volunteer;
   itemId: string;
   slot: number;
+  isTask?: boolean;
   onNameChange?: (itemId: string, slot: number, newName: string) => void;
   onDetailsChange?: (itemId: string, slot: number, newDetails: string) => void;
 }
@@ -13,6 +14,7 @@ export function VolunteerItem({
   volunteer,
   itemId,
   slot,
+  isTask = false,
   onNameChange,
   onDetailsChange,
 }: VolunteerItemProps) {
@@ -62,7 +64,11 @@ export function VolunteerItem({
             }}
             onFocus={() => setIsEditingDetails(true)}
             onBlur={() => setIsEditingDetails(false)}
-            placeholder="Add details..."
+            placeholder={
+              isTask
+                ? "Add availability or notes..."
+                : "Add quantity or what you'll bring..."
+            }
             className={`block w-full border-0 bg-transparent p-0 text-muted-foreground text-xs outline-none ${
               isEditingDetails
                 ? "rounded px-1 ring-2 ring-primary ring-offset-1"

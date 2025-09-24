@@ -4,8 +4,8 @@ import type { BoardData } from "@/components/board/pledge-board";
 import { PledgeBoard } from "@/components/board/pledge-board";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Footer } from "@/components/ui/footer";
 import { Header } from "@/components/ui/header";
-import { Logo } from "@/components/ui/logo";
 import { SectionHeading } from "@/components/ui/section-heading";
 import {
   ArrowRight,
@@ -266,10 +266,16 @@ export default function LandingPage() {
       {/* Interactive Demo */}
       <section className="bg-muted/30 px-4 py-20">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
+          <div className="mb-8 text-center">
             <SectionHeading>See How It Works</SectionHeading>
           </div>
-
+          <p className="mb-2 text-center text-lg text-muted-foreground">
+            Here's an appetizer to get you started. Play around with this board
+            to see how easy it is to organize your event.
+          </p>
+          <p className="mb-6 text-center text-muted-foreground text-sm">
+            (Don't worry, this board doesn't save your changes.)
+          </p>
           <PledgeBoard
             initialData={SIMPLE_EXAMPLE}
             editable={false}
@@ -363,39 +369,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t px-4 py-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-4">
-              <Logo size="sm" />
-              <p className="text-muted-foreground text-sm">
-                © 2024 Pleeboo. Made with ❤️ for communities everywhere.
-              </p>
-            </div>
-            <div className="flex gap-6 text-sm">
-              <Link
-                href="/landing"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                About
-              </Link>
-              <Link
-                href="/board"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Create Board
-              </Link>
-              <a
-                href="https://github.com"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                GitHub
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

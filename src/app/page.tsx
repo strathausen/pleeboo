@@ -198,7 +198,7 @@ export default function LandingPage() {
       <section className="px-4 py-20">
         <div className="mx-auto max-w-7xl text-center">
           <div className="mx-auto max-w-3xl">
-            <h1 className="mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text pb-2 font-bold text-5xl text-transparent tracking-tight sm:text-6xl">
+            <h1 className="mb-4 bg-gradient-to-r from-teal-600 to-yellow-500 bg-clip-text pb-2 font-bold text-5xl text-transparent tracking-tight sm:text-6xl">
               <style jsx>{`
                 .typewriter-gradient .Typewriter__wrapper,
                 .typewriter-gradient .Typewriter__cursor {
@@ -346,7 +346,7 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="px-4 py-20">
         <div className="mx-auto max-w-4xl text-center">
-          <div className="rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 p-12 text-white">
+          <div className="rounded-2xl bg-gradient-to-r from-teal-600 to-yellow-500 p-12 text-white">
             <SectionHeading variant="white" className="text-white">
               Start Organizing Today
             </SectionHeading>

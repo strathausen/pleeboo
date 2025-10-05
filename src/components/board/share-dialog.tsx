@@ -21,6 +21,7 @@ interface ShareDialogProps {
   token?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  boardTitle?: string;
 }
 
 export function ShareDialog({
@@ -28,6 +29,7 @@ export function ShareDialog({
   token,
   open,
   onOpenChange,
+  boardTitle = "",
 }: ShareDialogProps) {
   const [adminUrl, setAdminUrl] = useState("");
   const [viewUrl, setViewUrl] = useState("");
@@ -47,7 +49,16 @@ export function ShareDialog({
   useEffect(() => {
     if (tokens) {
       const baseUrl = window.location.origin;
-      const boardPath = `/board/${boardId}`;
+      // Create slug from board title
+      const slug = boardTitle
+        ? boardTitle
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+        : "";
+      const boardPath = slug
+        ? `/board/${slug}--${boardId}`
+        : `/board/${boardId}`;
 
       // Only set admin URL if user has admin access
       if (tokens.adminToken) {
@@ -57,9 +68,10 @@ export function ShareDialog({
         setHasAdminAccess(false);
       }
 
-      setViewUrl(`${baseUrl}${boardPath}?token=${tokens.viewToken}`);
+      // Volunteer access doesn't need a token
+      setViewUrl(`${baseUrl}${boardPath}`);
     }
-  }, [tokens, boardId]);
+  }, [tokens, boardId, boardTitle]);
 
   const copyToClipboard = (url: string, type: "admin" | "view") => {
     navigator.clipboard.writeText(url);

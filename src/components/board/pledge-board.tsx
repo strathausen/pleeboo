@@ -908,7 +908,7 @@ export function PledgeBoard({
             );
           })}
 
-        {editMode && canEdit && (
+        {editMode && canEdit && !isWaitingForAI && (
           <div className="flex justify-center">
             <Button
               onClick={handleSectionAdd}
@@ -929,6 +929,7 @@ export function PledgeBoard({
           token={token}
           open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
+          boardTitle={localBoard?.title}
         />
       )}
     </div>

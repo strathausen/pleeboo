@@ -12,7 +12,6 @@ import type { IconName } from "@/lib/available-icons";
 import { api } from "@/trpc/react";
 import { Edit3, Eye, Loader2, Plus, Share2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 type VolunteerUpdate = {
   itemId: string;
@@ -81,7 +80,7 @@ export function PledgeBoard({
 
   // State
   const [localBoard, setLocalBoard] = useState<BoardData | null>(
-    initialData || null
+    initialData || null,
   );
 
   const [pendingUpdates, setPendingUpdates] = useState<
@@ -90,7 +89,7 @@ export function PledgeBoard({
   const [editMode, setEditMode] = useState(startInEditMode);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [accessLevel, setAccessLevel] = useState<"admin" | "view" | "none">(
-    "none"
+    "none",
   );
   const [nextTempId, setNextTempId] = useState(1);
 
@@ -103,7 +102,7 @@ export function PledgeBoard({
 
   const { data: tokenData } = api.board.auth.validateToken.useQuery(
     { boardId: boardId, token: token || undefined },
-    { enabled: !initialData }
+    { enabled: !initialData },
   );
 
   // Debounced updates
@@ -132,16 +131,13 @@ export function PledgeBoard({
   const generateSuggestions = api.board.ai.generateSuggestions.useMutation({
     onSuccess: async (data) => {
       if (data.success && data.sections) {
+        // toast.success(`Generated ${data.sections.length} new sections!`);
         // Refresh the board to show new sections
-        toast.success(`Generated ${data.sections.length} new sections!`);
-        if (data.tips && data.tips.length > 0) {
-          console.log("Tips:", data.tips);
-        }
         await refetch();
       }
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to generate suggestions");
+      // toast.error(error.message || "Failed to generate suggestions");
     },
     onSettled: () => {
       setIsWaitingForAI(false);
@@ -159,7 +155,7 @@ export function PledgeBoard({
               // Replace temp section with the real one from server
               section.id.startsWith("temp-")
                 ? { ...newSection, items: [] }
-                : section
+                : section,
             ),
           };
         });
@@ -189,7 +185,7 @@ export function PledgeBoard({
                     // Replace temp item with the real one from server
                     item.id.startsWith("temp-")
                       ? { ...newItem, volunteers: [] }
-                      : item
+                      : item,
                   ),
                 };
               }
@@ -248,6 +244,8 @@ export function PledgeBoard({
     if (
       isGeneratingAI &&
       !isWaitingForAI &&
+      !generateSuggestions.isPending &&
+      !generateSuggestions.isError &&
       boardId &&
       !initialData &&
       !isExample &&
@@ -262,6 +260,7 @@ export function PledgeBoard({
   }, [
     isGeneratingAI,
     isWaitingForAI,
+    generateSuggestions.isPending,
     boardId,
     initialData,
     isExample,
@@ -318,7 +317,7 @@ export function PledgeBoard({
               if (item.id === itemId) {
                 // Find if volunteer already exists in this slot
                 const existingVolIndex = item.volunteers.findIndex(
-                  (v) => v.slot === slot
+                  (v) => v.slot === slot,
                 );
 
                 const newVolunteers = [...item.volunteers];
@@ -380,12 +379,12 @@ export function PledgeBoard({
               slot,
               name: newName,
               details,
-            })
-          )
+            }),
+          ),
         );
       }
     },
-    [localBoard, pendingUpdates, isExample]
+    [localBoard, pendingUpdates, isExample],
   );
 
   const handleVolunteerDetailsChange = useCallback(
@@ -401,7 +400,7 @@ export function PledgeBoard({
               if (item.id === itemId) {
                 // Find volunteer in this slot
                 const volIndex = item.volunteers.findIndex(
-                  (v) => v.slot === slot
+                  (v) => v.slot === slot,
                 );
 
                 if (volIndex >= 0) {
@@ -439,17 +438,17 @@ export function PledgeBoard({
               slot,
               name,
               details: newDetails,
-            })
-          )
+            }),
+          ),
         );
       }
     },
-    [localBoard, pendingUpdates, isExample]
+    [localBoard, pendingUpdates, isExample],
   );
 
   const handleSectionUpdate = (
     sectionId: string,
-    updates: { title?: string; description?: string; icon?: IconName }
+    updates: { title?: string; description?: string; icon?: IconName },
   ) => {
     // Handle new sections (temp IDs)
     if (sectionId.startsWith("temp-")) {
@@ -526,12 +525,12 @@ export function PledgeBoard({
       icon: IconName;
       needed: number;
       isTask?: boolean;
-    }>
+    }>,
   ) => {
     // If this is a new item (temp ID) being saved for the first time
     if (itemId.startsWith("temp-")) {
       const section = localBoard?.sections.find((s) =>
-        s.items.some((item) => item.id === itemId)
+        s.items.some((item) => item.id === itemId),
       );
       const item = section?.items.find((i) => i.id === itemId);
 

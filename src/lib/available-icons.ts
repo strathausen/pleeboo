@@ -32,9 +32,6 @@ import {
   Megaphone,
   Mic,
   Music,
-  Music2,
-  Music3,
-  Music4,
   Package,
   Palette,
   PartyPopper,
@@ -45,7 +42,6 @@ import {
   ShoppingBag,
   ShoppingCart,
   Soup,
-  Sparkle,
   Sparkles,
   Speaker,
   Star,
@@ -74,7 +70,6 @@ const ICON_MAP = {
   Cake,
   CakeSlice,
   Sparkles,
-  Sparkle,
   Star,
   Trophy,
   Heart,
@@ -99,13 +94,10 @@ const ICON_MAP = {
 
   // Activities & Entertainment
   Music,
-  Music2,
-  Music3,
-  Music4,
   Headphones,
   Mic,
   Speaker,
-  Gamepad: Gamepad2,
+  Gamepad2,
   Camera,
   Video,
   Activity,
@@ -142,7 +134,7 @@ const ICON_MAP = {
 
   // Utility
   Zap,
-  Trash: Trash2,
+  Trash2,
 } as const;
 
 // Type for valid icon names
@@ -151,87 +143,13 @@ export type IconName = keyof typeof ICON_MAP;
 // Default icon name
 export const DEFAULT_ICON: IconName = "Star";
 
+// Export all available icon names as a const array for runtime use
+export const ALL_ICON_NAMES = Object.keys(ICON_MAP);
+
 // Array of available icons for UI selection
 export const availableIcons: { icon: LucideIcon; name: IconName }[] = (
   Object.entries(ICON_MAP) as Array<[IconName, LucideIcon]>
 ).map(([name, icon]) => ({ name, icon }));
-
-// Grouped icons for better UI organization
-export const iconGroups = {
-  "Party & Celebration": [
-    "PartyPopper",
-    "Gift",
-    "Cake",
-    "CakeSlice",
-    "Sparkles",
-    "Sparkle",
-    "Star",
-    "Trophy",
-    "Heart",
-    "Ticket",
-  ] as IconName[],
-  "Food & Drinks": [
-    "Utensils",
-    "UtensilsCrossed",
-    "Pizza",
-    "Sandwich",
-    "Soup",
-    "Cookie",
-    "Popcorn",
-    "IceCreamCone",
-    "Cherry",
-    "Coffee",
-    "Beer",
-    "Wine",
-    "CupSoda",
-    "GlassWater",
-    "Beef",
-  ] as IconName[],
-  "Activities & Entertainment": [
-    "Music",
-    "Music2",
-    "Music3",
-    "Music4",
-    "Headphones",
-    "Mic",
-    "Speaker",
-    "Gamepad",
-    "Camera",
-    "Video",
-    "Activity",
-    "Bike",
-    "Tent",
-    "Palette",
-    "Book",
-  ] as IconName[],
-  "Setup & Logistics": [
-    "Users",
-    "Package",
-    "ShoppingCart",
-    "ShoppingBag",
-    "Truck",
-    "Car",
-    "Home",
-    "MapPin",
-    "Clock",
-    "Timer",
-    "Calendar",
-    "Megaphone",
-  ] as IconName[],
-  "Decorations & Ambiance": [
-    "Flower",
-    "Flower2",
-    "Sun",
-    "Lightbulb",
-    "Lamp",
-    "Flame",
-    "Trees",
-    "TreePine",
-    "Flag",
-    "Shirt",
-  ] as IconName[],
-  Utility: ["Zap", "Trash"] as IconName[],
-} as const;
 
 /**
  * Get the Lucide icon component for a given icon name

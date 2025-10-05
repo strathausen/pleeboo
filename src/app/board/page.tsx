@@ -28,7 +28,9 @@ export default function CreateBoardPage() {
       // Redirect with admin token and flags
       const hasPrompt = prompt.trim().length > 0;
       router.push(
-        `/board/${board.id}?token=${board.adminToken}&new=true${hasPrompt ? "&generating=true" : ""}`,
+        `/board/${board.id}?token=${board.adminToken}&new=true${
+          hasPrompt ? "&generating=true" : ""
+        }`
       );
     },
     onError: (error) => {
@@ -100,6 +102,10 @@ export default function CreateBoardPage() {
                 className="min-h-[100px] resize-none border-muted/20 placeholder:text-muted-foreground/40 focus:border-primary"
                 maxLength={2000}
               />
+              <p className="text-muted-foreground/60 text-xs">
+                Boo will use these details to suggest relevant volunteer tasks
+                and items needed for your event. If you don't want this, just leave this field blank.
+              </p>
             </div>
           </div>
 

@@ -3,7 +3,8 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { boardItems, boardSections, boards } from "@/server/db/schema";
 import { evaluateBoard } from "@/server/services/board-evaluator";
 import { TRPCError } from "@trpc/server";
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { omit } from "lodash";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
@@ -13,11 +14,28 @@ export const boardAIRouter = createTRPCRouter({
       z.object({
         boardId: z.string(),
         token: z.string().optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Validate admin access - will throw if not admin
       await validateAdminToken(input.boardId, input.token || undefined);
+
+      // Check if sections already exist
+      const result = await ctx.db
+        .select({ count: ctx.db.$count(boardSections) })
+        .from(boardSections)
+        .where(eq(boardSections.boardId, input.boardId));
+
+      const count = result[0]?.count ?? 0;
+
+      // If sections already exist, don't generate new ones
+      if (count > 0) {
+        return {
+          success: false,
+          message: "Board already has sections",
+          sections: [],
+        };
+      }
 
       // Get the board details
       const board = await ctx.db.query.boards.findFirst({
@@ -45,70 +63,52 @@ export const boardAIRouter = createTRPCRouter({
         });
       }
 
-      // Get current max sort order for sections
-      const existingSections = await ctx.db.query.boardSections.findMany({
-        where: eq(boardSections.boardId, input.boardId),
-        orderBy: desc(boardSections.sortOrder),
-      });
+      // Prepare sections for batch insert
+      const sectionsToInsert = evaluation.suggestedSections.map(
+        (section, index) => ({
+          id: nanoid(),
+          boardId: input.boardId,
+          sortOrder: index,
+          ...omit(section, "items"),
+        }),
+      );
 
-      const maxSectionOrder = existingSections[0]?.sortOrder ?? -1;
-      let currentSectionOrder = maxSectionOrder;
+      // Batch insert all sections
+      const insertedSections = await ctx.db
+        .insert(boardSections)
+        .values(sectionsToInsert)
+        .returning();
 
-      // Create sections and items from the suggestions
-      const createdSections = [];
-      for (const section of evaluation.suggestedSections) {
-        currentSectionOrder++;
+      // Prepare items for batch insert
+      const itemsToInsert = evaluation.suggestedSections.flatMap(
+        (section, sectionIndex) => {
+          const insertedSection = insertedSections[sectionIndex];
+          if (!insertedSection) return [];
 
-        // Create the section
-        const [newSection] = await ctx.db
-          .insert(boardSections)
-          .values({
+          return section.items.map((item, itemIndex) => ({
             id: nanoid(),
-            boardId: input.boardId,
-            title: section.title,
-            description: section.description,
-            icon: section.icon,
-            sortOrder: currentSectionOrder,
-          })
-          .returning();
+            sectionId: insertedSection.id,
+            sortOrder: itemIndex,
+            ...item,
+          }));
+        },
+      );
 
-        if (!newSection) continue;
+      // Batch insert all items
+      const insertedItems =
+        itemsToInsert.length > 0
+          ? await ctx.db.insert(boardItems).values(itemsToInsert).returning()
+          : [];
 
-        // Create items for this section
-        const createdItems = [];
-        for (let i = 0; i < section.items.length; i++) {
-          const item = section.items[i];
-          if (!item) continue;
-
-          const [newItem] = await ctx.db
-            .insert(boardItems)
-            .values({
-              id: nanoid(),
-              sectionId: newSection.id,
-              title: item.title,
-              description: item.description || undefined,
-              icon: item.icon,
-              needed: item.quantity,
-              sortOrder: i,
-            })
-            .returning();
-
-          if (newItem) {
-            createdItems.push(newItem);
-          }
-        }
-
-        createdSections.push({
-          ...newSection,
-          items: createdItems,
-        });
-      }
+      // Build the response with sections and their items
+      const createdSections = insertedSections.map((section) => ({
+        ...section,
+        items: insertedItems.filter((item) => item.sectionId === section.id),
+      }));
 
       return {
         success: true,
         sections: createdSections,
-        tips: evaluation.tips,
-        eventType: evaluation.eventType,
       };
     }),
 });

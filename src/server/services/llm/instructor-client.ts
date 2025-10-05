@@ -3,9 +3,7 @@ import { getOpenAIClient } from "./openai";
 
 const openai = getOpenAIClient();
 
-export const instructorClient = openai
-  ? Instructor({
-      client: openai,
-      mode: "FUNCTIONS",
-    })
-  : null;
+export const instructorClient = Instructor({
+  client: openai,
+  mode: "FUNCTIONS",
+});

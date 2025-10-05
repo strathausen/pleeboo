@@ -1,3 +1,4 @@
+import { ALL_ICON_NAMES } from "@/lib/available-icons";
 import {
   type BoardEvaluation,
   BoardEvaluationSchema,
@@ -44,11 +45,7 @@ Consider:
 - Items/supplies typically needed
 
 For icons, use common Lucide icon names like:
-- Food/Drinks: UtensilsCrossed, Coffee, Pizza, Cake, Wine
-- Setup/Cleanup: Hammer, Trash, Broom, Package
-- Activities: Music, GameController2, Camera, Megaphone
-- Supplies: Package, ShoppingCart, Clipboard, Calendar
-- People/Roles: Users, UserCheck, ChefHat, Car
+${ALL_ICON_NAMES.join(", ")}
 
 Provide practical, relevant suggestions that make organizing easier.`,
         },
@@ -67,30 +64,6 @@ Provide practical, relevant suggestions that make organizing easier.`,
     });
 
     const evaluation = result as BoardEvaluation;
-
-    // Log the evaluation to console
-    console.log("[Board Evaluator] Evaluation complete:", {
-      title: params.title,
-      eventType: evaluation.eventType,
-      sectionsCount: evaluation.suggestedSections.length,
-      totalItems: evaluation.suggestedSections.reduce(
-        (acc, section) => acc + section.items.length,
-        0,
-      ),
-    });
-
-    console.log(
-      "[Board Evaluator] Suggested sections:",
-      JSON.stringify(evaluation.suggestedSections, null, 2),
-    );
-
-    if (evaluation.tips) {
-      console.log("[Board Evaluator] Tips:", evaluation.tips);
-    }
-
-    if (evaluation.timeline) {
-      console.log("[Board Evaluator] Timeline:", evaluation.timeline);
-    }
 
     return evaluation;
   } catch (error) {

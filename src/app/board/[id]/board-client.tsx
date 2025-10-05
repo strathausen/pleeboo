@@ -10,6 +10,7 @@ export default function BoardClient() {
   const token = searchParams.get("token");
   const isNew = searchParams.get("new") === "true";
   const isGenerating = searchParams.get("generating") === "true";
+  console.log({ isNew, isGenerating }); // why is this being renedered twice?
 
   return (
     <PledgeBoard

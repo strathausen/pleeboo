@@ -36,7 +36,7 @@ export function ShareDialog({
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
 
   // Get existing tokens
-  const { data: tokens, isLoading } = api.board.getTokens.useQuery(
+  const { data: tokens, isLoading } = api.board.auth.getTokens.useQuery(
     { boardId, token: token || undefined },
     {
       enabled: open && !!boardId,

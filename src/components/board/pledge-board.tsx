@@ -1,5 +1,6 @@
 "use client";
 
+import { AILoading } from "@/components/board/ai-loading";
 import { ShareDialog } from "@/components/board/share-dialog";
 import { BoardHeader } from "@/components/pledge-board/board-header";
 import { PledgeSection } from "@/components/pledge-board/pledge-section";
@@ -10,8 +11,8 @@ import { useToken } from "@/hooks/use-token";
 import type { IconName } from "@/lib/available-icons";
 import { api } from "@/trpc/react";
 import { Edit3, Eye, Loader2, Plus, Share2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type VolunteerUpdate = {
   itemId: string;
@@ -53,13 +54,14 @@ export type BoardData = {
 };
 
 interface PledgeBoardProps {
-  boardId?: string;
+  boardId: string;
   token?: string;
   startInEditMode?: boolean;
   initialData?: BoardData;
   editable?: boolean;
   isExample?: boolean;
   bare?: boolean; // Removes title, example banner, and background for embedding
+  isGeneratingAI?: boolean;
 }
 
 export function PledgeBoard({
@@ -70,15 +72,16 @@ export function PledgeBoard({
   editable,
   isExample = false,
   bare = false,
+  isGeneratingAI = false,
 }: PledgeBoardProps) {
-  const router = useRouter();
   const { addToHistory } = useBoardHistory();
   const hookToken = useToken();
-  const token = propToken || hookToken;
+  const token = propToken || hookToken || undefined;
+  const [isWaitingForAI, setIsWaitingForAI] = useState(false);
 
   // State
   const [localBoard, setLocalBoard] = useState<BoardData | null>(
-    initialData || null,
+    initialData || null
   );
 
   const [pendingUpdates, setPendingUpdates] = useState<
@@ -87,9 +90,8 @@ export function PledgeBoard({
   const [editMode, setEditMode] = useState(startInEditMode);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [accessLevel, setAccessLevel] = useState<"admin" | "view" | "none">(
-    "none",
+    "none"
   );
-  const [isSaving, setIsSaving] = useState(false);
   const [nextTempId, setNextTempId] = useState(1);
 
   // API hooks - only fetch if boardId is provided (not for example board)
@@ -97,41 +99,55 @@ export function PledgeBoard({
     data: board,
     isLoading,
     refetch,
-  } = api.board.get.useQuery(
-    { id: boardId || "" },
-    { enabled: !!boardId && !initialData },
-  );
+  } = api.board.get.useQuery({ id: boardId }, { enabled: !initialData });
 
-  const { data: tokenData } = api.board.validateToken.useQuery(
-    { boardId: boardId || "", token: token || undefined },
-    { enabled: !!boardId && !initialData },
+  const { data: tokenData } = api.board.auth.validateToken.useQuery(
+    { boardId: boardId, token: token || undefined },
+    { enabled: !initialData }
   );
 
   // Debounced updates
   const debouncedUpdates = useDebounce(pendingUpdates, 500);
 
   // Mutations
-  const createBoard = api.board.create.useMutation();
   const updateBoard = api.board.update.useMutation({
     onSuccess: () => void refetch(),
   });
   const upsertVolunteer = api.pledge.upsertVolunteer.useMutation();
-  const updateSection = api.board.updateSection.useMutation({
+  const updateSection = api.board.sections.update.useMutation({
     onSuccess: () => void refetch(),
   });
-  const updateItem = api.board.updateItem.useMutation({
+  const updateItem = api.board.items.update.useMutation({
     onSuccess: () => void refetch(),
   });
-  const deleteSection = api.board.deleteSection.useMutation({
+  const deleteSection = api.board.sections.delete.useMutation({
     onSuccess: () => void refetch(),
   });
-  const deleteItem = api.board.deleteItem.useMutation({
+  const deleteItem = api.board.items.delete.useMutation({
     onSuccess: () => void refetch(),
   });
-  const reorderSections = api.board.reorderSections.useMutation({
+  const reorderSections = api.board.sections.reorder.useMutation({
     onSuccess: () => void refetch(),
   });
-  const addSection = api.board.addSection.useMutation({
+  const generateSuggestions = api.board.ai.generateSuggestions.useMutation({
+    onSuccess: async (data) => {
+      if (data.success && data.sections) {
+        // Refresh the board to show new sections
+        toast.success(`Generated ${data.sections.length} new sections!`);
+        if (data.tips && data.tips.length > 0) {
+          console.log("Tips:", data.tips);
+        }
+        await refetch();
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to generate suggestions");
+    },
+    onSettled: () => {
+      setIsWaitingForAI(false);
+    },
+  });
+  const addSection = api.board.sections.add.useMutation({
     onSuccess: (newSection) => {
       if (localBoard && newSection) {
         // Replace the temporary section with the server-saved section
@@ -143,7 +159,7 @@ export function PledgeBoard({
               // Replace temp section with the real one from server
               section.id.startsWith("temp-")
                 ? { ...newSection, items: [] }
-                : section,
+                : section
             ),
           };
         });
@@ -157,7 +173,7 @@ export function PledgeBoard({
     },
   });
 
-  const addItem = api.board.addItem.useMutation({
+  const addItem = api.board.items.add.useMutation({
     onSuccess: (newItem) => {
       if (localBoard && newItem) {
         // Replace the temporary item with the server-saved item
@@ -173,7 +189,7 @@ export function PledgeBoard({
                     // Replace temp item with the real one from server
                     item.id.startsWith("temp-")
                       ? { ...newItem, volunteers: [] }
-                      : item,
+                      : item
                   ),
                 };
               }
@@ -199,7 +215,7 @@ export function PledgeBoard({
 
   // Update local board when server data changes
   useEffect(() => {
-    if (board && !initialData && boardId) {
+    if (board && !initialData) {
       setLocalBoard(board);
       // Save to board history
       addToHistory({
@@ -210,10 +226,50 @@ export function PledgeBoard({
         accessLevel,
         lastVisited: new Date().toISOString(),
       });
+
+      // If we were waiting for AI and now have sections, stop waiting
+      if (isWaitingForAI && board.sections && board.sections.length > 0) {
+        setIsWaitingForAI(false);
+      }
     }
-  }, [board, boardId, token, accessLevel, addToHistory, initialData]);
+  }, [
+    board,
+    boardId,
+    token,
+    accessLevel,
+    addToHistory,
+    initialData,
+    isWaitingForAI,
+  ]);
+
+  // initially generate sections if AI generation was requested
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (
+      isGeneratingAI &&
+      !isWaitingForAI &&
+      boardId &&
+      !initialData &&
+      !isExample &&
+      !board?.sections.length
+    ) {
+      setIsWaitingForAI(true);
+      generateSuggestions.mutate({
+        boardId,
+        token,
+      });
+    }
+  }, [
+    isGeneratingAI,
+    isWaitingForAI,
+    boardId,
+    initialData,
+    isExample,
+    board?.sections.length,
+  ]);
 
   // Process debounced updates
+  // TODO check if this is working as intended
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (debouncedUpdates.size > 0 && !isExample) {
@@ -262,7 +318,7 @@ export function PledgeBoard({
               if (item.id === itemId) {
                 // Find if volunteer already exists in this slot
                 const existingVolIndex = item.volunteers.findIndex(
-                  (v) => v.slot === slot,
+                  (v) => v.slot === slot
                 );
 
                 const newVolunteers = [...item.volunteers];
@@ -324,12 +380,12 @@ export function PledgeBoard({
               slot,
               name: newName,
               details,
-            }),
-          ),
+            })
+          )
         );
       }
     },
-    [localBoard, pendingUpdates, isExample],
+    [localBoard, pendingUpdates, isExample]
   );
 
   const handleVolunteerDetailsChange = useCallback(
@@ -345,7 +401,7 @@ export function PledgeBoard({
               if (item.id === itemId) {
                 // Find volunteer in this slot
                 const volIndex = item.volunteers.findIndex(
-                  (v) => v.slot === slot,
+                  (v) => v.slot === slot
                 );
 
                 if (volIndex >= 0) {
@@ -383,17 +439,17 @@ export function PledgeBoard({
               slot,
               name,
               details: newDetails,
-            }),
-          ),
+            })
+          )
         );
       }
     },
-    [localBoard, pendingUpdates, isExample],
+    [localBoard, pendingUpdates, isExample]
   );
 
   const handleSectionUpdate = (
     sectionId: string,
-    updates: { title?: string; description?: string; icon?: IconName },
+    updates: { title?: string; description?: string; icon?: IconName }
   ) => {
     // Handle new sections (temp IDs)
     if (sectionId.startsWith("temp-")) {
@@ -470,19 +526,20 @@ export function PledgeBoard({
       icon: IconName;
       needed: number;
       isTask?: boolean;
-    }>,
+    }>
   ) => {
     // If this is a new item (temp ID) being saved for the first time
     if (itemId.startsWith("temp-")) {
       const section = localBoard?.sections.find((s) =>
-        s.items.some((item) => item.id === itemId),
+        s.items.some((item) => item.id === itemId)
       );
       const item = section?.items.find((i) => i.id === itemId);
 
-      if (section && item && !section.id.startsWith("temp-")) {
+      if (section && item && !section.id.startsWith("temp-") && boardId) {
         const icon = updates.icon || item.icon || "Star";
         // Save the new item to the database
         addItem.mutate({
+          boardId,
           sectionId: section.id,
           title: updates.title || item.title,
           description: updates.description || item.description || undefined,
@@ -780,6 +837,7 @@ export function PledgeBoard({
                   onClick={() => setEditMode(!editMode)}
                   variant={editMode ? "default" : "outline"}
                   className="gap-2"
+                  disabled={isWaitingForAI}
                 >
                   {editMode ? (
                     <>
@@ -798,49 +856,58 @@ export function PledgeBoard({
           </div>
         </div>
 
-        {localBoard?.sections.map((section, sectionIndex) => {
-          const items = section.items.map((item) => {
-            return {
-              id: item.id,
-              title: item.title,
-              description: item.description || "",
-              needed: item.needed,
-              volunteers: item.volunteers.map((v) => ({
-                id: v.id,
-                slot: v.slot,
-                name: v.name,
-                details: v.details || "",
-              })),
-              icon: item.icon as IconName,
-              category: "items" as const,
-            };
-          });
+        {/* Show AI loading state if waiting for generation */}
+        {isWaitingForAI && (
+          <div className="rounded-lg border-2 border-primary/30 border-dashed bg-muted/10">
+            <AILoading />
+          </div>
+        )}
 
-          return (
-            <PledgeSection
-              key={section.id}
-              sectionId={section.id}
-              title={section.title}
-              description={section.description || ""}
-              icon={section.icon as IconName}
-              items={items}
-              onPledge={() => {}}
-              onVolunteerNameChange={handleVolunteerNameChange}
-              onVolunteerDetailsChange={handleVolunteerDetailsChange}
-              isTask={section.title.toLowerCase().includes("task")}
-              editable={editMode && canEdit}
-              onSectionUpdate={handleSectionUpdate}
-              onSectionDelete={handleSectionDelete}
-              onItemUpdate={handleItemUpdate}
-              onItemDelete={handleItemDelete}
-              onItemAdd={handleItemAdd}
-              onMoveUp={handleSectionMoveUp}
-              onMoveDown={handleSectionMoveDown}
-              isFirst={sectionIndex === 0}
-              isLast={sectionIndex === (localBoard?.sections.length || 0) - 1}
-            />
-          );
-        })}
+        {/* Show sections if not waiting for AI or if sections exist */}
+        {!isWaitingForAI &&
+          localBoard?.sections.map((section, sectionIndex) => {
+            const items = section.items.map((item) => {
+              return {
+                id: item.id,
+                title: item.title,
+                description: item.description || "",
+                needed: item.needed,
+                volunteers: item.volunteers.map((v) => ({
+                  id: v.id,
+                  slot: v.slot,
+                  name: v.name,
+                  details: v.details || "",
+                })),
+                icon: item.icon as IconName,
+                category: "items" as const,
+              };
+            });
+
+            return (
+              <PledgeSection
+                key={section.id}
+                sectionId={section.id}
+                title={section.title}
+                description={section.description || ""}
+                icon={section.icon as IconName}
+                items={items}
+                onPledge={() => {}}
+                onVolunteerNameChange={handleVolunteerNameChange}
+                onVolunteerDetailsChange={handleVolunteerDetailsChange}
+                isTask={section.title.toLowerCase().includes("task")}
+                editable={editMode && canEdit}
+                onSectionUpdate={handleSectionUpdate}
+                onSectionDelete={handleSectionDelete}
+                onItemUpdate={handleItemUpdate}
+                onItemDelete={handleItemDelete}
+                onItemAdd={handleItemAdd}
+                onMoveUp={handleSectionMoveUp}
+                onMoveDown={handleSectionMoveDown}
+                isFirst={sectionIndex === 0}
+                isLast={sectionIndex === (localBoard?.sections.length || 0) - 1}
+              />
+            );
+          })}
 
         {editMode && canEdit && (
           <div className="flex justify-center">

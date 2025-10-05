@@ -25,8 +25,11 @@ export default function CreateBoardPage() {
         accessLevel: "admin" as const,
         lastVisited: new Date().toISOString(),
       });
-      // Redirect with admin token and new flag so board starts in edit mode
-      router.push(`/board/${board.id}?token=${board.adminToken}&new=true`);
+      // Redirect with admin token and flags
+      const hasPrompt = prompt.trim().length > 0;
+      router.push(
+        `/board/${board.id}?token=${board.adminToken}&new=true${hasPrompt ? "&generating=true" : ""}`,
+      );
     },
     onError: (error) => {
       toast.error(error.message);
@@ -88,7 +91,7 @@ export default function CreateBoardPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <span className="text-lg">👻</span>
-                <span className="text-sm">Tell us more! (optional)</span>
+                <span className="text-sm">Tell Boo more! (optional)</span>
               </div>
               <Textarea
                 placeholder="e.g., It's an outdoor party for 50 people. We'll have BBQ, lawn games, and live music from 2-8pm. Need help with setup at 1pm and cleanup after."

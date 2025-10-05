@@ -9,12 +9,14 @@ export default function BoardClient() {
   const boardId = params.id as string;
   const token = searchParams.get("token");
   const isNew = searchParams.get("new") === "true";
+  const isGenerating = searchParams.get("generating") === "true";
 
   return (
     <PledgeBoard
       boardId={boardId}
       token={token || undefined}
       startInEditMode={isNew}
+      isGeneratingAI={isGenerating}
     />
   );
 }

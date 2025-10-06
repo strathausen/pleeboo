@@ -2,8 +2,8 @@
 
 import type { BoardData } from "@/components/board/pledge-board";
 import { PledgeBoard } from "@/components/board/pledge-board";
-import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
 

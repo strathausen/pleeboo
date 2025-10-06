@@ -265,7 +265,9 @@ export function PledgeItem({
                       <TooltipTrigger asChild>
                         <Button
                           type="button"
-                          variant={tempItemType === "slots" ? "default" : "outline"}
+                          variant={
+                            tempItemType === "slots" ? "default" : "outline"
+                          }
                           size="sm"
                           className="gap-2"
                           onClick={() => setTempItemType("slots")}
@@ -274,14 +276,18 @@ export function PledgeItem({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>People bring specific items (e.g., 3 salads, 2 drinks)</p>
+                        <p>
+                          People bring specific items (e.g., 3 salads, 2 drinks)
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           type="button"
-                          variant={tempItemType === "task" ? "default" : "outline"}
+                          variant={
+                            tempItemType === "task" ? "default" : "outline"
+                          }
                           size="sm"
                           className="gap-2"
                           onClick={() => setTempItemType("task")}
@@ -290,7 +296,10 @@ export function PledgeItem({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>People volunteer for tasks or roles (e.g., 2 setup helpers)</p>
+                        <p>
+                          People volunteer for tasks or roles (e.g., 2 setup
+                          helpers)
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                     <Tooltip>
@@ -298,7 +307,9 @@ export function PledgeItem({
                         <Button
                           type="button"
                           variant={
-                            tempItemType === "cumulative" ? "default" : "outline"
+                            tempItemType === "cumulative"
+                              ? "default"
+                              : "outline"
                           }
                           size="sm"
                           className="gap-2"
@@ -308,7 +319,10 @@ export function PledgeItem({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Collect amounts until target reached (e.g., 5kg of sourdough)</p>
+                        <p>
+                          Collect amounts until target reached (e.g., 5kg of
+                          sourdough)
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </div>

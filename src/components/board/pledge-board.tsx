@@ -103,12 +103,12 @@ export function PledgeBoard({
     isLoading,
     refetch,
   } = api.board.get.useQuery(
-    { id: boardId! },
+    { id: boardId || "" },
     { enabled: !!boardId && !initialData },
   );
 
   const { data: tokenData } = api.board.auth.validateToken.useQuery(
-    { boardId: boardId!, token: token || undefined },
+    { boardId: boardId || "", token: token || undefined },
     { enabled: !!boardId && !initialData },
   );
 

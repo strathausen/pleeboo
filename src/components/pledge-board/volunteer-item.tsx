@@ -90,7 +90,7 @@ export function VolunteerItem({
               isEditingName
                 ? "rounded px-1 ring-2 ring-primary ring-offset-1"
                 : isEmpty
-                  ? "px-1 placeholder:text-muted-foreground/50 placeholder:italic"
+                  ? "px-1 placeholder:text-muted-foreground/50"
                   : "cursor-text rounded px-1 hover:bg-muted/50"
             }`}
             style={{ minWidth: "100px" }}
@@ -115,7 +115,7 @@ export function VolunteerItem({
             className={`block w-full border-0 bg-transparent p-0 text-muted-foreground text-xs outline-none ${
               isEditingDetails
                 ? "rounded px-1 ring-2 ring-primary ring-offset-1"
-                : "cursor-text rounded px-1 placeholder:text-muted-foreground/50 placeholder:italic hover:bg-muted/50"
+                : "cursor-text rounded px-1 placeholder:text-muted-foreground/50 hover:bg-muted/50"
             }`}
             style={{ minWidth: "150px" }}
           />

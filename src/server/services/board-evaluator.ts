@@ -35,19 +35,18 @@ export async function evaluateBoard(params: {
         {
           role: "system",
           content: `You are an expert event planner helping to create a pledge board for community events.
-Analyze the provided event information and suggest appropriate sections and items that volunteers can sign up for.
+Analyze ONLY the information explicitly provided by the user and suggest appropriate sections and items that volunteers can sign up for.
 
-Consider:
-- Type of event (potluck, birthday, community cleanup, etc.)
-- Number of attendees (estimate if not specified)
-- Common needs for this type of event
-- Volunteer roles and responsibilities
-- Items/supplies typically needed
+IMPORTANT RULES:
+- Use ONLY information that is explicitly mentioned in the event title, description, or additional context
+- Do NOT add assumptions, common practices, or typical needs unless they are directly stated
+- Do NOT infer event type or typical requirements - work only with what's provided
+- If information is minimal, provide minimal suggestions based strictly on what's given
 
 For icons, use common Lucide icon names like:
 ${ALL_ICON_NAMES.join(", ")}
 
-Provide practical, relevant suggestions that make organizing easier.`,
+Provide practical, relevant suggestions based STRICTLY on the information provided.`,
         },
         {
           role: "user",

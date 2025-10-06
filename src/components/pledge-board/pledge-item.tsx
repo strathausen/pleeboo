@@ -3,6 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownText } from "@/components/ui/markdown-text";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { type IconName, getIcon } from "@/lib/available-icons";
 import {
   Check,
@@ -12,8 +17,6 @@ import {
   Minus,
   Package,
   Plus,
-  ToggleLeft,
-  ToggleRight,
   Trash2,
   Users,
   X,
@@ -251,40 +254,64 @@ export function PledgeItem({
                       value={tempUnit}
                       onChange={(e) => setTempUnit(e.target.value)}
                       placeholder="kg, litres, etc."
-                      className="w-32 placeholder:text-muted-foreground/50 placeholder:italic"
+                      className="w-32 placeholder:text-muted-foreground/50"
                     />
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={tempItemType === "slots" ? "default" : "outline"}
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setTempItemType("slots")}
-                  >
-                    <Package className="h-4 w-4" /> Bring
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={tempItemType === "task" ? "default" : "outline"}
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setTempItemType("task")}
-                  >
-                    <Users className="h-4 w-4" /> Do
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={
-                      tempItemType === "cumulative" ? "default" : "outline"
-                    }
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setTempItemType("cumulative")}
-                  >
-                    <Plus className="h-4 w-4" /> Amount
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <span className="text-muted-foreground text-sm">Type:</span>
+                  <div className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant={tempItemType === "slots" ? "default" : "outline"}
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => setTempItemType("slots")}
+                        >
+                          <Package className="h-4 w-4" /> Bring Items
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>People bring specific items (e.g., 3 salads, 2 drinks)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant={tempItemType === "task" ? "default" : "outline"}
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => setTempItemType("task")}
+                        >
+                          <Users className="h-4 w-4" /> Do Tasks
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>People volunteer for tasks or roles (e.g., 2 setup helpers)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant={
+                            tempItemType === "cumulative" ? "default" : "outline"
+                          }
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => setTempItemType("cumulative")}
+                        >
+                          <Plus className="h-4 w-4" /> Collect Amount
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Collect amounts until target reached (e.g., 5kg of sourdough)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </div>
               </div>
             </div>

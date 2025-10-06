@@ -19,6 +19,8 @@ export const boardItemsRouter = createTRPCRouter({
         description: z.string().optional(),
         icon: z.string(),
         needed: z.number(),
+        itemType: z.enum(["slots", "task", "cumulative"]).optional(),
+        unit: z.string().optional().nullable(),
         token: z.string().optional(),
       }),
     )
@@ -58,6 +60,8 @@ export const boardItemsRouter = createTRPCRouter({
           description: input.description,
           icon: input.icon,
           needed: input.needed,
+          itemType: input.itemType || "slots",
+          unit: input.unit,
           sortOrder,
         })
         .returning();
@@ -73,6 +77,8 @@ export const boardItemsRouter = createTRPCRouter({
         description: z.string().optional().nullable(),
         icon: z.string().optional(),
         needed: z.number().optional(),
+        itemType: z.enum(["slots", "task", "cumulative"]).optional(),
+        unit: z.string().optional().nullable(),
         token: z.string().optional(),
       }),
     )
@@ -85,6 +91,8 @@ export const boardItemsRouter = createTRPCRouter({
         updatedValues.description = input.description;
       if (input.icon !== undefined) updatedValues.icon = input.icon;
       if (input.needed !== undefined) updatedValues.needed = input.needed;
+      if (input.itemType !== undefined) updatedValues.itemType = input.itemType;
+      if (input.unit !== undefined) updatedValues.unit = input.unit;
 
       if (Object.keys(updatedValues).length === 0) {
         throw new TRPCError({
@@ -124,6 +132,7 @@ export const boardItemsRouter = createTRPCRouter({
         slot: z.number(),
         name: z.string(),
         details: z.string().optional(),
+        quantity: z.number().optional().nullable(),
         token: z.string().optional(),
       }),
     )
@@ -143,6 +152,7 @@ export const boardItemsRouter = createTRPCRouter({
           .set({
             name: input.name,
             details: input.details,
+            quantity: input.quantity,
             updatedAt: new Date(),
           })
           .where(eq(boardVolunteers.id, existingVolunteer.id));
@@ -163,6 +173,7 @@ export const boardItemsRouter = createTRPCRouter({
           slot: input.slot,
           name: input.name,
           details: input.details,
+          quantity: input.quantity,
         })
         .returning();
 

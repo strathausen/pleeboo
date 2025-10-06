@@ -30,7 +30,7 @@ export default function CreateBoardPage() {
       router.push(
         `/board/${board.id}?token=${board.adminToken}&new=true${
           hasPrompt ? "&generating=true" : ""
-        }`
+        }`,
       );
     },
     onError: (error) => {
@@ -104,7 +104,8 @@ export default function CreateBoardPage() {
               />
               <p className="text-muted-foreground/60 text-xs">
                 Boo will use these details to suggest relevant volunteer tasks
-                and items needed for your event. If you don't want this, just leave this field blank.
+                and items needed for your event. If you don't want this, just
+                leave this field blank.
               </p>
             </div>
           </div>

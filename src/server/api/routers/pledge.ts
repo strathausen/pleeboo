@@ -13,6 +13,7 @@ export const pledgeRouter = createTRPCRouter({
         slot: z.number().min(0).max(99),
         name: z.string(),
         details: z.string().optional(),
+        quantity: z.number().optional().nullable(),
         token: z.string().optional(),
       }),
     )
@@ -35,7 +36,11 @@ export const pledgeRouter = createTRPCRouter({
           // Update existing volunteer
           await ctx.db
             .update(boardVolunteers)
-            .set({ name: volunteerData.name, details: volunteerData.details })
+            .set({
+              name: volunteerData.name,
+              details: volunteerData.details,
+              quantity: input.quantity,
+            })
             .where(eq(boardVolunteers.id, existingVolunteer.id));
         } else {
           // Delete if name is empty
@@ -51,6 +56,7 @@ export const pledgeRouter = createTRPCRouter({
           slot,
           name: volunteerData.name,
           details: volunteerData.details,
+          quantity: input.quantity,
         });
       }
 

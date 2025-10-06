@@ -6,8 +6,15 @@ interface VolunteerItemProps {
   itemId: string;
   slot: number;
   isTask?: boolean;
+  isCumulative?: boolean;
+  unit?: string | null;
   onNameChange?: (itemId: string, slot: number, newName: string) => void;
   onDetailsChange?: (itemId: string, slot: number, newDetails: string) => void;
+  onQuantityChange?: (
+    itemId: string,
+    slot: number,
+    newQuantity: number,
+  ) => void;
 }
 
 export function VolunteerItem({
@@ -15,15 +22,51 @@ export function VolunteerItem({
   itemId,
   slot,
   isTask = false,
+  isCumulative = false,
+  unit = null,
   onNameChange,
   onDetailsChange,
+  onQuantityChange,
 }: VolunteerItemProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [isEditingQuantity, setIsEditingQuantity] = useState(false);
   const isEmpty = !volunteer.name.trim();
 
   return (
     <div className="flex items-start gap-2 text-sm">
+      {isCumulative && (
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            min="0"
+            value={volunteer.quantity || ""}
+            onChange={(e) => {
+              if (onQuantityChange) {
+                onQuantityChange(
+                  itemId,
+                  slot,
+                  Number.parseInt(e.target.value) || 0,
+                );
+              }
+            }}
+            onFocus={() => setIsEditingQuantity(true)}
+            onBlur={() => setIsEditingQuantity(false)}
+            placeholder="0"
+            disabled={isEmpty}
+            className={`w-20 border-0 bg-transparent py-0 pr-1 pl-2 text-right outline-none ${
+              isEmpty
+                ? "cursor-not-allowed opacity-50"
+                : isEditingQuantity
+                  ? "rounded ring-2 ring-primary ring-offset-1"
+                  : "cursor-text rounded hover:bg-muted/50"
+            }`}
+          />
+          <span className="text-muted-foreground text-xs">
+            {unit || "unit"}
+          </span>
+        </div>
+      )}
       <div className="flex-1 space-y-1">
         <div
           className={
@@ -53,7 +96,7 @@ export function VolunteerItem({
             style={{ minWidth: "100px" }}
           />
         </div>
-        {(volunteer.details || !isEmpty) && (
+        {(volunteer.details || !isEmpty) && !isCumulative && (
           <input
             type="text"
             value={volunteer.details}

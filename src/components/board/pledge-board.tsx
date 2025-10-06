@@ -18,6 +18,7 @@ type VolunteerUpdate = {
   slot: number;
   name: string;
   details: string;
+  quantity?: number;
 };
 
 export type BoardData = {
@@ -36,12 +37,15 @@ export type BoardData = {
       description?: string | null;
       icon: IconName | string; // string for backward compatibility
       needed: number;
+      itemType?: "slots" | "task" | "cumulative";
+      unit?: string | null;
       volunteers: Array<{
         id: string;
         slot: number;
         itemId?: string;
         name: string;
         details?: string | null;
+        quantity?: number | null;
         createdAt?: Date;
         updatedAt?: Date | null;
       }>;
@@ -438,6 +442,63 @@ export function PledgeBoard({
               slot,
               name,
               details: newDetails,
+            }),
+          ),
+        );
+      }
+    },
+    [localBoard, pendingUpdates, isExample],
+  );
+
+  const handleVolunteerQuantityChange = useCallback(
+    (itemId: string, slot: number, newQuantity: number) => {
+      setLocalBoard((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          sections: prev.sections.map((section) => ({
+            ...section,
+            items: section.items.map((item) => {
+              if (item.id === itemId) {
+                // Find volunteer in this slot
+                const volIndex = item.volunteers.findIndex(
+                  (v) => v.slot === slot,
+                );
+
+                if (volIndex >= 0) {
+                  const newVolunteers = [...item.volunteers];
+                  if (!newVolunteers[volIndex]) return item;
+                  newVolunteers[volIndex] = {
+                    ...newVolunteers[volIndex],
+                    quantity: newQuantity,
+                  };
+                  return { ...item, volunteers: newVolunteers };
+                }
+              }
+              return item;
+            }),
+          })),
+        };
+      });
+
+      // Only queue updates if not a temp item and not an example board
+      if (!itemId.startsWith("temp-") && !isExample) {
+        const key = `${itemId}-${slot}`;
+        const existingUpdate = pendingUpdates.get(key);
+        const volunteer = localBoard?.sections
+          .find((s) => s.items.some((i) => i.id === itemId))
+          ?.items.find((i) => i.id === itemId)
+          ?.volunteers.find((v) => v.slot === slot);
+
+        setPendingUpdates(
+          new Map(
+            pendingUpdates.set(key, {
+              itemId,
+              slot,
+              name: existingUpdate?.name || volunteer?.name || "",
+              details: existingUpdate?.details || volunteer?.details || "",
+              quantity: newQuantity,
             }),
           ),
         );
@@ -876,9 +937,12 @@ export function PledgeBoard({
                   slot: v.slot,
                   name: v.name,
                   details: v.details || "",
+                  quantity: v.quantity,
                 })),
                 icon: item.icon as IconName,
                 category: "items" as const,
+                itemType: item.itemType,
+                unit: item.unit,
               };
             });
 
@@ -893,6 +957,7 @@ export function PledgeBoard({
                 onPledge={() => {}}
                 onVolunteerNameChange={handleVolunteerNameChange}
                 onVolunteerDetailsChange={handleVolunteerDetailsChange}
+                onVolunteerQuantityChange={handleVolunteerQuantityChange}
                 isTask={section.title.toLowerCase().includes("task")}
                 editable={editMode && canEdit}
                 onSectionUpdate={handleSectionUpdate}

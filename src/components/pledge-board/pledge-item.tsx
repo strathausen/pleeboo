@@ -26,6 +26,7 @@ export interface Volunteer {
   name: string;
   slot: number;
   details: string;
+  quantity?: number | null; // For cumulative items
 }
 
 export interface PledgeItemData {
@@ -37,6 +38,8 @@ export interface PledgeItemData {
   icon: IconName;
   category: string;
   isTask?: boolean;
+  itemType?: "slots" | "task" | "cumulative";
+  unit?: string | null; // e.g., "kg", "litres"
 }
 
 interface PledgeItemProps {
@@ -51,6 +54,11 @@ interface PledgeItemProps {
     itemId: string,
     slot: number,
     newDetails: string,
+  ) => void;
+  onVolunteerQuantityChange?: (
+    itemId: string,
+    slot: number,
+    newQuantity: number,
   ) => void;
   isTask?: boolean;
   editable?: boolean;
@@ -82,6 +90,7 @@ export function PledgeItem({
   item,
   onVolunteerNameChange,
   onVolunteerDetailsChange,
+  onVolunteerQuantityChange,
   isTask = false,
   editable = false,
   onItemUpdate,
@@ -93,6 +102,10 @@ export function PledgeItem({
   const [tempDescription, setTempDescription] = useState(item.description);
   const [tempNeeded, setTempNeeded] = useState(item.needed);
   const [tempIsTask, setTempIsTask] = useState(item.isTask ?? isTask);
+  const [tempItemType, setTempItemType] = useState<
+    "slots" | "task" | "cumulative"
+  >(item.itemType ?? (item.isTask ? "task" : "slots"));
+  const [tempUnit, setTempUnit] = useState(item.unit || "");
 
   const IconComponent = getIcon(item.icon);
 
@@ -107,7 +120,9 @@ export function PledgeItem({
         title: tempTitle,
         description: tempDescription,
         needed: tempNeeded,
-        isTask: tempIsTask,
+        isTask: tempItemType === "task",
+        itemType: tempItemType,
+        unit: tempItemType === "cumulative" ? tempUnit : null,
       });
     }
     setIsEditing(false);
@@ -125,20 +140,43 @@ export function PledgeItem({
       setTempDescription(item.description);
       setTempNeeded(item.needed);
       setTempIsTask(item.isTask ?? isTask);
+      setTempItemType(item.itemType ?? (item.isTask ? "task" : "slots"));
+      setTempUnit(item.unit || "");
       setIsEditing(false);
     }
   };
 
-  // Create array with all slots (0 to needed-1)
+  // For cumulative items, always show filled slots plus one empty row
+  // For slot/task items, show all needed slots
+  const isCumulative = item.itemType === "cumulative";
   const allSlots = [];
-  for (let slot = 0; slot < item.needed; slot++) {
-    const volunteer = item.volunteers.find((v) => v.slot === slot) || {
-      id: `empty-${slot}`,
+
+  if (isCumulative) {
+    // Show all filled volunteers
+    const filledVolunteers = item.volunteers.filter((v) => v.name.trim());
+    filledVolunteers.forEach((v, index) => {
+      allSlots.push({ ...v, slot: index });
+    });
+    // Always add one empty slot at the end
+    allSlots.push({
+      id: `empty-${allSlots.length}`,
       name: "",
       details: "",
-      slot,
-    };
-    allSlots.push({ ...volunteer, slot });
+      quantity: null,
+      slot: allSlots.length,
+    });
+  } else {
+    // Standard slot/task behavior - show all needed slots
+    for (let slot = 0; slot < item.needed; slot++) {
+      const volunteer = item.volunteers.find((v) => v.slot === slot) || {
+        id: `empty-${slot}`,
+        name: "",
+        details: "",
+        quantity: null,
+        slot,
+      };
+      allSlots.push({ ...volunteer, slot });
+    }
   }
 
   if (editable && isEditing) {
@@ -161,9 +199,11 @@ export function PledgeItem({
                   }
                 }}
                 placeholder={
-                  tempIsTask
+                  tempItemType === "task"
                     ? "e.g., Set up tables, Face painting"
-                    : "e.g., Savoury foods, Drinks, Decorations"
+                    : tempItemType === "cumulative"
+                      ? "e.g., Sourdough bread, Paper plates"
+                      : "e.g., Savoury foods, Drinks, Decorations"
                 }
                 className="font-semibold text-base placeholder:font-normal placeholder:text-muted-foreground/50"
                 autoFocus={item.id.startsWith("temp-")}
@@ -178,15 +218,19 @@ export function PledgeItem({
                   }
                 }}
                 placeholder={
-                  tempIsTask
+                  tempItemType === "task"
                     ? "Add notes about availability, timing, or special requirements (optional)"
-                    : "Specify what to bring, quantity, or dietary info (optional)"
+                    : tempItemType === "cumulative"
+                      ? "Description or notes (optional)"
+                      : "Specify what to bring, quantity, or dietary info (optional)"
                 }
                 className="text-sm placeholder:text-muted-foreground/50"
               />
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">Needed:</span>
+                  <span className="text-muted-foreground text-sm">
+                    {tempItemType === "cumulative" ? "Target:" : "Needed:"}
+                  </span>
                   <Input
                     type="number"
                     min="1"
@@ -202,29 +246,44 @@ export function PledgeItem({
                     }}
                     className="w-20"
                   />
+                  {tempItemType === "cumulative" && (
+                    <Input
+                      value={tempUnit}
+                      onChange={(e) => setTempUnit(e.target.value)}
+                      placeholder="kg, litres, etc."
+                      className="w-32 placeholder:text-muted-foreground/50 placeholder:italic"
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant={tempItemType === "slots" ? "default" : "outline"}
                     size="sm"
                     className="gap-2"
-                    onClick={() => setTempIsTask(!tempIsTask)}
+                    onClick={() => setTempItemType("slots")}
                   >
-                    {tempIsTask ? (
-                      <>
-                        <Users className="h-4 w-4" /> Task
-                      </>
-                    ) : (
-                      <>
-                        <Package className="h-4 w-4" /> Item
-                      </>
-                    )}
-                    {tempIsTask ? (
-                      <ToggleRight className="h-4 w-4" />
-                    ) : (
-                      <ToggleLeft className="h-4 w-4" />
-                    )}
+                    <Package className="h-4 w-4" /> Bring
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={tempItemType === "task" ? "default" : "outline"}
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setTempItemType("task")}
+                  >
+                    <Users className="h-4 w-4" /> Do
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={
+                      tempItemType === "cumulative" ? "default" : "outline"
+                    }
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setTempItemType("cumulative")}
+                  >
+                    <Plus className="h-4 w-4" /> Amount
                   </Button>
                 </div>
               </div>
@@ -295,8 +354,11 @@ export function PledgeItem({
                 itemId={item.id}
                 slot={volunteer.slot}
                 isTask={item.isTask}
+                isCumulative={isCumulative}
+                unit={item.unit}
                 onNameChange={onVolunteerNameChange}
                 onDetailsChange={onVolunteerDetailsChange}
+                onQuantityChange={onVolunteerQuantityChange}
               />
             ))}
           </div>
@@ -306,15 +368,30 @@ export function PledgeItem({
       {/* Progress status at the bottom */}
       <div className="flex items-center justify-between border-t pt-3">
         <div className="flex items-center gap-2 pt-1">
-          {getStatusBadge(
-            item.needed,
-            item.volunteers.filter((v) => !!v.name.trim()).length,
+          {isCumulative ? (
+            <>
+              {getStatusBadge(
+                item.needed,
+                item.volunteers.reduce((sum, v) => sum + (v.quantity || 0), 0),
+              )}
+              <span className="text-muted-foreground text-sm">
+                {item.volunteers.reduce((sum, v) => sum + (v.quantity || 0), 0)}{" "}
+                of {item.needed} {item.unit || "units"}
+              </span>
+            </>
+          ) : (
+            <>
+              {getStatusBadge(
+                item.needed,
+                item.volunteers.filter((v) => !!v.name.trim()).length,
+              )}
+              <span className="text-muted-foreground text-sm">
+                {item.volunteers.filter((v) => !!v.name.trim()).length} of{" "}
+                {item.needed}{" "}
+                {(item.isTask ?? isTask) ? "volunteers" : "contributions"}
+              </span>
+            </>
           )}
-          <span className="text-muted-foreground text-sm">
-            {item.volunteers.filter((v) => !!v.name.trim()).length} of{" "}
-            {item.needed}{" "}
-            {(item.isTask ?? isTask) ? "volunteers" : "contributions"}
-          </span>
         </div>
         {editable && onItemUpdate && (
           <div className="flex items-center gap-1">

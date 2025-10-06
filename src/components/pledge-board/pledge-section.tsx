@@ -41,6 +41,11 @@ interface PledgeSectionProps {
     slot: number,
     newDetails: string,
   ) => void;
+  onVolunteerQuantityChange?: (
+    itemId: string,
+    slot: number,
+    newQuantity: number,
+  ) => void;
   isTask: boolean;
   editable?: boolean;
   onSectionUpdate?: (
@@ -66,6 +71,7 @@ export function PledgeSection({
   onPledge,
   onVolunteerNameChange,
   onVolunteerDetailsChange,
+  onVolunteerQuantityChange,
   isTask,
   editable = false,
   onSectionUpdate,
@@ -253,6 +259,7 @@ export function PledgeSection({
             onPledge={onPledge}
             onVolunteerNameChange={onVolunteerNameChange}
             onVolunteerDetailsChange={onVolunteerDetailsChange}
+            onVolunteerQuantityChange={onVolunteerQuantityChange}
             isTask={isTask}
             editable={editable}
             onItemUpdate={onItemUpdate}

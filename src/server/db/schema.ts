@@ -83,6 +83,12 @@ export const boardItems = createTable(
     description: d.text(),
     icon: d.varchar({ length: 50 }).notNull().default("Star"),
     needed: d.integer().notNull().default(1),
+    itemType: d
+      .varchar({ length: 20 })
+      .notNull()
+      .default("slots")
+      .$type<"slots" | "task" | "cumulative">(), // slots=bring items, task=do something, cumulative=target amount
+    unit: d.varchar({ length: 50 }), // e.g., "kg", "litres", "dozen", etc. for cumulative items
     sortOrder: d.integer().notNull().default(0),
     createdAt: d
       .timestamp({ withTimezone: true })
@@ -115,6 +121,7 @@ export const boardVolunteers = createTable(
     slot: d.integer().notNull().default(0),
     name: d.varchar({ length: 256 }).notNull(),
     details: d.text(),
+    quantity: d.integer(), // For cumulative items, the amount contributed (e.g., 2 for "2kg")
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)

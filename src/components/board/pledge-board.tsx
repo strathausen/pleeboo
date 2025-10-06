@@ -57,7 +57,7 @@ export type BoardData = {
 };
 
 interface PledgeBoardProps {
-  boardId: string;
+  boardId?: string;
   token?: string;
   startInEditMode?: boolean;
   initialData?: BoardData;
@@ -102,11 +102,14 @@ export function PledgeBoard({
     data: board,
     isLoading,
     refetch,
-  } = api.board.get.useQuery({ id: boardId }, { enabled: !initialData });
+  } = api.board.get.useQuery(
+    { id: boardId! },
+    { enabled: !!boardId && !initialData },
+  );
 
   const { data: tokenData } = api.board.auth.validateToken.useQuery(
-    { boardId: boardId, token: token || undefined },
-    { enabled: !initialData },
+    { boardId: boardId!, token: token || undefined },
+    { enabled: !!boardId && !initialData },
   );
 
   // Debounced updates
@@ -215,7 +218,7 @@ export function PledgeBoard({
 
   // Update local board when server data changes
   useEffect(() => {
-    if (board && !initialData) {
+    if (board && !initialData && boardId) {
       setLocalBoard(board);
       // Save to board history
       addToHistory({

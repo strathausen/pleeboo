@@ -19,6 +19,8 @@ import {
 import Link from "next/link";
 import Typewriter from "typewriter-effect";
 
+export const dynamic = "force-dynamic";
+
 // Simple example board data
 const SIMPLE_EXAMPLE: BoardData = {
   id: "demo",

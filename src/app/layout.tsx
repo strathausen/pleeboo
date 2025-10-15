@@ -20,6 +20,25 @@ export const metadata: Metadata = {
     shortcut: "/pleeboo.png",
     apple: "/pleeboo.png",
   },
+  openGraph: {
+    title: "pleeboo 👻︎☑︎",
+    description: "pledgeboards for community events",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1478,
+        height: 692,
+        alt: "Pleeboo - Pledge boards for community events",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "pleeboo 👻︎☑︎",
+    description: "pledgeboards for community events",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
